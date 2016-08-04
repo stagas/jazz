@@ -1,0 +1,80 @@
+
+/*** syntax ***/
+
+/* red */
+operator,
+operator2,
+keyword {
+  color: #DF2266;
+}
+
+/* green */
+function {
+  color: #A0D92E;
+  font-style: normal;
+}
+
+/* blue */
+declare,
+builtin {
+  color: #61CCE0;
+}
+
+/* purple */
+boolean,
+number,
+number operator {
+  color: #AB7FFB;
+}
+
+/* orange */
+params {
+  color: #FD971F;
+}
+regexp,
+regexp * {
+  color: #FD971F !important;
+  font-style: normal !important;
+}
+
+/* yellow */
+string,
+string * {
+  color: #E6DB74 !important;
+  font-style: normal !important;
+}
+
+/* orange */
+regexp string,
+regexp string *,
+regexp comment,
+regexp comment * {
+  color: #FD971F !important;
+  font-style: normal !important;
+}
+
+/* gray */
+comment,
+comment *,
+comment regexp,
+comment regexp * {
+  color: #75715E !important;
+  font-style: normal !important;
+}
+
+/* white */
+
+symbol,
+code {
+  color: #f8f8f2;
+}
+
+/* italic */
+params,
+declare {
+  font-style: italic;
+}
+
+symbol {
+  font-style: normal;
+}
