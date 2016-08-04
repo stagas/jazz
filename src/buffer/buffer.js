@@ -11,6 +11,8 @@ var N = exports.N = /\n/g;
 var CHUNK_SIZE = exports.CHUNK_SIZE = 30;
 
 function Buffer(scene) {
+  Events.call(this);
+
   this.scene = scene;
   this.text = new SkipString;
   this.lines = new Lines;

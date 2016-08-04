@@ -5,6 +5,8 @@ var Buffer = require('./buffer');
 module.exports = File;
 
 function File(editor) {
+  Events.call(this);
+
   this.path = 'untitled';
   this.buffer = new Buffer;
   this.bindEvents();

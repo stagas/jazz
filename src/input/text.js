@@ -7,6 +7,8 @@ var Events = require('events');
 module.exports = Text;
 
 function Text() {
+  Events.call(this);
+
   this.node = document.createElement('textarea');
 
   dom.style(this, {
@@ -70,7 +72,7 @@ Text.prototype.oninput = function(e) {
 Text.prototype.onkeydown = function(e) {
   var key = keys(e);
   if (key) {
-    e.preventDefault();
+    this.emit(key, e);
     this.emit('key', key, e);
   }
 };

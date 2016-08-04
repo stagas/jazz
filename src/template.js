@@ -57,6 +57,13 @@ template.rows = function(range) {
   return s;
 };
 
+template.rows.style =
+template.code.style = function(range, layout) {
+  return {
+    top: range[0] * layout.char.height
+  };
+};
+
 template.mark = function(range, buffer) {
   var mark = buffer.mark.get();
 
@@ -89,7 +96,18 @@ template.mark = function(range, buffer) {
   var html = syntax.entities(above) + '<mark>' + syntax.entities(middle) + '</mark>';
 
   return html;
-}
+};
+
+template.caret = function() {
+  return '';
+};
+
+template.caret.style = function(point, _) {
+  return {
+    left: _.char.width * _.caret.x + _.gutter,
+    top: _.char.height * _.caret.y,
+  };
+};
 
 function insert(offset, string, part) {
   return string.slice(0, offset) + part + string.slice(offset);
