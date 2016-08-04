@@ -9,20 +9,24 @@ function View(editor, name, template) {
   this.template = template;
   this.range = [-1,-1];
   this.name = name;
-  this.dom = dom(name, {
+
+  this.node = document.createElement('div');
+  this.node.className = name;
+  dom.style(this, {
     top: 0,
     visibility: 'hidden'
   });
 }
 
 View.prototype.render = function(range) {
-  var html = this.template(range, this.editor.buffer);
+  var e = this.editor;
+  var html = this.template(range, e.file.buffer);
   if (html === false) return;
   this.range = range;
   dom.html(this, html);
   dom.style(this, {
     visibility: 'visible',
-    top: range[0] * this.editor.layout.char.height
+    top: range[0] * e.layout.char.height
   });
 };
 
