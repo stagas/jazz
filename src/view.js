@@ -11,7 +11,6 @@ function View(editor, name, template) {
   this.name = name;
   this.dom = dom(name, {
     top: 0,
-    paddingLeft: this.editor.layout.gutterMargin,
     visibility: 'hidden'
   });
 }

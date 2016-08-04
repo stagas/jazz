@@ -25,14 +25,15 @@ function Xoor() {
     pageBounds: new Range,
 
     gutter: new Box,
-    gutterMargin: 10,
+    gutterMargin: 15,
   };
 
   this.buffer = new Buffer;
 
   this.node = document.createDocumentFragment();
   this.code = new View(this, 'code', template.code);
-  dom.append(this.node, this.code);
+  this.rows = new View(this, 'rows', template.rows);
+  dom.append(this.node, [this.code, this.rows]);
 
   this.bindEvents();
 }
@@ -56,6 +57,17 @@ Xoor.prototype.resize = function() {
   _.pagePoint.set(_.scroll.grid(_.char));
   _.pageRemainder.set(_.size['-'](_.page['*'](_.char)));
   _.pageBounds = [0, this.buffer.loc];
+  _.gutter = (''+this.buffer.loc).length * _.char.width;
+
+  dom.css(
+    '.editor .code {'
+  + '  padding-left: ' + (_.gutter + _.gutterMargin) + 'px;'
+  + '}'
+  + '.editor .rows {'
+  + '  padding-right: ' + (_.gutterMargin) + 'px;'
+  + '  width: ' + (_.gutter + _.gutterMargin) + 'px;'
+  + '}'
+  );
 
   this.emit('resize');
 };
@@ -86,5 +98,7 @@ Xoor.prototype.focus = function() {
 
 Xoor.prototype.render = function() {
   var _ = this.layout;
+
   this.code.render(_.pageBounds);
+  this.rows.render(_.pageBounds);
 };
