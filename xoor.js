@@ -1,34 +1,38 @@
 var dom = require('dom');
 var load = require('load');
+var Events = require('events');
 var Point = require('point');
 var Range = require('range');
 var Box = require('box');
-var Events = require('events');
-var Buffer = require('src/buffer');
+
+var template = require('src/template')
 var syntax = require('src/syntax');
+var Buffer = require('src/buffer');
+var View = require('src/view')
 
 module.exports = Xoor;
 
 function Xoor() {
-  this.node = document.createDocumentFragment();
-
-  this.code = dom('code');
-
-  dom.append(this.node, this.code);
-
   this.layout = {
     scroll: new Point,
     offset: new Point,
-    point: new Point,
     size: new Box,
-    page: new Box,
     char: new Box,
+
+    page: new Box,
+    pagePoint: new Point,
+    pageRemainder: new Box,
+    pageBounds: new Range,
+
     gutter: new Box,
-    remainder: new Box,
-    bounds: new Range,
+    gutterMargin: 10,
   };
 
   this.buffer = new Buffer;
+
+  this.node = document.createDocumentFragment();
+  this.code = new View(this, 'code', template.code);
+  dom.append(this.node, this.code);
 
   this.bindEvents();
 }
@@ -36,11 +40,30 @@ function Xoor() {
 Xoor.prototype.__proto__ = Events.prototype;
 
 Xoor.prototype.bindEvents = function() {
+  this.buffer.on('set', this.resize.bind(this));
   this.buffer.on('set', this.render.bind(this));
 };
 
-Xoor.prototype.appendTo = function(node) {
+Xoor.prototype.resize = function() {
+  var $ = this.node;
+  var _ = this.layout;
+
+  _.offset.set(dom.getOffset($));
+  _.scroll.set(dom.getScroll($));
+  _.size.set(dom.getSize($));
+  _.char.set(dom.getCharSize($));
+  _.page.set(_.size.grid(_.char));
+  _.pagePoint.set(_.scroll.grid(_.char));
+  _.pageRemainder.set(_.size['-'](_.page['*'](_.char)));
+  _.pageBounds = [0, this.buffer.loc];
+
+  this.emit('resize');
+};
+
+Xoor.prototype.use = function(node) {
   node.appendChild(this.node);
+  this.node = node;
+  this.resize();
 };
 
 Xoor.prototype.open = function(path, fn) {
@@ -62,8 +85,6 @@ Xoor.prototype.focus = function() {
 };
 
 Xoor.prototype.render = function() {
-  var code = this.buffer.get();
-  var html = syntax.highlight(code);
-  dom.style(this.code, { top: 0 });
-  dom.html(this.code, html);
+  var _ = this.layout;
+  this.code.render(_.pageBounds);
 };
