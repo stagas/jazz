@@ -5,7 +5,7 @@ var merge = require('merge');
 module.exports = View;
 
 function View(name, editor, template) {
-  if (!(this instanceof View)) return new View(editor, name, template);
+  if (!(this instanceof View)) return new View(name, editor, template);
 
   this.editor = editor;
   this.name = name;

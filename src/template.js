@@ -109,6 +109,17 @@ template.caret.style = function(point, _) {
   };
 };
 
+template.gutter = function() {
+  return '';
+};
+
+template.gutter.style = function(point, _) {
+  return {
+    width: 1,
+    height: _.rows * _.char.height,
+  };
+};
+
 function insert(offset, string, part) {
   return string.slice(0, offset) + part + string.slice(offset);
 }

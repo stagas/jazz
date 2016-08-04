@@ -1,4 +1,5 @@
 var dom = require('dom');
+var atomic = require('atomic');
 var Events = require('events');
 var Point = require('point');
 var Range = require('range');
@@ -10,6 +11,9 @@ var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
 var View = require('./src/view');
+var Code = require('./src/code')
+var Edit = require('./src/edit')
+var Rows = require('./src/rows')
 
 module.exports = Xoor;
 
@@ -25,11 +29,10 @@ function Xoor() {
     char: new Box,
 
     page: new Box,
-    pagePoint: new Point,
     pageRemainder: new Box,
     pageBounds: new Range,
 
-    gutter: new Box,
+    gutter: 0,
     gutterMargin: 15,
 
     caret: new Point({ x: -1, y: -1 }),
@@ -41,17 +44,20 @@ function Xoor() {
   this.move = new Move(this);
 
   this.node = document.createDocumentFragment();
+  this.gutter = new View('gutter', this, template.gutter);
   this.caret = new View('caret', this, template.caret);
-  this.code = new View('code', this, template.code);
-  this.rows = new View('rows', this, template.rows);
+  this.code = new Code('code', this, template.code);
+  this.rows = new Rows('rows', this, template.rows);
   this.input = new Input(this);
 
   dom.append(this.node, [
+    this.gutter,
+    this.caret,
     this.code,
     this.rows,
-    this.caret,
-    this.input.text,
   ]);
+
+  dom.append(this.caret, this.input.text);
 
   this.bindEvents();
 }
@@ -143,6 +149,23 @@ Xoor.prototype.focus = function() {
   this.input.focus();
 };
 
+Xoor.prototype.getRange = function(range) {
+  return Range.clamp(range, this.layout.pageBounds);
+};
+
+Xoor.prototype.getPageRange = function(range) {
+  var _ = this.layout;
+  var p = _.scroll['/'](_.char);
+  return this.getRange([
+    Math.floor(p.y + _.page.height * range[0]),
+    Math.ceil(p.y + _.page.height + _.page.height * range[1])
+  ]);
+};
+
+Xoor.prototype.getLineLength = function(y) {
+  return this.file.buffer.lines.getLineLength(y);
+};
+
 Xoor.prototype.followCaret = function(center) {
   var _ = this.layout;
   center = center ? _.size.height / 2 | 0 : 0;
@@ -169,10 +192,8 @@ Xoor.prototype.scrollVertical = function(y) {
 };
 
 Xoor.prototype.insert = function(text) {
-  // stage();
-    this.file.buffer.insert(this.layout.caret, text);
-    this.move.byChars(+1);
-  // commit();
+  this.file.buffer.insert(this.layout.caret, text);
+  this.move.byChars(+1);
 };
 
 Xoor.prototype.repaint = function() {
@@ -190,8 +211,7 @@ Xoor.prototype.resize = function() {
   _.char.set(dom.getCharSize($));
   _.rows = this.file.buffer.loc;
   _.code = this.file.buffer.text.length;
-  _.page.set(_.size.grid(_.char));
-  _.pagePoint.set(_.scroll.grid(_.char));
+  _.page.set(_.size['/'](_.char));
   _.pageRemainder.set(_.size['-'](_.page['*'](_.char)));
   _.pageBounds = [0, _.rows];
   _.gutter = (''+_.rows).length * _.char.width + _.gutterMargin;
@@ -214,34 +234,9 @@ Xoor.prototype.resize = function() {
 };
 
 Xoor.prototype.render = atomic(function() {
-  var _ = this.layout;
-  this.code.render(_.pageBounds);
-  this.rows.render(_.pageBounds);
+  this.gutter.render();
   this.caret.render();
+  this.code.render();
+  this.rows.render();
   this.emit('render');
 });
-
-function atomic(fn) {
-  var stage = false;
-  var n = 0;
-
-  function wrap() {
-    if (stage) return n++;
-    else fn.call(this);
-  }
-
-  wrap.hold = function() {
-    stage = true;
-    n = n || 0;
-  };
-
-  wrap.release = function(context) {
-    if (stage && n) {
-      stage = false;
-      n = 0;
-      fn.call(context);
-    }
-  };
-
-  return wrap;
-}

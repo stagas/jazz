@@ -147,7 +147,13 @@ Move.prototype.__proto__ = Events.prototype;
 
 Object.keys(move).forEach(function(method) {
   Move.prototype[method] = function(param) {
-    this.editor.layout.caret = new Point(move[method](this.editor.file.buffer, this.editor.layout.caret, param));
+    this.editor.layout.caret = new Point(
+      move[method](
+        this.editor.file.buffer,
+        this.editor.layout.caret,
+        param
+      )
+    );
     this.emit('move');
   };
 });
