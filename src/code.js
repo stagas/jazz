@@ -8,7 +8,7 @@ module.exports = Code;
 function Code(name, editor, template) {
   Render.call(this, name, editor, template);
 
-  this.createViews(50);
+  this.createViews(8);
 }
 
 Code.prototype.__proto__ = Render.prototype;
@@ -46,8 +46,6 @@ Code.prototype.render = function() {
     var isTouchBelow = r[0] - isBackspace === y;
     // var isTouchAbove = r[1] + isEnter === y;
     var isCurrent = r[0] === r[1] && r[0] === y + isBackspace;
-
-    debugger;
 
     if (isEnter) {
       if (isCurrent) {
