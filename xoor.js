@@ -13,17 +13,21 @@ var File = require('./src/file');
 var Move = require('./src/move');
 var View = require('./src/view');
 var Code = require('./src/code')
-var Edit = require('./src/edit')
 var Rows = require('./src/rows')
 
 module.exports = Xoor;
 
-function Xoor() {
+function Xoor(options) {
   Events.call(this);
+
+  this.options = options || {};
+  this.options.debug = this.options.debug || {};
 
   this.bindings = {};
 
   this.layout = {
+    animation: {},
+
     scroll: new Point,
     offset: new Point,
     size: new Box,
@@ -62,6 +66,8 @@ function Xoor() {
   ]);
 
   dom.append(this.caret, this.input.text);
+
+  this.animationScrollFrame = this.animationScrollFrame.bind(this);
 
   this.bindEvents();
 }
@@ -109,24 +115,13 @@ Xoor.prototype.onMove = function() {
 
 Xoor.prototype.onScroll = function(scroll) {
   if (scroll.y !== this.layout.scroll.y) {
-    // console.log('scroll');
     this.layout.scroll.set(scroll);
     this.render();
   }
-
-  // this.layout.editLine = -1;
-  // this.layout.editShift = 0;
-
-    // this.layout.editLine = -1;
-    // this.layout.editShift = 0;
-  // this.render.release(this);
-  // });
-  // this.render.release(this);
 };
 
 Xoor.prototype.onInput = function(text) {
   this.render();
-  // window.requestAnimationFrame(() => this.render.release(this));
 };
 
 Xoor.prototype.onText = function(text) {
@@ -144,10 +139,8 @@ Xoor.prototype.onClick = function(text) {
 };
 
 Xoor.prototype.onFileOpen = function() {
-  this.repaint();
   this.move.beginOfFile();
-
-  this.render();
+  this.repaint();
 };
 
 Xoor.prototype.onFileChange = function(editLine, editShift) {
@@ -196,7 +189,7 @@ Xoor.prototype.followCaret = function(center) {
   var _ = this.layout;
   center = center ? _.size.height / 2 | 0 : 0;
   var p = _.caret['*'](_.char);
-  var s = _.scroll; //getScroll();
+  var s = _.animation.scrollTarget || _.scroll; //getScroll();
   var top = s.y - p.y;
   var bottom = (p.y) - (s.y + _.size.height) + _.char.height;
   if (bottom > 0) this.scrollVertical(bottom + center);
@@ -212,6 +205,56 @@ Xoor.prototype.scrollTo = function(p) {
 Xoor.prototype.scrollVertical = function(y) {
   this.layout.scroll.y += y;
   this.scrollTo(this.layout.scroll);
+};
+
+Xoor.prototype.animateScrollVertical = function(y) {
+  var _ = this.layout;
+
+  if (!_.animation.isRunning) {
+    _.animation.isRunning = true;
+  } else {
+    window.cancelAnimationFrame(_.animation.frame);
+  }
+
+  _.animation.frame = window.requestAnimationFrame(this.animationScrollFrame);
+
+  var s = _.animation.scrollTarget || _.scroll;
+
+  _.animation.scrollTarget = {
+    // x: Math.max(0, s.x + x),
+    x: 0,
+    y: Math.max(0, s.y + y)
+  };
+};
+
+Xoor.prototype.animationScrollFrame = function() {
+  var _ = this.layout;
+
+  window.cancelAnimationFrame(_.animation.frame);
+
+  var speed = 0.29;
+  var s = _.scroll;
+  var t = _.animation.scrollTarget;
+
+  // var dx = t.x - s.x;
+  var dy = t.y - s.y;
+
+  if (/*dx === 0 && */dy === 0) {
+    _.animation.isRunning = false;
+    _.animation.scrollTarget = null;
+    // console.log('anim end')
+    return;
+  }
+
+  _.animation.frame = window.requestAnimationFrame(this.animationScrollFrame);
+
+  // dx *= speed;
+  dy *= speed;
+
+  // dx = dx > 0 ? Math.ceil(dx) : Math.floor(dx);
+  dy = dy > 0 ? Math.ceil(dy) : Math.floor(dy);
+
+  this.scrollVertical(dy);
 };
 
 Xoor.prototype.insert = function(text) {

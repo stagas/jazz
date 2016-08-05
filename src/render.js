@@ -43,7 +43,7 @@ Render.prototype.renderVisible = function() {
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
-    console.log('last resort, clear all and try again');
+    // console.log('last resort, clear all and try again');
     this.clear();
     return this.renderVisible();
   }
@@ -62,7 +62,7 @@ Render.prototype.renderLittleAhead = function() {
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
-    console.log('last resort, clear all and try again');
+    // console.log('last resort, clear all and try again');
     views.clear();
     return this.renderLittleAhead();
   }

@@ -160,14 +160,14 @@ Object.keys(move).forEach(function(method) {
 });
 
 Move.prototype.pageDown = function(buffer, p) {
-  // var layout = this.editor;
-  // layout.animateScrollBy(0, layout.size.height - layout.rem.height);
-  return this.byLines(this.editor.layout.page.height);
+  var _ = this.editor.layout;
+  this.editor.animateScrollVertical(_.size.height - _.pageRemainder.height);
+  return this.byLines(_.page.height);
 };
 
 Move.prototype.pageUp = function(buffer, p) {
-  // var layout = this.scene.layout;
-  // layout.animateScrollBy(0, -(layout.size.height - layout.rem.height));
-  return this.byLines(-this.editor.layout.page.height);
+  var _ = this.editor.layout;
+  this.editor.animateScrollVertical(-(_.size.height - _.pageRemainder.height));
+  return this.byLines(-_.page.height);
 };
 

@@ -17,20 +17,25 @@ function View(name, editor, template) {
 
   this.node = document.createElement('div');
   this.node.className = name;
-  dom.style(this, {
+  var style = {
     top: 0,
     height: 0,
-    // background: '#'
-    //   + (Math.random() * 12 | 0).toString(16)
-    //   + (Math.random() * 12 | 0).toString(16)
-    //   + (Math.random() * 12 | 0).toString(16),
     visibility: 'hidden'
-  });
+  }
+
+  if (this.editor.options.debug.views) {
+    style.background = '#'
+      + (Math.random() * 12 | 0).toString(16)
+      + (Math.random() * 12 | 0).toString(16)
+      + (Math.random() * 12 | 0).toString(16);
+  }
+
+  dom.style(this, style);
 }
 
 View.prototype.render = function(range) {
   // console.log(this.name, this.value, e.layout[this.name], diff(this.value, e.layout[this.name]))
-  // if (!diff(this.value, e.layout[this.name])) return;
+  // if (!diff(this.value, this.editor.layout[this.name])) return;
 
   var html = this.template(range, this.editor.file.buffer);
   if (html === false) return;

@@ -16,10 +16,10 @@ module.exports = {
   },
   'pageup': throttle(function() {
     this.move.pageUp();
-  }, 60),
+  }, 50),
   'pagedown': throttle(function() {
     this.move.pageDown();
-  }, 60),
+  }, 50),
   'left': function() {
     this.move.byChars(-1);
   },

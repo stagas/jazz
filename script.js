@@ -1,10 +1,13 @@
 var bindings = require('./bindings');
 var Xoor = require('./xoor');
 
+var options = {
+  debug: {
+    // views: true,
+  }
+};
 
-
-
-var xoor = new Xoor;
+var xoor = new Xoor(options);
 
 xoor.use(document.body);
 xoor.assign(bindings);
