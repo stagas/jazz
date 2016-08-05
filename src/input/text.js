@@ -64,7 +64,7 @@ Text.prototype.focus = function() {
 
 Text.prototype.oninput = function(e) {
   e.preventDefault();
-  this.emit('input', this.get());
+  this.emit('text', this.get());
   this.clear();
   return false;
 };

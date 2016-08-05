@@ -56,19 +56,20 @@ Buffer.prototype.set = function(text) {
 
 Buffer.prototype.insert = function(point, text) {
   text = this.normalizeEndLines(text);
-  if ('\n' == text) this.emit('shift', +1);
+  // if ('\n' == text) this.emit('shift', +1);
+  var isEOL = '\n' === text;
   this.point = this.lines.getPoint(point);
   this.lines.insert(this.point, text);
   this.text.insert(this.point.offset, text);
-  this.emit('update', this.point.y);
+  this.emit('update', this.point.y, +isEOL);
 };
 
 Buffer.prototype.deleteCharAt = function(point) {
   this.point = this.lines.getPoint(point);
   var isEOL = this.lines.removeCharAt(this.point);
-  if (isEOL) this.emit('shift', -1);
+  // if (isEOL) this.emit('shift', -1);
   this.text.removeCharAt(this.point.offset);
-  this.emit('update', this.point.y);
+  this.emit('update', this.point.y, -isEOL);
 };
 
 /*

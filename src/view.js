@@ -1,6 +1,7 @@
 var dom = require('dom');
 var diff = require('diff');
 var merge = require('merge');
+var trim = require('trim');
 
 module.exports = View;
 
@@ -8,6 +9,7 @@ function View(name, editor, template) {
   if (!(this instanceof View)) return new View(name, editor, template);
 
   this.editor = editor;
+  this.visible = false;
   this.name = name;
   this.value = editor.layout[name];
   this.template = template;
@@ -17,32 +19,50 @@ function View(name, editor, template) {
   this.node.className = name;
   dom.style(this, {
     top: 0,
+    height: 0,
+    // background: '#'
+    //   + (Math.random() * 12 | 0).toString(16)
+    //   + (Math.random() * 12 | 0).toString(16)
+    //   + (Math.random() * 12 | 0).toString(16),
     visibility: 'hidden'
   });
 }
 
 View.prototype.render = function(range) {
-  var e = this.editor;
   // console.log(this.name, this.value, e.layout[this.name], diff(this.value, e.layout[this.name]))
-  if (!diff(this.value, e.layout[this.name])) return;
+  // if (!diff(this.value, e.layout[this.name])) return;
 
-  var html = this.template(range, e.file.buffer);
+  var html = this.template(range, this.editor.file.buffer);
   if (html === false) return;
 
+  if ('code' === this.name) {
+    var result = trim.emptyLines(html);
+    range[0] += result.leading;
+    range[1] -= result.trailing - 1;
+    html = result.string;
+  }
+
   this.range = range;
+  this.visible = true;
 
   if (html) dom.html(this, html);
+  else if ('code' === this.name) return this.clear();
 
+  this.style();
+};
+
+View.prototype.style = function() {
   dom.style(
     this,
     merge(
       { visibility: 'visible' },
-      this.template.style(range, e.layout)
+      this.template.style(this.range, this.editor.layout)
     )
   );
 };
 
 View.prototype.clear = function() {
   this.range = [-1,-1];
+  this.visible = false;
   dom.style(this, { visibility: 'hidden' });
 };

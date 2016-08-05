@@ -1,5 +1,4 @@
 var dom = require('dom');
-var Pool = require('pool');
 var Events = require('events');
 var Range = require('range');
 var View = require('./view');
@@ -13,20 +12,16 @@ function Render(name, editor, template) {
 
   editor.layout.visible = {};
   editor.layout.ahead = {};
+  editor.layout.line = {};
 }
 
 Render.prototype.__proto__ = Events.prototype;
 
 Render.prototype.createViews = function(length) {
-  return new Pool(
-    length,
-    View.bind(
-      null,
-      this.name,
-      this.editor,
-      this.template
-    )
-  ).fill();
+  this.views = new Array(length);
+  for (var i = 0; i < this.views.length; i++) {
+    this.views[i] = new View(this.name, this.editor, this.template);
+  }
 };
 
 Render.prototype.renderRanges = function(ranges, views) {
@@ -48,9 +43,28 @@ Render.prototype.renderVisible = function() {
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
-    // console.log('last resort, clear all and try again');
-    views.clear();
+    console.log('last resort, clear all and try again');
+    this.clear();
     return this.renderVisible();
+  }
+
+  this.renderRanges(_.visible.need, _.visible.outside);
+};
+
+Render.prototype.renderLittleAhead = function() {
+  var views = this.views;
+  var e = this.editor;
+  var _ = e.layout;
+
+  views.ranges = Range.ranges(views);
+
+  _.visible.range = e.getPageRange([-.5,+.5]);
+  _.visible.need = Range.XOOR(_.visible.range, views.ranges);
+  _.visible.outside = _.visible.range.outside(views);
+  if (_.visible.need.length > _.visible.outside.length) {
+    console.log('last resort, clear all and try again');
+    views.clear();
+    return this.renderLittleAhead();
   }
 
   this.renderRanges(_.visible.need, _.visible.outside);
@@ -88,7 +102,7 @@ Render.prototype.renderAhead = function() {
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
-    views.clear();
+    this.clear();
     // console.log(this.name + ': last resort, clear all and try again');
     return this.renderAhead(views);
   }
@@ -97,6 +111,30 @@ Render.prototype.renderAhead = function() {
   // console.log(this.name + ': render outside visible');
 };
 
+Render.prototype.renderLine = function(y, views) {
+  var e = this.editor;
+  var _ = e.layout;
+
+  _.line.range = [y,y];
+  _.line.current = views.pop();
+
+  this.renderRanges([_.line.range], [_.line.current]);
+
+  return _.line.current;
+};
+
+Render.prototype.clearInvisible = function() {
+  var views = this.views;
+  var e = this.editor;
+  var _ = e.layout;
+
+  _.visible.range = e.getPageRange([0,0]);
+  _.visible.outside = _.visible.range.outside(views);
+  _.visible.outside.forEach((view) => view.clear());
+
+  return _.visible.outside;
+};
+
 Render.prototype.clear = function() {
-  this.views.clear();
+  this.views.forEach((view) => view.clear());
 };

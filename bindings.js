@@ -96,10 +96,10 @@ module.exports = {
   },
 
   'backspace': function() {
-    this.edit.backspace();
+    this.backspace();
   },
   'delete': function() {
-    this.edit.delete();
+    this.delete();
   },
   'ctrl+backspace': function() {
     this.mark.byWord(-1);

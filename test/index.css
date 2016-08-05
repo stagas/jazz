@@ -1,0 +1,64 @@
+
+html, body {
+  margin: 0;
+  padding: 0 5px 10px;
+  font-family: Roboto Mono, monospace;
+  color: #656565;
+  font-size: 8.5pt;
+}
+
+pre {
+  font-family: Roboto Mono;
+}
+
+table {
+  width: 100%;
+  border-sizing: border-box;
+  border-collapse: collapse;
+}
+
+table, td {
+  padding: 1px 15px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+td, th {
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+td:last-child,
+th:last-child {
+  border-right: none;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+td:nth-child(1) {
+  width: 45%;
+  text-align: right;
+}
+
+button {
+  padding: 2px 7px;
+  margin: 1px 0 5px;
+  font-size: 10pt;
+  letter-spacing: 0.5px;
+  color: white;
+  background: #4ab;
+  border: none;
+  border-radius: 2px;
+}
+
+.item .result {
+  position: relative;
+}
+
+.item .header {
+  margin: 25px 0;
+  font-size: 14pt;
+  text-align: center;
+}

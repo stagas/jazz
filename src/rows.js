@@ -6,7 +6,7 @@ module.exports = Rows;
 function Rows(name, editor, template) {
   Render.call(this, name, editor, template);
 
-  this.views = this.createViews(10);
+  this.createViews(10);
 }
 
 Rows.prototype.__proto__ = Render.prototype;

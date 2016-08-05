@@ -12,12 +12,12 @@ var template = exports;
 template.code = function(range, buffer) {
   var code = buffer.get(range);
 
-  if (template.code.memoize.param === code) {
-    return template.code.memoize.result;
-  } else {
-    template.code.memoize.param = code;
-    template.code.memoize.result = false;
-  }
+  // if (template.code.memoize.param === code) {
+  //   return template.code.memoize.result;
+  // } else {
+  //   template.code.memoize.param = code;
+  //   template.code.memoize.result = false;
+  // }
 
   if (code.length > 10000) {
     return syntax.entities(code);
@@ -40,7 +40,7 @@ template.code = function(range, buffer) {
 
   var html = syntax.highlight(code);
 
-  return '<code>' + html + '</code>';
+  return html;
 };
 
 // singleton memoize for fast last repeating value
@@ -60,7 +60,8 @@ template.rows = function(range) {
 template.rows.style =
 template.code.style = function(range, layout) {
   return {
-    top: range[0] * layout.char.height
+    top: range[0] * layout.char.height,
+    height: (range[1] - range[0] + 1) * layout.char.height
   };
 };
 

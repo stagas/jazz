@@ -76,14 +76,16 @@ html, body {
   position: absolute;
   cursor: text;
   background: #272822;
+  padding-right: 8px;
+  overflow: hidden;
 }
 
 .editor > .caret {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1px;
-  background: #fff;
+  width: 2px;
+  background: #fff !important;
   z-index: 99;
 }
 

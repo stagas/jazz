@@ -132,7 +132,7 @@ move.isBeginOfFile = function(_, p) {
 };
 
 move.isEndOfFile = function(buffer, p) {
-  var last = buffer.lines.length - 1;
+  var last = buffer.lines.length;
   return p.y === last && p.x === buffer.lines.getLine(last).length;
 };
 
@@ -147,13 +147,14 @@ Move.prototype.__proto__ = Events.prototype;
 
 Object.keys(move).forEach(function(method) {
   Move.prototype[method] = function(param) {
-    this.editor.layout.caret = new Point(
-      move[method](
-        this.editor.file.buffer,
-        this.editor.layout.caret,
-        param
-      )
+    var result = move[method](
+      this.editor.file.buffer,
+      this.editor.layout.caret,
+      param
     );
+
+    if ('is' === method.slice(0,2)) return result;
+    this.editor.layout.caret.set(result);
     this.emit('move');
   };
 });

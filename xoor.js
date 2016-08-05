@@ -1,4 +1,5 @@
 var dom = require('dom');
+var diff = require('diff');
 var atomic = require('atomic');
 var Events = require('events');
 var Point = require('point');
@@ -38,6 +39,9 @@ function Xoor() {
     caret: new Point({ x: -1, y: -1 }),
     code: 0,
     rows: 0,
+
+    editLine: -1,
+    editShift: 0,
   };
 
   this.file = new File;
@@ -93,23 +97,40 @@ Xoor.prototype.bindEvents = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.input.on('key', this.onKey);
+  this.input.on('text', this.onText);
   this.input.on('input', this.onInput);
   this.input.on('click', this.onClick);
 };
 
 Xoor.prototype.onMove = function() {
-  this.render.hold();
   this.followCaret();
   this.render();
-  window.requestAnimationFrame(() => {
-    this.render.release(this);
-  });
 };
 
 Xoor.prototype.onScroll = function(scroll) {
-  this.layout.scroll.set(scroll);
+  if (scroll.y !== this.layout.scroll.y) {
+    // console.log('scroll');
+    this.layout.scroll.set(scroll);
+    this.render();
+  }
+
+  // this.layout.editLine = -1;
+  // this.layout.editShift = 0;
+
+    // this.layout.editLine = -1;
+    // this.layout.editShift = 0;
+  // this.render.release(this);
+  // });
+  // this.render.release(this);
+};
+
+Xoor.prototype.onInput = function(text) {
   this.render();
-  this.render.release(this);
+  // window.requestAnimationFrame(() => this.render.release(this));
+};
+
+Xoor.prototype.onText = function(text) {
+  this.insert(text);
 };
 
 Xoor.prototype.onKey = function(key, e) {
@@ -118,27 +139,32 @@ Xoor.prototype.onKey = function(key, e) {
   this.bindings[key].call(this, e);
 };
 
-Xoor.prototype.onInput = function(text) {
-  this.render.hold();
-  this.insert(text);
-  this.render.release(this);
-};
-
 Xoor.prototype.onClick = function(text) {
   this.focus();
 };
 
 Xoor.prototype.onFileOpen = function() {
-  this.render.hold();
   this.repaint();
   this.move.beginOfFile();
-  this.render.release(this);
+
+  this.render();
 };
 
-Xoor.prototype.onFileChange = function() {
-  this.layout.rows = this.file.buffer.loc;
-  this.layout.code = this.file.buffer.text.length;
+Xoor.prototype.onFileChange = function(editLine, editShift) {
+  var _ = this.layout;
+
+  _.rows = this.file.buffer.loc;
+  _.code = this.file.buffer.text.length;
+  _.pageBounds = [0, _.rows];
+  _.editLine = editLine;
+  _.editShift = editShift;
+
   this.render();
+};
+
+Xoor.prototype.clearEdit = function() {
+  this.layout.editLine = -1;
+  this.layout.editShift = 0;
 };
 
 Xoor.prototype.open = function(path, fn) {
@@ -175,10 +201,7 @@ Xoor.prototype.followCaret = function(center) {
   var bottom = (p.y) - (s.y + _.size.height) + _.char.height;
   if (bottom > 0) this.scrollVertical(bottom + center);
   else if (top > 0) this.scrollVertical(-top - center);
-  if (bottom > 0 || top > 0) {
-    this.render.hold();
-    this.render();
-  }
+  if (bottom > 0 || top > 0) this.render();
 };
 
 Xoor.prototype.scrollTo = function(p) {
@@ -196,6 +219,17 @@ Xoor.prototype.insert = function(text) {
   this.move.byChars(+1);
 };
 
+Xoor.prototype.backspace = function() {
+  if (this.move.isBeginOfFile()) return;
+  this.move.byChars(-1);
+  this.file.buffer.deleteCharAt(this.layout.caret);
+};
+
+Xoor.prototype.delete = function() {
+  if (this.move.isEndOfFile()) return;
+  this.file.buffer.deleteCharAt(this.layout.caret);
+};
+
 Xoor.prototype.repaint = function() {
   this.resize();
   this.render();
@@ -211,7 +245,7 @@ Xoor.prototype.resize = function() {
   _.char.set(dom.getCharSize($));
   _.rows = this.file.buffer.loc;
   _.code = this.file.buffer.text.length;
-  _.page.set(_.size['/'](_.char));
+  _.page.set(_.size['^/'](_.char));
   _.pageRemainder.set(_.size['-'](_.page['*'](_.char)));
   _.pageBounds = [0, _.rows];
   _.gutter = (''+_.rows).length * _.char.width + _.gutterMargin;
@@ -234,9 +268,11 @@ Xoor.prototype.resize = function() {
 };
 
 Xoor.prototype.render = atomic(function() {
+  // console.log('render')
   this.gutter.render();
   this.caret.render();
   this.code.render();
   this.rows.render();
+  this.clearEdit();
   this.emit('render');
 });
