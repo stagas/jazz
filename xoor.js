@@ -3,6 +3,7 @@ var diff = require('diff');
 var throttle = require('throttle');
 var atomic = require('atomic');
 var Events = require('events');
+var Dialog = require('dialog');
 var Point = require('point');
 var Range = require('range');
 var Area = require('area');
@@ -31,6 +32,7 @@ function Xoor(options) {
 
     file: new File,
     move: new Move(this),
+    find: new Dialog('Find'),
     input: new Input(this),
     bindings: {},
 
@@ -62,6 +64,7 @@ function Xoor(options) {
     animationRunning: false,
     animationScrollTarget: null,
   });
+
 
   this.views = {
     gutter: new View('gutter', this, template.gutter),
@@ -114,6 +117,7 @@ Xoor.prototype.bindHandlers = function() {
 
 Xoor.prototype.bindEvents = function() {
   this.bindHandlers()
+  this.find.on('close', this.focus.bind(this));
   this.move.on('move', this.onMove);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);

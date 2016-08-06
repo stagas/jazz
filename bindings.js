@@ -154,7 +154,7 @@ var keys = module.exports = {
   },
 
   'ctrl+f': function() {
-    this.searchDialog();
+    this.find.open();
   }
 };
 
