@@ -15,8 +15,7 @@ Code.prototype.__proto__ = Render.prototype;
 
 Code.prototype.render = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
   var y = _.editLine;
   var shift = _.editShift;
   var isEnter = shift > 0;
@@ -49,7 +48,7 @@ Code.prototype.render = function() {
 
     if (isEnter) {
       if (isCurrent) {
-        if (e.getLineLength(y) > 0) {
+        if (_.getLineLength(y) > 0) {
           view.render([y,y]);
         } else {
           shiftView(view, shift);

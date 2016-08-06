@@ -4,16 +4,31 @@
 x- mouse
 x- double/triple click to select line
 x- shift+ctrl left,right to select words
+x- refactor layout to top level and move views
+
+
+
+-- doing ---------------------
+
+
+
 
 
 
 -- todo ----------------------
 
+
 - delete/insert on selection
   (needs buffer to support deleteArea)
+  (lines/buffer need tests)
 
+- ctrl+delete to delete same line
 
+- ctrl+shift lines
 
+- search/replace
+
+- undo/redo
 
 
 -- later ---------------------

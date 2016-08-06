@@ -10,9 +10,10 @@ function Render(name, editor, template) {
   this.editor = editor;
   this.template = template;
 
-  editor.layout.visible = {};
-  editor.layout.ahead = {};
-  editor.layout.line = {};
+  var _ = this.editor;
+  _.visible = {};
+  _.ahead = {};
+  _.line = {};
 }
 
 Render.prototype.__proto__ = Events.prototype;
@@ -34,12 +35,11 @@ Render.prototype.renderRanges = function(ranges, views) {
 
 Render.prototype.renderVisible = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
   views.ranges = Range.ranges(views);
 
-  _.visible.range = e.getPageRange([0,0]);
+  _.visible.range = _.getPageRange([0,0]);
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
@@ -53,12 +53,11 @@ Render.prototype.renderVisible = function() {
 
 Render.prototype.renderLittleAhead = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
   views.ranges = Range.ranges(views);
 
-  _.visible.range = e.getPageRange([-.7,+.7]);
+  _.visible.range = _.getPageRange([-.7,+.7]);
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
@@ -72,19 +71,18 @@ Render.prototype.renderLittleAhead = function() {
 
 Render.prototype.renderAhead = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
   views.ranges = Range.ranges(views);
 
-  _.visible.range = e.getPageRange([0,0]);
+  _.visible.range = _.getPageRange([0,0]);
 
   if (Range.AND(_.visible.range, views.ranges).length > 0) {
-    _.ahead.range = e.getPageRange([-1.5,+1.5]);
+    _.ahead.range = _.getPageRange([-1.5,+1.5]);
     _.ahead.need = Range.XOOR(_.ahead.range, views.ranges);
     if (_.ahead.need.length) {
       // console.log(this.name + ': need', _.ahead.need.join(' '), '#### have:', views.ranges.join(' '))
-      _.ahead.range = e.getPageRange([-2.5,+2.5]);
+      _.ahead.range = _.getPageRange([-2.5,+2.5]);
       _.ahead.outside = _.ahead.range.outside(views);
       _.ahead.need = Range.XOOR(_.ahead.range, views.ranges);
       // console.log(this.name + ': need', _.ahead.need.join(' '), '#### have:', views.ranges.join(' '))
@@ -112,8 +110,7 @@ Render.prototype.renderAhead = function() {
 };
 
 Render.prototype.renderLine = function(y, views) {
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
   _.line.range = [y,y];
   _.line.current = views.pop();
@@ -125,10 +122,9 @@ Render.prototype.renderLine = function(y, views) {
 
 Render.prototype.clearInvisible = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
-  _.visible.range = e.getPageRange([0,0]);
+  _.visible.range = _.getPageRange([0,0]);
   _.visible.outside = _.visible.range.outside(views);
   _.visible.outside.forEach((view) => view.clear());
 

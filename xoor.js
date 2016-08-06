@@ -26,9 +26,14 @@ function Xoor(options) {
   this.options = options || {};
   this.options.debug = this.options.debug || {};
 
-  this.bindings = {};
+  Object.assign(this, {
+    node: document.createDocumentFragment(),
 
-  this.layout = {
+    file: new File,
+    move: new Move(this),
+    input: new Input(this),
+    bindings: {},
+
     scroll: new Point,
     offset: new Point,
     size: new Box,
@@ -52,30 +57,22 @@ function Xoor(options) {
     animationFrame: -1,
     animationRunning: false,
     animationScrollTarget: null,
+  });
+
+  this.views = {
+    gutter: new View('gutter', this, template.gutter),
+    caret: new View('caret', this, template.caret),
+    code: new Code('code', this, template.code),
+    mark: new Mark('mark', this, template.mark),
+    rows: new Rows('rows', this, template.rows),
   };
 
-  this.file = new File;
-  this.move = new Move(this);
+  dom.append(this.node, this.views, true);
+  dom.append(this.views.caret, this.input.text);
 
-  this.file.buffer.mark = this.layout.mark;
-
-  this.node = document.createDocumentFragment();
-  this.gutter = new View('gutter', this, template.gutter);
-  this.caret = new View('caret', this, template.caret);
-  this.code = new Code('code', this, template.code);
-  this.mark = new Mark('mark', this, template.mark);
-  this.rows = new Rows('rows', this, template.rows);
-  this.input = new Input(this);
-
-  dom.append(this.node, [
-    this.gutter,
-    this.caret,
-    this.code,
-    this.mark,
-    this.rows,
-  ]);
-
-  dom.append(this.caret, this.input.text);
+  // useful shortcuts
+  this.buffer = this.file.buffer;
+  this.buffer.mark = this.mark;
 
   this.bindMethods();
   this.bindEvents();
@@ -128,8 +125,8 @@ Xoor.prototype.bindEvents = function() {
 };
 
 Xoor.prototype.onScroll = function(scroll) {
-  if (scroll.y !== this.layout.scroll.y) {
-    this.layout.scroll.set(scroll);
+  if (scroll.y !== this.scroll.y) {
+    this.scroll.set(scroll);
     this.render();
   }
 };
@@ -159,7 +156,7 @@ Xoor.prototype.onFileOpen = function() {
 };
 
 Xoor.prototype.onFileChange = function(editLine, editShift) {
-  var _ = this.layout;
+  var _ = this;
 
   _.rows = this.file.buffer.loc;
   _.code = this.file.buffer.text.length;
@@ -171,7 +168,7 @@ Xoor.prototype.onFileChange = function(editLine, editShift) {
 };
 
 Xoor.prototype.setCaretFromPx = function(px) {
-  var _ = this.layout;
+  var _ = this;
   var g = new Point({ x: _.gutter, y: _.char.height/2 });
   var p = px['-'](g)['+'](_.scroll)['o/'](_.char);
   p.x = Math.min(p.x, this.getLineLength(p.y));
@@ -198,9 +195,9 @@ Xoor.prototype.onMouseClick = function() {
     var area;
 
     if (clicks === 2) {
-      area = this.file.buffer.wordAt(this.layout.caret);
+      area = this.file.buffer.wordAt(this.caret);
     } else if (clicks === 3) {
-      var y = this.layout.caret.y;
+      var y = this.caret.y;
       area = new Area({
         begin: { x: 0, y: y },
         end: { x: this.getLineLength(y), y: y }
@@ -208,7 +205,7 @@ Xoor.prototype.onMouseClick = function() {
     }
 
     if (area) {
-      this.layout.caret.set(area.end);
+      this.caret.set(area.end);
       this.markSetArea(area);
       this.render();
     }
@@ -228,20 +225,20 @@ Xoor.prototype.onMouseDrag = function() {
 };
 
 Xoor.prototype.onMove = function(point) {
-  if (point) this.layout.caret.set(point);
+  if (point) this.caret.set(point);
   this.followCaret();
   this.emit('move');
   this.render();
 };
 
 Xoor.prototype.markBegin = function(area) {
-  if (!this.layout.mark.active) {
-    this.layout.mark.active = true;
+  if (!this.mark.active) {
+    this.mark.active = true;
     if (!area) {
-      this.layout.mark.begin.set(this.layout.caret);
-      this.layout.mark.end.set(this.layout.caret);
+      this.mark.begin.set(this.caret);
+      this.mark.end.set(this.caret);
     } else {
-      this.layout.mark.set(area);
+      this.mark.set(area);
     }
     this.off('move', this.markSet);
     this.on('move', this.markSet);
@@ -252,7 +249,7 @@ Xoor.prototype.markBegin = function(area) {
 };
 
 Xoor.prototype.markSet = function() {
-  this.layout.mark.end.set(this.layout.caret);
+  this.mark.end.set(this.caret);
 };
 
 Xoor.prototype.markSetArea = function(area) {
@@ -268,12 +265,12 @@ Xoor.prototype.markEnd = function() {
 Xoor.prototype.markClear = function() {
   this.off('move', this.markClear);
   this.off('move', this.markSet);
-  this.layout.mark.active = false;
+  this.mark.active = false;
 };
 
 Xoor.prototype.clearEdit = function() {
-  this.layout.editLine = -1;
-  this.layout.editShift = 0;
+  this.editLine = -1;
+  this.editShift = 0;
 };
 
 Xoor.prototype.open = function(path, fn) {
@@ -285,11 +282,11 @@ Xoor.prototype.focus = function() {
 };
 
 Xoor.prototype.getRange = function(range) {
-  return Range.clamp(range, this.layout.pageBounds);
+  return Range.clamp(range, this.pageBounds);
 };
 
 Xoor.prototype.getPageRange = function(range) {
-  var _ = this.layout;
+  var _ = this;
   var p = (_.animationScrollTarget || _.scroll)['/'](_.char);
   return this.getRange([
     Math.floor(p.y + _.page.height * range[0]),
@@ -302,7 +299,7 @@ Xoor.prototype.getLineLength = function(y) {
 };
 
 Xoor.prototype.followCaret = function(center) {
-  var _ = this.layout;
+  var _ = this;
   center = center ? _.size.height / 2 | 0 : 0;
   var p = _.caret['*'](_.char);
   var s = _.animationScrollTarget || _.scroll; //getScroll();
@@ -319,12 +316,12 @@ Xoor.prototype.scrollTo = function(p) {
 };
 
 Xoor.prototype.scrollVertical = function(y) {
-  this.layout.scroll.y += y;
-  this.scrollTo(this.layout.scroll);
+  this.scroll.y += y;
+  this.scrollTo(this.scroll);
 };
 
 Xoor.prototype.animateScrollVertical = function(y) {
-  var _ = this.layout;
+  var _ = this;
 
   if (!_.animationRunning) {
     _.animationRunning = true;
@@ -344,7 +341,7 @@ Xoor.prototype.animateScrollVertical = function(y) {
 };
 
 Xoor.prototype.animationScrollFrame = function() {
-  var _ = this.layout;
+  var _ = this;
 
   window.cancelAnimationFrame(_.animationFrame);
 
@@ -375,19 +372,19 @@ Xoor.prototype.animationScrollFrame = function() {
 };
 
 Xoor.prototype.insert = function(text) {
-  this.file.buffer.insert(this.layout.caret, text);
+  this.buffer.insert(this.caret, text);
   this.move.byChars(+1);
 };
 
 Xoor.prototype.backspace = function() {
   if (this.move.isBeginOfFile()) return;
   this.move.byChars(-1);
-  this.file.buffer.deleteCharAt(this.layout.caret);
+  this.file.buffer.deleteCharAt(this.caret);
 };
 
 Xoor.prototype.delete = function() {
   if (this.move.isEndOfFile()) return;
-  this.file.buffer.deleteCharAt(this.layout.caret);
+  this.file.buffer.deleteCharAt(this.caret);
 };
 
 Xoor.prototype.repaint = function() {
@@ -397,7 +394,7 @@ Xoor.prototype.repaint = function() {
 
 Xoor.prototype.resize = function() {
   var $ = this.node;
-  var _ = this.layout;
+  var _ = this;
 
   _.offset.set(dom.getOffset($));
   _.scroll.set(dom.getScroll($));
@@ -410,7 +407,7 @@ Xoor.prototype.resize = function() {
   _.pageBounds = [0, _.rows];
   _.gutter = (''+_.rows).length * _.char.width + _.gutterMargin;
 
-  dom.style(this.caret, {
+  dom.style(_.views.caret, {
     height: _.char.height
   });
 
@@ -430,11 +427,11 @@ Xoor.prototype.resize = function() {
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
-  this.gutter.render();
-  this.caret.render();
-  this.mark.render();
-  this.code.render();
-  this.rows.render();
+  this.views.gutter.render();
+  this.views.caret.render();
+  this.views.mark.render();
+  this.views.code.render();
+  this.views.rows.render();
   this.clearEdit();
   this.emit('render');
 });

@@ -95,10 +95,10 @@ template.mark = function(range, buffer) {
 
 template.mark.style =
 template.rows.style =
-template.code.style = function(range, layout) {
+template.code.style = function(range, _) {
   return {
-    top: range[0] * layout.char.height,
-    height: (range[1] - range[0] + 1) * layout.char.height
+    top: range[0] * _.char.height,
+    height: (range[1] - range[0] + 1) * _.char.height
   };
 };
 

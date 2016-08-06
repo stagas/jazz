@@ -11,7 +11,7 @@ function View(name, editor, template) {
   this.editor = editor;
   this.visible = false;
   this.name = name;
-  this.value = editor.layout[name];
+  this.value = editor[name];
   this.template = template;
   this.range = [-1,-1];
 
@@ -61,7 +61,7 @@ View.prototype.style = function() {
     this,
     merge(
       { visibility: 'visible' },
-      this.template.style(this.range, this.editor.layout)
+      this.template.style(this.range, this.editor)
     )
   );
 };

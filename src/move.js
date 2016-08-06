@@ -148,8 +148,8 @@ Move.prototype.__proto__ = Events.prototype;
 Object.keys(move).forEach(function(method) {
   Move.prototype[method] = function(param) {
     var result = move[method](
-      this.editor.file.buffer,
-      this.editor.layout.caret,
+      this.editor.buffer,
+      this.editor.caret,
       param
     );
 
@@ -160,13 +160,13 @@ Object.keys(move).forEach(function(method) {
 });
 
 Move.prototype.pageDown = function(buffer, p) {
-  var _ = this.editor.layout;
+  var _ = this.editor;
   this.editor.animateScrollVertical(_.size.height - _.pageRemainder.height);
   return this.byLines(_.page.height);
 };
 
 Move.prototype.pageUp = function(buffer, p) {
-  var _ = this.editor.layout;
+  var _ = this.editor;
   this.editor.animateScrollVertical(-(_.size.height - _.pageRemainder.height));
   return this.byLines(-_.page.height);
 };

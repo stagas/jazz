@@ -15,15 +15,14 @@ Mark.prototype.__proto__ = Render.prototype;
 
 Mark.prototype.render = function() {
   var views = this.views;
-  var e = this.editor;
-  var _ = e.layout;
+  var _ = this.editor;
 
   if (!_.mark.active) {
     if (views[0].range[0] !== -1) this.clear();
     return;
   }
 
-  _.ahead.range = e.getPageRange([-1,+1]);
+  _.ahead.range = _.getPageRange([-1,+1]);
 
   _.mark.area = _.mark.get();
   _.mark.ranges = Range.AND(_.ahead.range, [[_.mark.area.begin.y, _.mark.area.end.y]]);
