@@ -58,12 +58,12 @@ Render.prototype.renderLittleAhead = function() {
 
   views.ranges = Range.ranges(views);
 
-  _.visible.range = e.getPageRange([-.5,+.5]);
+  _.visible.range = e.getPageRange([-.7,+.7]);
   _.visible.need = Range.XOOR(_.visible.range, views.ranges);
   _.visible.outside = _.visible.range.outside(views);
   if (_.visible.need.length > _.visible.outside.length) {
     // console.log('last resort, clear all and try again');
-    views.clear();
+    this.clear();
     return this.renderLittleAhead();
   }
 

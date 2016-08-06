@@ -154,8 +154,8 @@ Object.keys(move).forEach(function(method) {
     );
 
     if ('is' === method.slice(0,2)) return result;
-    this.editor.layout.caret.set(result);
-    this.emit('move');
+
+    this.emit('move', result);
   };
 });
 

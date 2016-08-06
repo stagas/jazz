@@ -1,0 +1,23 @@
+
+-- done ----------------------
+
+x- mouse
+x- double/triple click to select line
+x- shift+ctrl left,right to select words
+
+
+
+-- todo ----------------------
+
+- delete/insert on selection
+  (needs buffer to support deleteArea)
+
+
+
+
+
+-- later ---------------------
+
+- optimize mark
+- triple click + continue selection select by lines
+- double click + continue selection select by words

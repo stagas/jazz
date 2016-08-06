@@ -1,4 +1,5 @@
-
+var parse = require('parse');
+var Area = require('area');
 var Events = require('events');
 var Lines = require('./lines');
 var Segments = require('./segments');
@@ -36,7 +37,7 @@ Buffer.prototype.get = function(lines) {
 };
 
 Buffer.prototype.getLine = function(y) {
-  return this.text.get([y,y]);
+  return this.get([y,y]);
 };
 
 Buffer.prototype.set = function(text) {
@@ -70,6 +71,23 @@ Buffer.prototype.deleteCharAt = function(point) {
   // if (isEOL) this.emit('shift', -1);
   this.text.removeCharAt(this.point.offset);
   this.emit('update', this.point.y, -isEOL);
+};
+
+Buffer.prototype.wordAt = function(point) {
+  this.point = this.lines.getPoint(point);
+  var text = this.text.getRange(this.point.line.range);
+  var words = parse.tokens(text);
+  var lastIndex = 0;
+  for (var i = 0; i < words.length; i++) {
+    word = words[i];
+    if (word.index > this.point.x) {
+      return new Area({
+        begin: { x: lastIndex, y: this.point.y },
+        end: { x: word.index, y: this.point.y }
+      });
+    }
+    lastIndex = word.index;
+  }
 };
 
 /*

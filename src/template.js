@@ -57,18 +57,10 @@ template.rows = function(range) {
   return s;
 };
 
-template.rows.style =
-template.code.style = function(range, layout) {
-  return {
-    top: range[0] * layout.char.height,
-    height: (range[1] - range[0] + 1) * layout.char.height
-  };
-};
-
 template.mark = function(range, buffer) {
   var mark = buffer.mark.get();
 
-  if (mark.begin.y >= range[1] || mark.end.y <= range[0]) return false;
+  // if (mark.begin.y >= range[1] || mark.end.y <= range[0]) return false;
   // if (mark.begin.y < range[0] || mark.end.y > range[1]) return false;
 
   // var a = {
@@ -96,7 +88,18 @@ template.mark = function(range, buffer) {
   var middle = code.substring(area[0].offset, area[1].offset);
   var html = syntax.entities(above) + '<mark>' + syntax.entities(middle) + '</mark>';
 
+  html = html.replace(/\n/g, ' \n');
+
   return html;
+};
+
+template.mark.style =
+template.rows.style =
+template.code.style = function(range, layout) {
+  return {
+    top: range[0] * layout.char.height,
+    height: (range[1] - range[0] + 1) * layout.char.height
+  };
 };
 
 template.caret = function() {

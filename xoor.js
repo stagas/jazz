@@ -1,19 +1,22 @@
 var dom = require('dom');
 var diff = require('diff');
+var throttle = require('throttle');
 var atomic = require('atomic');
 var Events = require('events');
 var Point = require('point');
 var Range = require('range');
+var Area = require('area');
 var Box = require('box');
 
-var template = require('./src/template')
+var template = require('./src/template');
 var syntax = require('./src/syntax');
 var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
 var View = require('./src/view');
-var Code = require('./src/code')
-var Rows = require('./src/rows')
+var Code = require('./src/code');
+var Mark = require('./src/mark');
+var Rows = require('./src/rows');
 
 module.exports = Xoor;
 
@@ -26,8 +29,6 @@ function Xoor(options) {
   this.bindings = {};
 
   this.layout = {
-    animation: {},
-
     scroll: new Point,
     offset: new Point,
     size: new Box,
@@ -43,18 +44,26 @@ function Xoor(options) {
     caret: new Point({ x: -1, y: -1 }),
     code: 0,
     rows: 0,
+    mark: new Area,
 
     editLine: -1,
     editShift: 0,
+
+    animationFrame: -1,
+    animationRunning: false,
+    animationScrollTarget: null,
   };
 
   this.file = new File;
   this.move = new Move(this);
 
+  this.file.buffer.mark = this.layout.mark;
+
   this.node = document.createDocumentFragment();
   this.gutter = new View('gutter', this, template.gutter);
   this.caret = new View('caret', this, template.caret);
   this.code = new Code('code', this, template.code);
+  this.mark = new Mark('mark', this, template.mark);
   this.rows = new Rows('rows', this, template.rows);
   this.input = new Input(this);
 
@@ -62,13 +71,13 @@ function Xoor(options) {
     this.gutter,
     this.caret,
     this.code,
+    this.mark,
     this.rows,
   ]);
 
   dom.append(this.caret, this.input.text);
 
-  this.animationScrollFrame = this.animationScrollFrame.bind(this);
-
+  this.bindMethods();
   this.bindEvents();
 }
 
@@ -88,6 +97,12 @@ Xoor.prototype.assign = function(bindings) {
   this.bindings = bindings;
 };
 
+Xoor.prototype.bindMethods = function() {
+  this.animationScrollFrame = this.animationScrollFrame.bind(this);
+  this.markSet = this.markSet.bind(this);
+  this.markClear = this.markClear.bind(this);
+};
+
 Xoor.prototype.bindHandlers = function() {
   for (var method in this) {
     if ('on' === method.slice(0, 2)) {
@@ -98,19 +113,18 @@ Xoor.prototype.bindHandlers = function() {
 
 Xoor.prototype.bindEvents = function() {
   this.bindHandlers()
-
   this.move.on('move', this.onMove);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
+  this.input.on('keys', this.onKeys);
   this.input.on('key', this.onKey);
   this.input.on('text', this.onText);
   this.input.on('input', this.onInput);
-  this.input.on('click', this.onClick);
-};
-
-Xoor.prototype.onMove = function() {
-  this.followCaret();
-  this.render();
+  this.input.on('mouseup', this.onMouseUp);
+  this.input.on('mousedown', this.onMouseDown);
+  this.input.on('mouseclick', this.onMouseClick);
+  this.input.on('mousedragbegin', this.onMouseDragBegin);
+  this.input.on('mousedrag', this.onMouseDrag);
 };
 
 Xoor.prototype.onScroll = function(scroll) {
@@ -128,14 +142,15 @@ Xoor.prototype.onText = function(text) {
   this.insert(text);
 };
 
-Xoor.prototype.onKey = function(key, e) {
-  if (!(key in this.bindings)) return;
+Xoor.prototype.onKeys = function(keys, e) {
+  if (!(keys in this.bindings)) return;
   e.preventDefault();
-  this.bindings[key].call(this, e);
+  this.bindings[keys].call(this, e);
 };
 
-Xoor.prototype.onClick = function(text) {
-  this.focus();
+Xoor.prototype.onKey = function(key, e) {
+  if (!(key in this.bindings.single)) return;
+  this.bindings.single[key].call(this, e);
 };
 
 Xoor.prototype.onFileOpen = function() {
@@ -153,6 +168,107 @@ Xoor.prototype.onFileChange = function(editLine, editShift) {
   _.editShift = editShift;
 
   this.render();
+};
+
+Xoor.prototype.setCaretFromPx = function(px) {
+  var _ = this.layout;
+  var g = new Point({ x: _.gutter, y: _.char.height/2 });
+  var p = px['-'](g)['+'](_.scroll)['o/'](_.char);
+  p.x = Math.min(p.x, this.getLineLength(p.y));
+  _.caret.set(p);
+  return p;
+};
+
+Xoor.prototype.onMouseUp = function() {
+  this.markEnd();
+  this.focus();
+};
+
+Xoor.prototype.onMouseDown = function() {
+  if (this.input.text.modifiers.shift) {
+    this.markBegin();
+  }
+  this.setCaretFromPx(this.input.mouse.point);
+  this.onMove();
+};
+
+Xoor.prototype.onMouseClick = function() {
+  var clicks = this.input.mouse.clicks;
+  if (clicks > 1) {
+    var area;
+
+    if (clicks === 2) {
+      area = this.file.buffer.wordAt(this.layout.caret);
+    } else if (clicks === 3) {
+      var y = this.layout.caret.y;
+      area = new Area({
+        begin: { x: 0, y: y },
+        end: { x: this.getLineLength(y), y: y }
+      });
+    }
+
+    if (area) {
+      this.layout.caret.set(area.end);
+      this.markSetArea(area);
+      this.render();
+    }
+  }
+};
+
+Xoor.prototype.onMouseDragBegin = function() {
+  console.log('drag begin')
+  this.setCaretFromPx(this.input.mouse.down);
+  this.markBegin();
+};
+
+Xoor.prototype.onMouseDrag = function() {
+  this.setCaretFromPx(this.input.mouse.point);
+  this.onMove();
+  this.markSet();
+};
+
+Xoor.prototype.onMove = function(point) {
+  if (point) this.layout.caret.set(point);
+  this.followCaret();
+  this.emit('move');
+  this.render();
+};
+
+Xoor.prototype.markBegin = function(area) {
+  if (!this.layout.mark.active) {
+    this.layout.mark.active = true;
+    if (!area) {
+      this.layout.mark.begin.set(this.layout.caret);
+      this.layout.mark.end.set(this.layout.caret);
+    } else {
+      this.layout.mark.set(area);
+    }
+    this.off('move', this.markSet);
+    this.on('move', this.markSet);
+    // console.log('mark begin')
+  } else {
+    this.off('move', this.markClear);
+  }
+};
+
+Xoor.prototype.markSet = function() {
+  this.layout.mark.end.set(this.layout.caret);
+};
+
+Xoor.prototype.markSetArea = function(area) {
+  this.markBegin(area);
+  this.render();
+  this.markEnd();
+};
+
+Xoor.prototype.markEnd = function() {
+  this.on('move', this.markClear);
+};
+
+Xoor.prototype.markClear = function() {
+  this.off('move', this.markClear);
+  this.off('move', this.markSet);
+  this.layout.mark.active = false;
 };
 
 Xoor.prototype.clearEdit = function() {
@@ -174,7 +290,7 @@ Xoor.prototype.getRange = function(range) {
 
 Xoor.prototype.getPageRange = function(range) {
   var _ = this.layout;
-  var p = _.scroll['/'](_.char);
+  var p = (_.animationScrollTarget || _.scroll)['/'](_.char);
   return this.getRange([
     Math.floor(p.y + _.page.height * range[0]),
     Math.ceil(p.y + _.page.height + _.page.height * range[1])
@@ -189,7 +305,7 @@ Xoor.prototype.followCaret = function(center) {
   var _ = this.layout;
   center = center ? _.size.height / 2 | 0 : 0;
   var p = _.caret['*'](_.char);
-  var s = _.animation.scrollTarget || _.scroll; //getScroll();
+  var s = _.animationScrollTarget || _.scroll; //getScroll();
   var top = s.y - p.y;
   var bottom = (p.y) - (s.y + _.size.height) + _.char.height;
   if (bottom > 0) this.scrollVertical(bottom + center);
@@ -210,43 +326,44 @@ Xoor.prototype.scrollVertical = function(y) {
 Xoor.prototype.animateScrollVertical = function(y) {
   var _ = this.layout;
 
-  if (!_.animation.isRunning) {
-    _.animation.isRunning = true;
+  if (!_.animationRunning) {
+    _.animationRunning = true;
   } else {
-    window.cancelAnimationFrame(_.animation.frame);
+    window.cancelAnimationFrame(_.animationFrame);
   }
 
-  _.animation.frame = window.requestAnimationFrame(this.animationScrollFrame);
+  _.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
-  var s = _.animation.scrollTarget || _.scroll;
+  var s = _.animationScrollTarget || _.scroll;
 
-  _.animation.scrollTarget = {
+  _.animationScrollTarget = new Point({
     // x: Math.max(0, s.x + x),
     x: 0,
     y: Math.max(0, s.y + y)
-  };
+  });
 };
 
 Xoor.prototype.animationScrollFrame = function() {
   var _ = this.layout;
 
-  window.cancelAnimationFrame(_.animation.frame);
+  window.cancelAnimationFrame(_.animationFrame);
 
   var speed = 0.29;
   var s = _.scroll;
-  var t = _.animation.scrollTarget;
+  var t = _.animationScrollTarget;
 
   // var dx = t.x - s.x;
   var dy = t.y - s.y;
 
   if (/*dx === 0 && */dy === 0) {
-    _.animation.isRunning = false;
-    _.animation.scrollTarget = null;
+    _.animationRunning = false;
+    _.animationScrollTarget = null;
+    this.emit('animation end');
     // console.log('anim end')
     return;
   }
 
-  _.animation.frame = window.requestAnimationFrame(this.animationScrollFrame);
+  _.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
   // dx *= speed;
   dy *= speed;
@@ -298,6 +415,7 @@ Xoor.prototype.resize = function() {
   });
 
   dom.css(''
+  + '.editor > .mark,'
   + '.editor > .code {'
   + '  padding-left: ' + _.gutter + 'px;'
   + '}'
@@ -314,6 +432,7 @@ Xoor.prototype.render = atomic(function() {
   // console.log('render')
   this.gutter.render();
   this.caret.render();
+  this.mark.render();
   this.code.render();
   this.rows.render();
   this.clearEdit();

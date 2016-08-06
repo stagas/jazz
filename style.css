@@ -82,6 +82,7 @@ html, body {
 
 .editor > .caret {
   position: absolute;
+  cursor: text;
   top: 0;
   left: 0;
   width: 2px;
@@ -121,7 +122,7 @@ html, body {
 
 mark {
   color: #fff;
-  background: #642;
+  background: #b41;
   padding-top: 1px;
   padding-bottom: 1px;
 }

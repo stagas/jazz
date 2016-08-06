@@ -18,8 +18,13 @@ Input.prototype.__proto__ = Events.prototype;
 Input.prototype.bindEvents = function() {
   this.text.on(['key', 'text'], this.emit.bind(this, 'input'));
   this.text.on('text', this.emit.bind(this, 'text'));
+  this.text.on('keys', this.emit.bind(this, 'keys'));
   this.text.on('key', this.emit.bind(this, 'key'));
-  this.mouse.on('up', this.emit.bind(this, 'click'));
+  this.mouse.on('up', this.emit.bind(this, 'mouseup'));
+  this.mouse.on('click', this.emit.bind(this, 'mouseclick'));
+  this.mouse.on('down', this.emit.bind(this, 'mousedown'));
+  this.mouse.on('drag', this.emit.bind(this, 'mousedrag'));
+  this.mouse.on('drag begin', this.emit.bind(this, 'mousedragbegin'));
 };
 
 Input.prototype.use = function(node) {

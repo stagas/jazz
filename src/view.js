@@ -40,7 +40,7 @@ View.prototype.render = function(range) {
   var html = this.template(range, this.editor.file.buffer);
   if (html === false) return;
 
-  if ('code' === this.name) {
+  if ('code' === this.name || 'mark' === this.name) {
     var result = trim.emptyLines(html);
     range[0] += result.leading;
     range[1] -= result.trailing - 1;
