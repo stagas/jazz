@@ -9,8 +9,8 @@ var symbol = {
 
 var template = exports;
 
-template.code = function(range, buffer) {
-  var code = buffer.get(range);
+template.code = function(range, _) {
+  var code = _.buffer.get(range);
 
   // if (template.code.memoize.param === code) {
   //   return template.code.memoize.result;
@@ -23,8 +23,8 @@ template.code = function(range, buffer) {
     return syntax.entities(code);
   }
 
-  var offset = buffer.lines.get(range[0]);
-  var segment = buffer.segments.get(offset);
+  var offset = _.buffer.lines.get(range[0]);
+  var segment = _.buffer.segments.get(offset);
 
   if (segment) {
     var offset = segment.offset;
@@ -49,7 +49,7 @@ template.code.memoize = {
   result: ''
 };
 
-template.rows = function(range) {
+template.rows = function(range, _) {
   var s = '';
   for (var i = range[0]; i <= range[1]; i++) {
     s += (i + 1) + '\n';
@@ -57,29 +57,12 @@ template.rows = function(range) {
   return s;
 };
 
-template.mark = function(range, buffer) {
-  var mark = buffer.mark.get();
+template.mark = function(range, _) {
+  var mark = _.mark.get();
 
-  // if (mark.begin.y >= range[1] || mark.end.y <= range[0]) return false;
-  // if (mark.begin.y < range[0] || mark.end.y > range[1]) return false;
-
-  // var a = {
-  //   begin: {
-  //     x: 0, //range[0] > mark.begin.y ? 0 : mark.begin.x,
-  //     y: Math.max(range[0], mark.begin.y)
-  //   },
-  //   end: {
-  //     x: 0, //range[1] < mark.end.y ? 0 : mark.end.x,
-  //     y: Math.min(range[1], mark.end.y)
-  //   }
-  // };
-
-  // range[0] = a.begin.y;
-  // range[1] = a.end.y;
-
-  var offset = buffer.lines.getRange(range);
-  var area = buffer.lines.getArea(mark);
-  var code = buffer.text.getRange(offset);
+  var offset = _.buffer.lines.getRange(range);
+  var area = _.buffer.lines.getArea(mark);
+  var code = _.buffer.text.getRange(offset);
 
   area[0].offset -= offset[0];
   area[1].offset -= offset[0];
@@ -91,6 +74,44 @@ template.mark = function(range, buffer) {
   html = html.replace(/\n/g, ' \n');
 
   return html;
+};
+
+template.find = function(range, _) {
+  var results = _.findResults;
+
+  var begin = 0;
+  var end = results.length;
+  var prev = -2;
+  var i = -1;
+
+  if (!end) return false;
+
+  do {
+    prev = i;
+    i = begin + (end - begin) / 2 | 0;
+    if (results[i].y < range[0]) begin = i;
+    else end = i;
+  } while (prev !== i);
+
+  var width = _.findValue.length * _.char.width + 'px';
+
+  var html = '';
+  var r;
+
+  while (results[i] && results[i].y < range[1]) {
+    r = results[i++];
+    html += '<i style="'
+      + 'width:' + width + ';'
+      + 'top:' + (r.y * _.char.height) + 'px;'
+      + 'left:' + (r.x * _.char.width + _.gutter) + 'px;'
+      + '"></i>';
+  }
+
+  return html;
+};
+
+template.find.style = function() {
+  //
 };
 
 template.mark.style =

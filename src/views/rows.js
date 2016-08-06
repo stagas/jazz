@@ -1,5 +1,5 @@
-var Render = require('./render');
-var template = require('./template');
+var Render = require('../render');
+var template = require('../template');
 
 module.exports = Rows;
 

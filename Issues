@@ -15,25 +15,33 @@ x- shift+ctrl+backspace to delete to begin
 x- ctrl+d = duplicate line
 x- ctrl+shift lines
 x- copy/paste
+x- search
+  x- implement find dialog
+  x- lines.getOffset
+  x- implement search using indexOf
+  x- optimize search
+  x- implement running indexing
 
 
 -- doing ---------------------
 
-
+- undo/redo
 
 
 
 
 -- todo ----------------------
 
-- search/replace
-- undo/redo
+- implement replace
+*- double/triple click to select line
+^ done, but broke
 
 
 -- later ---------------------
 
 - optimize mark
 - optimize ctrl-shift lines
+- fix edge case (bottom) inserting lines pushing content down
 - fix edge case ctrl-shift lines
 - fix edge case shift+(ctrl)+delete
 - double click + continue selection select by words

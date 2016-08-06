@@ -65,6 +65,15 @@ module.exports = function(t, Lines) {
       assert.equal(2, lines.getLineLength(2));
       assert.throws(() => lines.getLineLength(3));
     })
+
+    t('getOffset', function() {
+      assert.equal({x:0,y:0}, lines.getOffset(0));
+      assert.equal({x:3,y:0}, lines.getOffset(3));
+      assert.equal({x:1,y:1}, lines.getOffset(7));
+      assert.equal({x:1,y:2}, lines.getOffset(13));
+      assert.equal({x:2,y:2}, lines.getOffset(14));
+      assert.equal(false, lines.getOffset(15));
+    })
   }()
 
   t('edge case 1', function() {
@@ -73,7 +82,6 @@ module.exports = function(t, Lines) {
     lines.insertLine(1,'world\n');
     lines.insertLine(0,'\n');
     lines.insertLine(2,'\n');
-    console.log(lines.index)
     assert.equal(1, lines.get(1));
     assert.equal(0, lines.getLineLength(0));
     assert.equal(5, lines.getLineLength(1));
@@ -166,23 +174,17 @@ module.exports = function(t, Lines) {
     var lines = new Lines;
     lines.insert({ x:0, y:0 }, '123456');
     assert.equal([], lines.index);
-    console.log(lines.tail)
     lines.insert({ x:0, y:0 }, '123\n56\n890');
     assert.equal([3,6], lines.index);
-    console.log(lines.tail)
     lines.insert({ x:0, y:0 }, '123\n56\n890');
-    console.log(lines.tail)
     assert.equal([3,6,13,16], lines.index);
 
     var lines = new Lines;
     lines.insert({ x:0, y:0 }, '123456');
     assert.equal([], lines.index);
-    console.log(lines.tail)
     lines.insert({ x:0, y:0 }, '123\n56\n890');
     assert.equal([3,6], lines.index);
-    console.log(lines.tail)
     lines.insert({ x:1, y:1 }, '123\n56\n890');
-    console.log(lines.tail)
     assert.equal([3,8,11,16], lines.index);
   })
 // 123 5123 56 8906 890123456

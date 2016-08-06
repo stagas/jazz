@@ -130,6 +130,34 @@ Lines.prototype.getPoint = function(point) {
   };
 };
 
+Lines.prototype.getOffset = function(offset) {
+  var begin = 0;
+  var end = this.length;
+  var prev = -2;
+  var i = -1;
+
+  do {
+    prev = i;
+    i = begin + (end - begin) / 2 | 0;
+    if (this.get(i) < offset) begin = i;
+    else end = i;
+  } while (prev !== i);
+
+  var line = this.getLine(i);
+  var x = offset - line.offset;
+  if ( x > line.length
+    && i === this.length - 1) {
+    x -= line.length + 1;
+    i += 1;
+    if (x > this.tail.length) return false;
+  }
+
+  return {
+    x: x,
+    y: i
+  };
+};
+
 Lines.prototype.insert = function(p, text) {
   var point = this.getPoint(p);
   var x = point.x;

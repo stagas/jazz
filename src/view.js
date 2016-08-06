@@ -37,7 +37,7 @@ View.prototype.render = function(range) {
   // console.log(this.name, this.value, e.layout[this.name], diff(this.value, e.layout[this.name]))
   // if (!diff(this.value, this.editor.layout[this.name])) return;
 
-  var html = this.template(range, this.editor.file.buffer);
+  var html = this.template(range, this.editor);
   if (html === false) return;
 
   if ('code' === this.name) {
@@ -69,5 +69,6 @@ View.prototype.style = function() {
 View.prototype.clear = function() {
   this.range = [-1,-1];
   this.visible = false;
+  dom.html(this, '');
   dom.style(this, { visibility: 'hidden' });
 };

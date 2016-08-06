@@ -15,9 +15,10 @@ var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
 var View = require('./src/view');
-var Code = require('./src/code');
-var Mark = require('./src/mark');
-var Rows = require('./src/rows');
+var CodeView = require('./src/views/code');
+var MarkView = require('./src/views/mark');
+var RowsView = require('./src/views/rows');
+var FindView = require('./src/views/find');
 
 module.exports = Xoor;
 
@@ -32,9 +33,13 @@ function Xoor(options) {
 
     file: new File,
     move: new Move(this),
-    find: new Dialog('Find'),
     input: new Input(this),
     bindings: {},
+
+    find: new Dialog('Find'),
+    findValue: '',
+    findResults: [],
+    findIndexDirty: false,
 
     scroll: new Point,
     offset: new Point,
@@ -65,18 +70,17 @@ function Xoor(options) {
     animationScrollTarget: null,
   });
 
-
   this.views = {
     gutter: new View('gutter', this, template.gutter),
     caret: new View('caret', this, template.caret),
-    code: new Code('code', this, template.code),
-    mark: new Mark('mark', this, template.mark),
-    rows: new Rows('rows', this, template.rows),
+    code: new CodeView('code', this, template.code),
+    mark: new MarkView('mark', this, template.mark),
+    rows: new RowsView('rows', this, template.rows),
+    find: new FindView('find', this, template.find),
   };
 
   dom.append(this.node, this.views, true);
   dom.append(this.views.caret, this.input.text);
-
   // useful shortcuts
   this.buffer = this.file.buffer;
   this.buffer.mark = this.mark;
@@ -105,6 +109,7 @@ Xoor.prototype.bindMethods = function() {
   this.animationScrollFrame = this.animationScrollFrame.bind(this);
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
+  this.focus = this.focus.bind(this);
 };
 
 Xoor.prototype.bindHandlers = function() {
@@ -117,7 +122,6 @@ Xoor.prototype.bindHandlers = function() {
 
 Xoor.prototype.bindEvents = function() {
   this.bindHandlers()
-  this.find.on('close', this.focus.bind(this));
   this.move.on('move', this.onMove);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
@@ -133,6 +137,9 @@ Xoor.prototype.bindEvents = function() {
   this.input.on('mouseclick', this.onMouseClick);
   this.input.on('mousedragbegin', this.onMouseDragBegin);
   this.input.on('mousedrag', this.onMouseDrag);
+  this.find.on('value', this.onFindValue);
+  this.find.on('open', this.onFindOpen);
+  this.find.on('close', this.onFindClose);
 };
 
 Xoor.prototype.onScroll = function(scroll) {
@@ -193,6 +200,11 @@ Xoor.prototype.onFileChange = function(editRange, editShift) {
   _.editRange = editRange;
   _.editShift = editShift;
   _.pageBounds = [0, _.rows];
+  _.findIndexDirty = true;
+  if (_.findValue) {
+    _.onFindOpen();
+    _.onFindValue(_.findValue);
+  }
 
   this.render();
 };
@@ -443,6 +455,37 @@ Xoor.prototype.delete = function() {
   }
 };
 
+Xoor.prototype.onFindValue = function(value) {
+  var _ = this;
+  var g = new Point({ x: _.gutter, y: 0 });
+
+  this.views.find.clear();
+
+  _.findValue = value;
+  console.time('find ' + value);
+  _.findResults = this.buffer
+    .indexer.find(value).map((offset) => {
+    return this.buffer.lines.getOffset(offset);
+      //px: new Point(point)['*'](_.char)['+'](g)
+  });
+  console.timeEnd('find ' + value);
+
+  this.views.find.render();
+};
+
+Xoor.prototype.onFindOpen = function() {
+  if (!this.findIndexDirty) return;
+  console.time('index');
+  this.buffer.raw = this.buffer.get();
+  console.timeEnd('index');
+  this.findIndexDirty = false;
+};
+
+Xoor.prototype.onFindClose = function() {
+  this.findValue = '';
+  this.views.find.clear();
+};
+
 Xoor.prototype.repaint = function() {
   this.resize();
   this.render();
@@ -468,6 +511,7 @@ Xoor.prototype.resize = function() {
   });
 
   dom.css(''
+  + '.editor > .find,'
   + '.editor > .mark,'
   + '.editor > .code {'
   + '  padding-left: ' + _.gutter + 'px;'
@@ -475,6 +519,9 @@ Xoor.prototype.resize = function() {
   + '.editor > .rows {'
   + '  padding-right: ' + _.gutterMargin + 'px;'
   + '  width: ' + _.gutter + 'px;'
+  + '}'
+  + '.editor > .find > i {'
+  + '  height: ' + (_.char.height + 1) + 'px;'
   + '}'
   );
 
@@ -488,6 +535,7 @@ Xoor.prototype.render = atomic(function() {
   this.views.mark.render();
   this.views.code.render();
   this.views.rows.render();
+  this.views.find.render();
   this.clearEdit();
   this.emit('render');
 });

@@ -1,7 +1,7 @@
 var dom = require('dom');
 var Range = require('range');
-var Render = require('./render');
-var template = require('./template');
+var Render = require('../render');
+var template = require('../template');
 
 module.exports = Mark;
 

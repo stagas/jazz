@@ -4,6 +4,7 @@ var Events = require('events');
 var Lines = require('./lines');
 var Segments = require('./segments');
 var SkipString = require('./skipstring');
+var Indexer = require('./indexer');
 
 exports = module.exports = Buffer;
 
@@ -18,6 +19,7 @@ function Buffer(scene) {
   this.text = new SkipString;
   this.lines = new Lines;
   this.segments = new Segments;
+  this.indexer = new Indexer(this);
   this.point = { x:0, y:0, offset: 0 };
 }
 
@@ -42,6 +44,7 @@ Buffer.prototype.getLine = function(y) {
 
 Buffer.prototype.set = function(text) {
   text = this.normalizeEndLines(text);
+  this.raw = text;
   this.lines = new Lines;
   this.text = new SkipString;
 
