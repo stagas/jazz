@@ -134,6 +134,7 @@ Lines.prototype.insert = function(p, text) {
   var point = this.getPoint(p);
   var x = point.x;
   var y = point.y;
+  var lines = 0;
   var offset = point.offset;
 
   if (y === this.length) {
@@ -149,25 +150,28 @@ Lines.prototype.insert = function(p, text) {
 
   while (~(match = text.indexOf('\n', match + 1))) {
     matches.push(match + offset);
-    shift += match + 1;
     last = match;
+    lines++;
   }
 
-  var tail = text.slice(last + 1);
+  shift += last + 1;
 
+  var tail = text.slice(last + 1);
   if (y === this.length) {
     this.tail += tail;
   }
 
-  if (y <= this.length) {
+  if (y < this.length) {
     shift += tail.length;
     this.shift(y, shift);
   }
 
-  if (matches.length < 3) return;
+  if (matches.length < 3) return lines;
 
   this.index.splice.apply(this.index, matches);
   this.length = this.index.length;
+
+  return lines;
 };
 
 Lines.prototype.insertLine = function(y, text) {

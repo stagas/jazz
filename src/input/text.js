@@ -15,6 +15,8 @@ var map = {
   40: 'down',
   46: 'delete',
   65: 'a',
+  68: 'd',
+  70: 'f',
   89: 'y',
   90: 'z',
 
@@ -94,6 +96,7 @@ Text.prototype.focus = function() {
 Text.prototype.oninput = function(e) {
   e.preventDefault();
   this.emit('text', this.get());
+  // forces caret to end of textarea so we can get .slice(-1) char
   setImmediate(() => this.node.selectionStart = this.node.value.length);
   this.clear();
   return false;

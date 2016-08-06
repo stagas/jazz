@@ -5,7 +5,16 @@ x- mouse
 x- double/triple click to select line
 x- shift+ctrl left,right to select words
 x- refactor layout to top level and move views
-
+x- delete/insert on selection
+  (needs buffer to support deleteArea)
+  (lines/buffer need tests)
+x- ctrl-delete/backspace
+x- shift+delete to delete same line
+x- shift+ctrl+delete to delete to end
+x- shift+ctrl+backspace to delete to begin
+x- ctrl+d = duplicate line
+x- ctrl+shift lines
+x- copy/paste
 
 
 -- doing ---------------------
@@ -17,23 +26,15 @@ x- refactor layout to top level and move views
 
 -- todo ----------------------
 
-
-- delete/insert on selection
-  (needs buffer to support deleteArea)
-  (lines/buffer need tests)
-
-- ctrl+delete to delete same line
-
-- ctrl+shift lines
-
 - search/replace
-
 - undo/redo
 
 
 -- later ---------------------
 
 - optimize mark
-- triple click + continue selection select by lines
+- optimize ctrl-shift lines
+- fix edge case ctrl-shift lines
+- fix edge case shift+(ctrl)+delete
 - double click + continue selection select by words
 - refactor move.js

@@ -162,8 +162,30 @@ module.exports = function(t, Lines) {
 
 // h e l l o     w o r l d !   !
 // 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
-  })
 
+    var lines = new Lines;
+    lines.insert({ x:0, y:0 }, '123456');
+    assert.equal([], lines.index);
+    console.log(lines.tail)
+    lines.insert({ x:0, y:0 }, '123\n56\n890');
+    assert.equal([3,6], lines.index);
+    console.log(lines.tail)
+    lines.insert({ x:0, y:0 }, '123\n56\n890');
+    console.log(lines.tail)
+    assert.equal([3,6,13,16], lines.index);
+
+    var lines = new Lines;
+    lines.insert({ x:0, y:0 }, '123456');
+    assert.equal([], lines.index);
+    console.log(lines.tail)
+    lines.insert({ x:0, y:0 }, '123\n56\n890');
+    assert.equal([3,6], lines.index);
+    console.log(lines.tail)
+    lines.insert({ x:1, y:1 }, '123\n56\n890');
+    console.log(lines.tail)
+    assert.equal([3,8,11,16], lines.index);
+  })
+// 123 5123 56 8906 890123456
   t('removeCharAt', function() {
     var lines = new Lines;
     lines.insert({ x:0, y:0 }, 'hello\n world!\n!');
@@ -186,6 +208,18 @@ module.exports = function(t, Lines) {
     assert.equal([], lines.index);
   })
 
+  t('removeArea', function() {
+    var lines = new Lines;
+    lines.insert({ x:0, y:0 }, 'hello\n world!\n!');
+    assert.equal([5,13], lines.index);
+    lines.removeArea({
+      begin: { x:3, y:0 },
+      end: { x:3, y:1 }
+    });
+    assert.equal([7], lines.index);
+  })
+// h e l r l d !   !
+// 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
 /**/
 
 };

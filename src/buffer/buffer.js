@@ -57,12 +57,12 @@ Buffer.prototype.set = function(text) {
 
 Buffer.prototype.insert = function(point, text) {
   text = this.normalizeEndLines(text);
-  // if ('\n' == text) this.emit('shift', +1);
   var isEOL = '\n' === text;
   this.point = this.lines.getPoint(point);
-  this.lines.insert(this.point, text);
+  var lines = this.lines.insert(this.point, text);
   this.text.insert(this.point.offset, text);
-  this.emit('update', this.point.y, +isEOL);
+  this.emit('update', [this.point.y, this.point.y + lines], +isEOL);
+  return text.length;
 };
 
 Buffer.prototype.deleteCharAt = function(point) {
@@ -70,7 +70,7 @@ Buffer.prototype.deleteCharAt = function(point) {
   var isEOL = this.lines.removeCharAt(this.point);
   // if (isEOL) this.emit('shift', -1);
   this.text.removeCharAt(this.point.offset);
-  this.emit('update', this.point.y, -isEOL);
+  this.emit('update', [this.point.y, this.point.y], -isEOL);
 };
 
 Buffer.prototype.wordAt = function(point) {
@@ -90,13 +90,20 @@ Buffer.prototype.wordAt = function(point) {
   }
 };
 
-/*
-Buffer.prototype.getAreaText = function(area) {
+Buffer.prototype.deleteArea = function(area) {
   var range = this.lines.getArea(area);
-  var text = this.text.getRange(range);
+  this.lines.removeArea(area);
+  this.text.remove([range[0].offset, range[1].offset]);
+  this.emit('update', [area.begin.y, area.end.y]);
+};
+
+Buffer.prototype.getArea = function(area) {
+  var range = this.lines.getArea(area);
+  var text = this.text.getRange([range[0].offset, range[1].offset]);
   return text;
 };
 
+/*
 Buffer.prototype.moveAreaByLines = function(y, area) {
   var range = this.lines.getAreaRange(area);
   var text = this.text.getRange(range);
@@ -110,11 +117,6 @@ Buffer.prototype.moveAreaByLines = function(y, area) {
   this.lines.insert(y, text);
 };
 
-Buffer.prototype.deleteArea = function(area) {
-  var range = this.lines.getArea(area);
-  this.lines.removeArea(area);
-  this.text.remove(range);
-};
 */
 Buffer.prototype.normalizeEndLines = function(s) {
   return s.replace(exports.EOL, '\n');

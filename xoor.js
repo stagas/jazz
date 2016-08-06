@@ -49,9 +49,13 @@ function Xoor(options) {
     caret: new Point({ x: -1, y: -1 }),
     code: 0,
     rows: 0,
-    mark: new Area,
+    mark: new Area({
+      begin: new Point({ x: -1, y: -1 }),
+      end: new Point({ x: -1, y: -1 })
+    }),
 
     editLine: -1,
+    editRange: [-1,-1],
     editShift: 0,
 
     animationFrame: -1,
@@ -113,10 +117,13 @@ Xoor.prototype.bindEvents = function() {
   this.move.on('move', this.onMove);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
+  this.input.on('input', this.onInput);
+  this.input.on('text', this.onText);
   this.input.on('keys', this.onKeys);
   this.input.on('key', this.onKey);
-  this.input.on('text', this.onText);
-  this.input.on('input', this.onInput);
+  this.input.on('cut', this.onCut);
+  this.input.on('copy', this.onCopy);
+  this.input.on('paste', this.onPaste);
   this.input.on('mouseup', this.onMouseUp);
   this.input.on('mousedown', this.onMouseDown);
   this.input.on('mouseclick', this.onMouseClick);
@@ -150,19 +157,38 @@ Xoor.prototype.onKey = function(key, e) {
   this.bindings.single[key].call(this, e);
 };
 
+Xoor.prototype.onCut = function(e) {
+  if (!this.mark.active) return;
+  this.onCopy(e);
+  this.delete();
+};
+
+Xoor.prototype.onCopy = function(e) {
+  if (!this.mark.active) return;
+  var area = this.mark.get();
+  var text = this.buffer.getArea(area);
+  e.clipboardData.setData('text/plain', text);
+};
+
+Xoor.prototype.onPaste = function(e) {
+  var text = e.clipboardData.getData('text/plain');
+  this.insert(text);
+};
+
 Xoor.prototype.onFileOpen = function() {
   this.move.beginOfFile();
   this.repaint();
 };
 
-Xoor.prototype.onFileChange = function(editLine, editShift) {
+Xoor.prototype.onFileChange = function(editRange, editShift) {
   var _ = this;
 
-  _.rows = this.file.buffer.loc;
-  _.code = this.file.buffer.text.length;
-  _.pageBounds = [0, _.rows];
-  _.editLine = editLine;
+  _.rows = this.buffer.loc;
+  _.code = this.buffer.text.length;
+  _.editLine = [editRange[0], editRange[0]];
+  _.editRange = editRange;
   _.editShift = editShift;
+  _.pageBounds = [0, _.rows];
 
   this.render();
 };
@@ -234,10 +260,10 @@ Xoor.prototype.onMove = function(point) {
 Xoor.prototype.markBegin = function(area) {
   if (!this.mark.active) {
     this.mark.active = true;
-    if (!area) {
+    if (area !== false || !area && this.mark.begin.x === -1) {
       this.mark.begin.set(this.caret);
       this.mark.end.set(this.caret);
-    } else {
+    } else if (area) {
       this.mark.set(area);
     }
     this.off('move', this.markSet);
@@ -266,10 +292,15 @@ Xoor.prototype.markClear = function() {
   this.off('move', this.markClear);
   this.off('move', this.markSet);
   this.mark.active = false;
+  this.mark.set({
+    begin: new Point({ x: -1, y: -1 }),
+    end: new Point({ x: -1, y: -1 })
+  });
 };
 
 Xoor.prototype.clearEdit = function() {
   this.editLine = -1;
+  this.editRange = [-1,-1];
   this.editShift = 0;
 };
 
@@ -378,19 +409,34 @@ Xoor.prototype.animationScrollFrame = function() {
 };
 
 Xoor.prototype.insert = function(text) {
-  this.buffer.insert(this.caret, text);
-  this.move.byChars(+1);
+  if (this.mark.active) this.delete();
+  var length = this.buffer.insert(this.caret, text);
+  this.move.byChars(length);
 };
 
 Xoor.prototype.backspace = function() {
   if (this.move.isBeginOfFile()) return;
-  this.move.byChars(-1);
-  this.file.buffer.deleteCharAt(this.caret);
+  if (this.mark.active) {
+    var area = this.mark.get();
+    this.caret.set(area.begin);
+    this.buffer.deleteArea(area);
+    this.markClear();
+  } else {
+    this.move.byChars(-1);
+    this.buffer.deleteCharAt(this.caret);
+  }
 };
 
 Xoor.prototype.delete = function() {
   if (this.move.isEndOfFile()) return;
-  this.file.buffer.deleteCharAt(this.caret);
+  if (this.mark.active) {
+    var area = this.mark.get();
+    this.caret.set(area.begin);
+    this.buffer.deleteArea(area);
+    this.markClear();
+  } else {
+    this.buffer.deleteCharAt(this.caret);
+  }
 };
 
 Xoor.prototype.repaint = function() {

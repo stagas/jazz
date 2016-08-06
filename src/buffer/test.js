@@ -140,6 +140,31 @@ module.exports = function(t, Buffer) {
     }
   })
 
+  t('deleteArea', function() {
+    repeat(times, function() {
+      for (var i = 1; i < 10; i++) {
+        Buffer.CHUNK_SIZE = i;
+
+        var buffer = new Buffer;
+        buffer.set('1234567\n7890123\n456789012');
+        assert.equal('1234567\n7890123\n456789012', buffer.get());
+        buffer.deleteArea({
+          begin: {x:3,y:0},
+          end:   {x:3,y:1}
+        });
+        assert.equal('1230123\n456789012', buffer.get());
+        buffer.insert({x:3,y:0}, '456');
+        assert.equal('1234560123\n456789012', buffer.get());
+        buffer.insert({x:0,y:1}, '123');
+        assert.equal('1234560123\n123456789012', buffer.get());
+        buffer.deleteArea({
+          begin: {x:3,y:0},
+          end:   {x:3,y:1}
+        });
+        assert.equal('123456789012', buffer.get());
+      }
+    })
+  })
 };
 
 function repeat(times, fn) {

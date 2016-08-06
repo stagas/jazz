@@ -17,12 +17,21 @@ Code.prototype.render = function() {
   var views = this.views;
   var _ = this.editor;
   var y = _.editLine;
+  var range = _.editRange;
   var shift = _.editShift;
   var isEnter = shift > 0;
   var isBackspace = shift < 0;
+  var isRange = range[0] !== -1 && range[1] - range[0] > 1;
 
   // randomize
   views.sort(random);
+
+  if (isRange) {
+    // console.log('is range')
+    this.clear();
+    this.renderVisible();
+    return;
+  }
 
   if (y < 0) return this.renderAhead();
 

@@ -20,6 +20,9 @@ Input.prototype.bindEvents = function() {
   this.text.on('text', this.emit.bind(this, 'text'));
   this.text.on('keys', this.emit.bind(this, 'keys'));
   this.text.on('key', this.emit.bind(this, 'key'));
+  this.text.on('cut', this.emit.bind(this, 'cut'));
+  this.text.on('copy', this.emit.bind(this, 'copy'));
+  this.text.on('paste', this.emit.bind(this, 'paste'));
   this.mouse.on('up', this.emit.bind(this, 'mouseup'));
   this.mouse.on('click', this.emit.bind(this, 'mouseclick'));
   this.mouse.on('down', this.emit.bind(this, 'mousedown'));
