@@ -36,3 +36,4 @@ x- refactor layout to top level and move views
 - optimize mark
 - triple click + continue selection select by lines
 - double click + continue selection select by words
+- refactor move.js

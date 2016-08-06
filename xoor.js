@@ -227,8 +227,8 @@ Xoor.prototype.onMouseDrag = function() {
 Xoor.prototype.onMove = function(point) {
   if (point) this.caret.set(point);
   this.followCaret();
-  this.emit('move');
   this.render();
+  this.emit('move');
 };
 
 Xoor.prototype.markBegin = function(area) {
@@ -305,9 +305,15 @@ Xoor.prototype.followCaret = function(center) {
   var s = _.animationScrollTarget || _.scroll; //getScroll();
   var top = s.y - p.y;
   var bottom = (p.y) - (s.y + _.size.height) + _.char.height;
-  if (bottom > 0) this.scrollVertical(bottom + center);
-  else if (top > 0) this.scrollVertical(-top - center);
-  if (bottom > 0 || top > 0) this.render();
+  if (!_.animationRunning) {
+    if (bottom > 0) this.scrollVertical(bottom + center);
+    else if (top > 0) this.scrollVertical(-top - center);
+    if (bottom > 0 || top > 0) this.render();
+  } else {
+    if (bottom > 0) this.animateScrollVertical(bottom + center);
+    else if (top > 0) this.animateScrollVertical(-top - center);
+    // if (bottom > 0 || top > 0) this.render();
+  }
 };
 
 Xoor.prototype.scrollTo = function(p) {
