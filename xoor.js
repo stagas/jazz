@@ -205,11 +205,13 @@ Xoor.prototype.onPaste = function(e) {
 Xoor.prototype.onFileOpen = function() {
   this.move.beginOfFile();
   this.repaint();
+  this.history.actuallySave();
 };
 
 Xoor.prototype.onFileSet = function() {
-  this.clear();
-  this.repaint();
+  this.views.caret.render();
+  this.views.code.clear();
+  this.views.code.renderVisible();
 };
 
 Xoor.prototype.onBeforeFileChange = function() {
@@ -231,7 +233,7 @@ Xoor.prototype.onFileChange = function(editRange, editShift) {
     _.onFindValue(_.findValue);
   }
 
-  this.history.save();
+  // this.history.save();
   this.render();
 };
 
@@ -304,7 +306,7 @@ Xoor.prototype.markBegin = function(area) {
     this.mark.active = true;
     if (area) {
       this.mark.set(area);
-    } else if (area !== false) {
+    } else if (area !== false || this.mark.begin.x === -1) {
       this.mark.begin.set(this.caret);
       this.mark.end.set(this.caret);
     }

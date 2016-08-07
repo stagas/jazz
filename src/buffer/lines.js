@@ -280,6 +280,14 @@ Lines.prototype.shift = function(y, diff) {
   }
 };
 
+Lines.prototype.copy = function() {
+  var lines = new Lines;
+  lines.index = this.index.slice();
+  lines.tail = this.tail;
+  lines.length = this.length;
+  return lines;
+};
+
 Lines.count = function(text) {
   return this.text.match(N).length;
 };

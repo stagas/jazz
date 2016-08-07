@@ -134,6 +134,7 @@ var keys = module.exports = {
     area.begin.x = 0;
     area.end.x = 0;
     var text = this.buffer.get([area.begin.y, area.end.y-1]);
+    this.views.code.clear();
     this.buffer.deleteArea(area);
     this.buffer.insert({ x:0, y:area.begin.y-1 }, text);
     this.mark.begin.y -= 1;
@@ -148,6 +149,7 @@ var keys = module.exports = {
     area.begin.x = 0;
     area.end.x = 0;
     var text = this.buffer.get([area.begin.y, area.end.y-1]);
+    this.views.code.clear();
     this.buffer.deleteArea(area);
     this.buffer.insert({ x:0, y:area.begin.y+1 }, text);
     this.mark.begin.y += 1;

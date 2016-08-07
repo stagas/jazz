@@ -12,7 +12,7 @@ exports = module.exports = Buffer;
 
 var EOL = exports.EOL = /\r\n|\r|\n/g;
 var N = exports.N = /\n/g;
-var CHUNK_SIZE = exports.CHUNK_SIZE = 30;
+var CHUNK_SIZE = exports.CHUNK_SIZE = 3000;
 
 function Buffer() {
   this.raw = '';
@@ -48,17 +48,12 @@ Buffer.prototype.set = function(text) {
   text = this.normalizeEndLines(text);
   this.raw = text;
 
-  console.time('index');
-  console.time('prefix index');
-  this.prefix.index(text);
-  console.timeEnd('prefix index');
+  // this.updateIndexes();
 
-  console.time('segment index');
-  this.segments.set(text);
-  console.timeEnd('segment index');
-  console.timeEnd('index');
-
+  console.time('lines index');
   this.lines.insert({ x:0, y:0 }, text);
+  console.timeEnd('lines index');
+
   this.text.insertChunked(0, text, exports.CHUNK_SIZE);
 
   this.emit('set');
@@ -73,7 +68,6 @@ Buffer.prototype.insert = function(point, text) {
   this.text.insert(point.offset, text);
   var range = [point.y, point.y + lines];
   var insertedText = this.get(range);
-  this.updateIndexes();
   this.emit('update', range, +isEOL);
   return text.length;
 };
@@ -89,7 +83,7 @@ Buffer.prototype.updateIndexes = debounce(function() {
   this.segments.set(this.raw);
   console.timeEnd('segment index');
   console.timeEnd('index');
-}, 1000);
+}, 10000);
 
 Buffer.prototype.deleteCharAt = function(point) {
   this.emit('before update');

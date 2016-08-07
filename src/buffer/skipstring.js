@@ -276,6 +276,17 @@ SkipString.prototype.getRange = function(range) {
   return this.substring(range[0], range[1]);
 };
 
+SkipString.prototype.copy = function() {
+  var copy = new SkipString;
+  var node = this.head;
+  var offset = 0;
+  while (node = node.next[0]) {
+    copy.insert(offset, node.value);
+    offset += node.width[0];
+  }
+  return copy;
+};
+
 SkipString.prototype.joinString = function(delimiter) {
   var parts = [];
   var node = this.head;

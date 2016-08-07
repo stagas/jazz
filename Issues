@@ -34,6 +34,8 @@ x- autocomplete
 
 -- doing ---------------------
 
+- optimize ctrl-shift lines
+
 
 
 -- todo ----------------------
@@ -46,7 +48,6 @@ x- autocomplete
 -- later ---------------------
 
 - optimize mark
-- optimize ctrl-shift lines
 - optimize segment inserting
 - fix edge case (bottom) inserting lines pushing content down
 - fix edge case ctrl-shift lines
