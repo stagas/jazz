@@ -139,7 +139,7 @@ Lines.prototype.getOffset = function(offset) {
   do {
     prev = i;
     i = begin + (end - begin) / 2 | 0;
-    if (this.get(i) < offset) begin = i;
+    if (this.get(i) <= offset) begin = i;
     else end = i;
   } while (prev !== i);
 
