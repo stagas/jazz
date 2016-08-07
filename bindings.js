@@ -156,7 +156,13 @@ var keys = module.exports = {
   },
 
   'tab': function() {
-    this.insert('  ');
+    var res = this.suggest();
+    if (!res) {
+      this.insert('  ');
+    } else {
+      this.markSetArea(res.area);
+      this.insert(res.node.value);
+    }
   },
 
   'ctrl+f': function() {

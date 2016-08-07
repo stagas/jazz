@@ -17,11 +17,13 @@ Mark.prototype.render = function() {
   var views = this.views;
   var _ = this.editor;
 
+  this.clear();
+  /*
   if (!_.mark.active) {
     if (views[0].range[0] !== -1) this.clear();
     return;
   }
-
+*/
   _.ahead.range = _.getPageRange([-1,+1]);
 
   _.mark.area = _.mark.get();

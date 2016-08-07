@@ -68,6 +68,10 @@ function Xoor(options) {
     editRange: [-1,-1],
     editShift: 0,
 
+    suggestIndex: 0,
+    suggestRoot: '',
+    suggestNodes: [],
+
     animationFrame: -1,
     animationRunning: false,
     animationScrollTarget: null,
@@ -84,6 +88,7 @@ function Xoor(options) {
 
   dom.append(this.node, this.views, true);
   dom.append(this.views.caret, this.input.text);
+
   // useful shortcuts
   this.buffer = this.file.buffer;
   this.buffer.mark = this.mark;
@@ -164,6 +169,7 @@ Xoor.prototype.onInput = function(text) {
 };
 
 Xoor.prototype.onText = function(text) {
+  this.suggestRoot = '';
   this.insert(text);
 };
 
@@ -239,7 +245,7 @@ Xoor.prototype.setCaretFromPx = function(px) {
 };
 
 Xoor.prototype.onMouseUp = function() {
-  this.markEnd();
+  // this.markEnd();
   this.focus();
 };
 
@@ -257,7 +263,7 @@ Xoor.prototype.onMouseClick = function() {
     var area;
 
     if (clicks === 2) {
-      area = this.file.buffer.wordAt(this.caret);
+      area = this.buffer.wordAt(this.caret);
     } else if (clicks === 3) {
       var y = this.caret.y;
       area = new Area({
@@ -269,7 +275,7 @@ Xoor.prototype.onMouseClick = function() {
     if (area) {
       this.caret.set(area.end);
       this.markSetArea(area);
-      this.render();
+      // this.render();
     }
   }
 };
@@ -296,11 +302,11 @@ Xoor.prototype.onMove = function(point) {
 Xoor.prototype.markBegin = function(area) {
   if (!this.mark.active) {
     this.mark.active = true;
-    if (area !== false || !area && this.mark.begin.x === -1) {
+    if (area) {
+      this.mark.set(area);
+    } else if (area !== false) {
       this.mark.begin.set(this.caret);
       this.mark.end.set(this.caret);
-    } else if (area) {
-      this.mark.set(area);
     }
     this.off('move', this.markSet);
     this.on('move', this.markSet);
@@ -321,6 +327,7 @@ Xoor.prototype.markSetArea = function(area) {
 };
 
 Xoor.prototype.markEnd = function() {
+  this.off('move', this.markClear);
   this.on('move', this.markClear);
 };
 
@@ -478,6 +485,8 @@ Xoor.prototype.delete = function() {
 Xoor.prototype.findJump = function(jump) {
   var _ = this;
 
+  if (!_.findResults.length) return;
+
   _.findNeedle = _.findNeedle + jump;
   if (_.findNeedle === _.findResults.length) {
     _.findNeedle = 0;
@@ -527,6 +536,30 @@ Xoor.prototype.onFindClose = function() {
   this.findValue = '';
   this.views.find.clear();
   this.focus();
+};
+
+Xoor.prototype.suggest = function() {
+  var area = this.buffer.wordAt(this.caret, true);
+  if (!area) return;
+
+  var key = this.buffer.getArea(area);
+
+  if (!this.suggestRoot
+    || key.substr(0, this.suggestRoot.length) !== this.suggestRoot) {
+    this.suggestIndex = 0;
+    this.suggestRoot = key;
+    this.suggestNodes = this.buffer.prefix.collect(key);
+  }
+
+  if (!this.suggestNodes.length) return;
+  var node = this.suggestNodes[this.suggestIndex];
+
+  this.suggestIndex = (this.suggestIndex + 1) % this.suggestNodes.length;
+
+  return {
+    area: area,
+    node: node
+  };
 };
 
 Xoor.prototype.repaint = function() {

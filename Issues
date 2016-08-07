@@ -27,11 +27,12 @@ x- show occurences
 x- implement next/prev search (f3 + shift+f3)
 x- undo/redo
 x- display indentation
+x- autocomplete
+  x- prefix tree
+  x- integration
 
 
 -- doing ---------------------
-
-
 
 
 
@@ -46,9 +47,11 @@ x- display indentation
 
 - optimize mark
 - optimize ctrl-shift lines
+- optimize segment inserting
 - fix edge case (bottom) inserting lines pushing content down
 - fix edge case ctrl-shift lines
 - fix edge case shift+(ctrl)+delete
+- tweak autocomplete
 - tweak next/prev search
 - double click + continue selection select by words
 - refactor move.js
