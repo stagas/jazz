@@ -8,7 +8,7 @@ module.exports = Code;
 function Code(name, editor, template) {
   Render.call(this, name, editor, template);
 
-  this.createViews(8);
+  this.createViews(50);
 }
 
 Code.prototype.__proto__ = Render.prototype;
@@ -17,20 +17,14 @@ Code.prototype.render = function() {
   var views = this.views;
   var _ = this.editor;
   var y = _.editLine;
-  var range = _.editRange;
+  var g = _.editRange.slice();
   var shift = _.editShift;
   var isEnter = shift > 0;
   var isBackspace = shift < 0;
-  var isRange = range[0] !== -1 && range[1] - range[0] > 1;
+  var isRange = g[0] !== -1 && g[1] - g[0] > 0;
 
   // randomize
   views.sort(random);
-
-  if (isRange) {
-    this.clear();
-    this.renderVisible();
-    return;
-  }
 
   if (y < 0) return this.renderAhead();
 
@@ -38,6 +32,83 @@ Code.prototype.render = function() {
   if (_.invisible.length < 2) {
     this.clear();
     this.render();
+    return;
+  }
+
+  if (isRange) {
+    if (!shift) {
+      this.clear();
+      this.renderVisible();
+      return;
+    }
+
+    var size = g[1] - g[0];
+
+    g[1] -= 1;
+
+    var foundCurrent;
+
+    for (var i = 0; i < views.length; i++) {
+      var view = views[i];
+      var r = view.range;
+      if (!view.visible) continue;
+
+      var isInside = r[0] < g[0] && r[1] >= g[0];
+      var isContained = r[0] === r[1] && (r[0] === g[0] || r[1] === g[1]);
+      var isCurrent = r[0] + shift === g[0] && r[1] + shift === g[1];
+      var isTouchBelow = r[0] - isBackspace === g[1];
+      var isAbove = r[1] < g[0];
+      var isBelow = r[0] > g[1];
+
+      if (isCurrent) foundCurrent = true;
+
+      // debugger;
+
+      if (isEnter) {
+        if (isCurrent) shiftView(view, shift);
+        else if (isContained) shiftView(view, -size);
+        else if (isInside) {
+          splitView(view, g[0]-1);
+          this.renderRanges([g], _.invisible);
+          foundCurrent = true;
+          // this.renderVisible();
+          // this.renderRanges([g], _.invisible);
+          // this.renderVisible();
+        }
+        else if (isTouchBelow) {
+          shortenView(view, g[1]);
+          // this.renderVisible();
+        }
+        else if (isAbove) noop();
+        else if (isBelow) noop();
+        else view.clear();
+      } else if (isBackspace) {
+        if (isCurrent) shiftView(view, shift);
+        else if (isContained) shiftView(view, size);
+        else if (isInside) {
+          splitView(view, g[0]-1);
+          this.renderRanges([g], _.invisible);
+          foundCurrent = true;
+          // this.renderVisible();
+          // this.renderRanges([g], _.invisible);
+          // this.renderVisible();
+        }
+        else if (isTouchBelow) {
+          shortenView(view, g[1]);
+          // this.renderVisible();
+        }
+        else if (isAbove) noop();
+        else if (isBelow) noop();
+        else view.clear();
+      }
+    }
+
+    if (!foundCurrent) {
+      this.clear();
+    }
+
+    this.renderVisible();
+
     return;
   }
 

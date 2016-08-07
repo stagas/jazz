@@ -59,16 +59,16 @@ Buffer.prototype.set = function(text) {
   this.emit('set');
 };
 
-Buffer.prototype.insert = function(point, text) {
+Buffer.prototype.insert = function(point, text, shift) {
   this.emit('before update');
   text = this.normalizeEndLines(text);
   var isEOL = '\n' === text;
   point = this.lines.getPoint(point);
   var lines = this.lines.insert(point, text);
   this.text.insert(point.offset, text);
-  var range = [point.y, point.y + lines];
+  var range = [point.y, point.y + lines - isEOL];
   var insertedText = this.get(range);
-  this.emit('update', range, +isEOL);
+  this.emit('update', range, shift || +isEOL);
   return text.length;
 };
 
@@ -118,11 +118,11 @@ Buffer.prototype.wordAt = function(point, inclusive) {
   }
 };
 
-Buffer.prototype.deleteArea = function(area) {
+Buffer.prototype.deleteArea = function(area, noUpdate) {
   var range = this.lines.getArea(area);
   this.lines.removeArea(area);
   this.text.remove([range[0].offset, range[1].offset]);
-  this.emit('update', [area.begin.y, area.end.y]);
+  if (!noUpdate) this.emit('update', [area.begin.y, area.end.y]);
 };
 
 Buffer.prototype.getArea = function(area) {

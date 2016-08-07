@@ -23,7 +23,7 @@ function View(name, editor, template) {
     visibility: 'hidden'
   }
 
-  if (this.editor.options.debug.views) {
+  if (this.editor.options.debug.views && this.name === 'code') {
     style.background = '#'
       + (Math.random() * 12 | 0).toString(16)
       + (Math.random() * 12 | 0).toString(16)
@@ -69,6 +69,6 @@ View.prototype.style = function() {
 View.prototype.clear = function() {
   this.range = [-1,-1];
   this.visible = false;
-  dom.html(this, '');
+  // dom.html(this, '');
   dom.style(this, { visibility: 'hidden' });
 };
