@@ -553,6 +553,24 @@ Xoor.prototype.resize = function() {
     height: _.char.height
   });
 
+  // draw indent image
+  var canvas = document.createElement('canvas');
+  var foo = document.getElementById('foo');
+  var ctx = canvas.getContext('2d');
+
+  canvas.setAttribute('width', Math.ceil(_.char.width * 2));
+  canvas.setAttribute('height', _.char.height);
+
+  ctx.setLineDash([1,1]);
+  ctx.lineDashOffset = 0;
+  ctx.beginPath();
+  ctx.moveTo(0,1);
+  ctx.lineTo(0, _.char.height);
+  ctx.strokeStyle = '#54544b';
+  ctx.stroke();
+
+  var dataURL = canvas.toDataURL();
+
   dom.css(''
   + '.editor > .find,'
   + '.editor > .mark,'
@@ -565,6 +583,9 @@ Xoor.prototype.resize = function() {
   + '}'
   + '.editor > .find > i {'
   + '  height: ' + (_.char.height + 1) + 'px;'
+  + '}'
+  + 'indent {'
+  + '  background-image: url(' + dataURL + ');'
   + '}'
   );
 
