@@ -26,6 +26,7 @@ x- fix resize
 x- show occurences
 x- implement next/prev search (f3 + shift+f3)
 x- undo/redo
+x- display indentation
 
 
 -- doing ---------------------
@@ -39,7 +40,6 @@ x- undo/redo
 *- double/triple click to select line
 ^ done, but broke
 - implement replace
-- display indentation
 
 
 -- later ---------------------

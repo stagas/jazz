@@ -215,7 +215,7 @@ Xoor.prototype.onFileChange = function(editRange, editShift) {
 
   _.rows = this.buffer.loc;
   _.code = this.buffer.text.length;
-  _.editLine = [editRange[0], editRange[0]];
+  _.editLine = editRange[0];
   _.editRange = editRange;
   _.editShift = editShift;
   _.pageBounds = [0, _.rows];

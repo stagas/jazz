@@ -27,7 +27,6 @@ Code.prototype.render = function() {
   views.sort(random);
 
   if (isRange) {
-    // console.log('is range')
     this.clear();
     this.renderVisible();
     return;

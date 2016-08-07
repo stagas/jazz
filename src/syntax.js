@@ -15,6 +15,7 @@ syntax.replace.firstPass = [
   [/\/\/.*/g, '\ufff3$&'],
   [/(?![^\/])\/(?![\/|\*])(.*?[^\\\^]\/[ gim]+)/g, '\ufff4$&\ufff5'],
 ];
+
 syntax.replace.secondPass = [
   [/\ufff1/g, '<comment>/*'],
   [/\ufff2/g, '*/</comment>'],
@@ -26,6 +27,7 @@ syntax.replace.secondPass = [
   [/\uffe4/g, '</string>'],
   [/\uffaa/g, '<mark>'],
   [/\uffab/g, '</mark>'],
+  [/^ +/gm, '<indent>$&</indent>'],
 ];
 
 syntax.rules = map({
