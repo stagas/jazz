@@ -22,15 +22,14 @@ x- search
   x- optimize search
   x- implement running indexing
   x- search bug on 'function' search
+x- fix resize
+x- show occurences
+x- implement next/prev search (f3 + shift+f3)
+x- undo/redo
 
 
 -- doing ---------------------
 
-- fix resize
-
-- implement next/prev search (f3 + shift+f3)
-- implement replace
-- undo/redo
 
 
 
@@ -39,6 +38,8 @@ x- search
 
 *- double/triple click to select line
 ^ done, but broke
+- implement replace
+- display indentation
 
 
 -- later ---------------------
@@ -48,5 +49,6 @@ x- search
 - fix edge case (bottom) inserting lines pushing content down
 - fix edge case ctrl-shift lines
 - fix edge case shift+(ctrl)+delete
+- tweak next/prev search
 - double click + continue selection select by words
 - refactor move.js

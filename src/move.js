@@ -159,15 +159,23 @@ Object.keys(move).forEach(function(method) {
   };
 });
 
-Move.prototype.pageDown = function(buffer, p) {
+Move.prototype.pageDown = function(div) {
+  div = div || 1;
   var _ = this.editor;
-  this.editor.animateScrollVertical(_.size.height - _.pageRemainder.height);
-  return this.byLines(_.page.height);
+  var page = _.page.height / div | 0;
+  var size = _.size.height / div | 0;
+  var remainder = size - page * _.char.height | 0;
+  this.editor.animateScrollVertical(size - remainder);
+  return this.byLines(page);
 };
 
-Move.prototype.pageUp = function(buffer, p) {
+Move.prototype.pageUp = function(div) {
+  div = div || 1;
   var _ = this.editor;
-  this.editor.animateScrollVertical(-(_.size.height - _.pageRemainder.height));
-  return this.byLines(-_.page.height);
+  var page = _.page.height / div | 0;
+  var size = _.size.height / div | 0;
+  var remainder = size - page * _.char.height | 0;
+  this.editor.animateScrollVertical(-(size - remainder));
+  return this.byLines(-page);
 };
 

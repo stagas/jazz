@@ -20,6 +20,12 @@ var keys = module.exports = {
   'pagedown': throttle(function() {
     this.move.pageDown();
   }, 60),
+  'ctrl+up': throttle(function() {
+    this.move.pageUp(6);
+  }, 60),
+  'ctrl+down': throttle(function() {
+    this.move.pageDown(6);
+  }, 60),
   'left': function() {
     this.move.byChars(-1);
   },
@@ -155,7 +161,14 @@ var keys = module.exports = {
 
   'ctrl+f': function() {
     this.find.open();
-  }
+  },
+
+  'f3': function() {
+    this.findJump(+1);
+  },
+  'shift+f3': function() {
+    this.findJump(-1);
+  },
 };
 
 keys.single = {

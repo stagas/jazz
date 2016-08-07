@@ -15,8 +15,9 @@ function File(editor) {
 File.prototype.__proto__ = Events.prototype;
 
 File.prototype.bindEvents = function() {
-  this.buffer.on('set', this.emit.bind(this, 'open'));
+  this.buffer.on('set', this.emit.bind(this, 'set'));
   this.buffer.on('update', this.emit.bind(this, 'change'));
+  this.buffer.on('before update', this.emit.bind(this, 'before change'));
 };
 
 File.prototype.open = function(path, fn) {
@@ -28,6 +29,7 @@ File.prototype.open = function(path, fn) {
     }
     this.path = path;
     this.buffer.set(text);
+    this.emit('open');
     fn && fn(null, this);
   });
 };

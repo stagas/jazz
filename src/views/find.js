@@ -12,5 +12,6 @@ function Find(name, editor, template) {
 Find.prototype.__proto__ = Render.prototype;
 
 Find.prototype.render = function() {
+  if (!this.editor.findValue || !this.editor.findResults.length) return;
   this.renderAhead();
 };

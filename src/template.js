@@ -84,12 +84,10 @@ template.find = function(range, _) {
   var prev = -2;
   var i = -1;
 
-  if (!end) return false;
-
   do {
     prev = i;
     i = begin + (end - begin) / 2 | 0;
-    if (results[i].y < range[0]) begin = i;
+    if (results[i].y <= range[0]) begin = i;
     else end = i;
   } while (prev !== i);
 

@@ -9,8 +9,9 @@ var Range = require('range');
 var Area = require('area');
 var Box = require('box');
 
-var template = require('./src/template');
 var syntax = require('./src/syntax');
+var template = require('./src/template');
+var History = require('./src/history');
 var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
@@ -34,10 +35,12 @@ function Xoor(options) {
     file: new File,
     move: new Move(this),
     input: new Input(this),
+    history: new History(this),
     bindings: {},
 
     find: new Dialog('Find'),
     findValue: '',
+    findNeedle: 0,
     findResults: [],
     findIndexDirty: false,
 
@@ -96,6 +99,7 @@ Xoor.prototype.use = function(node) {
   this.node = node;
 
   dom.onscroll(this.node, this.onScroll);
+  dom.onresize(this.onResize);
 
   this.input.use(node);
   this.resize();
@@ -123,8 +127,10 @@ Xoor.prototype.bindHandlers = function() {
 Xoor.prototype.bindEvents = function() {
   this.bindHandlers()
   this.move.on('move', this.onMove);
+  this.file.on('set', this.onFileSet);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
+  this.file.on('before change', this.onBeforeFileChange);
   this.input.on('input', this.onInput);
   this.input.on('text', this.onText);
   this.input.on('keys', this.onKeys);
@@ -147,6 +153,10 @@ Xoor.prototype.onScroll = function(scroll) {
     this.scroll.set(scroll);
     this.render();
   }
+};
+
+Xoor.prototype.onResize = function() {
+  this.repaint();
 };
 
 Xoor.prototype.onInput = function(text) {
@@ -191,6 +201,15 @@ Xoor.prototype.onFileOpen = function() {
   this.repaint();
 };
 
+Xoor.prototype.onFileSet = function() {
+  this.clear();
+  this.repaint();
+};
+
+Xoor.prototype.onBeforeFileChange = function() {
+  this.history.save();
+};
+
 Xoor.prototype.onFileChange = function(editRange, editShift) {
   var _ = this;
 
@@ -206,6 +225,7 @@ Xoor.prototype.onFileChange = function(editRange, editShift) {
     _.onFindValue(_.findValue);
   }
 
+  this.history.save();
   this.render();
 };
 
@@ -342,7 +362,7 @@ Xoor.prototype.getPageRange = function(range) {
 };
 
 Xoor.prototype.getLineLength = function(y) {
-  return this.file.buffer.lines.getLineLength(y);
+  return this.buffer.lines.getLineLength(y);
 };
 
 Xoor.prototype.followCaret = function(center) {
@@ -455,35 +475,58 @@ Xoor.prototype.delete = function() {
   }
 };
 
+Xoor.prototype.findJump = function(jump) {
+  var _ = this;
+
+  _.findNeedle = _.findNeedle + jump;
+  if (_.findNeedle === _.findResults.length) {
+    _.findNeedle = 0;
+  } else if (_.findNeedle < 0) {
+    _.findNeedle = _.findResults.length - 1;
+  }
+
+  _.markClear();
+  var result = _.findResults[_.findNeedle];
+  _.caret.set(result);
+  _.markBegin();
+  _.move.byChars(_.findValue.length);
+  _.render();
+};
+
 Xoor.prototype.onFindValue = function(value) {
   var _ = this;
   var g = new Point({ x: _.gutter, y: 0 });
 
-  this.views.find.clear();
+  _.views.find.clear();
 
   _.findValue = value;
   console.time('find ' + value);
   _.findResults = this.buffer
     .indexer.find(value).map((offset) => {
-    return this.buffer.lines.getOffset(offset);
+    return _.buffer.lines.getOffset(offset);
       //px: new Point(point)['*'](_.char)['+'](g)
   });
   console.timeEnd('find ' + value);
 
-  this.views.find.render();
+  _.find.info('0/' + _.findResults.length);
+
+  _.views.find.render();
 };
 
 Xoor.prototype.onFindOpen = function() {
   if (!this.findIndexDirty) return;
+  this.find.info('');
   console.time('index');
   this.buffer.raw = this.buffer.get();
   console.timeEnd('index');
   this.findIndexDirty = false;
+  this.findJump(0);
 };
 
 Xoor.prototype.onFindClose = function() {
   this.findValue = '';
   this.views.find.clear();
+  this.focus();
 };
 
 Xoor.prototype.repaint = function() {
@@ -526,6 +569,15 @@ Xoor.prototype.resize = function() {
   );
 
   this.emit('resize');
+};
+
+Xoor.prototype.clear = function() {
+  // this.views.gutter.clear();
+  // this.views.caret.clear();
+  this.views.mark.clear();
+  this.views.code.clear();
+  this.views.rows.clear();
+  this.views.find.clear();
 };
 
 Xoor.prototype.render = atomic(function() {

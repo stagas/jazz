@@ -48,9 +48,9 @@ Buffer.prototype.set = function(text) {
   this.lines = new Lines;
   this.text = new SkipString;
 
-  console.time('segment index');
+  // console.time('segment index');
   this.segments.set(text);
-  console.timeEnd('segment index');
+  // console.timeEnd('segment index');
 
   this.lines.insert({ x:0, y:0 }, text);
   this.text.insertChunked(0, text, exports.CHUNK_SIZE);
@@ -59,6 +59,7 @@ Buffer.prototype.set = function(text) {
 };
 
 Buffer.prototype.insert = function(point, text) {
+  this.emit('before update');
   text = this.normalizeEndLines(text);
   var isEOL = '\n' === text;
   this.point = this.lines.getPoint(point);
@@ -69,6 +70,7 @@ Buffer.prototype.insert = function(point, text) {
 };
 
 Buffer.prototype.deleteCharAt = function(point) {
+  this.emit('before update');
   this.point = this.lines.getPoint(point);
   var isEOL = this.lines.removeCharAt(this.point);
   // if (isEOL) this.emit('shift', -1);

@@ -12,3 +12,7 @@ dialog.on('value', function(s) {
 });
 
 dialog.open();
+
+setTimeout(function() {
+  dialog.info('5/16')
+}, 1000)
