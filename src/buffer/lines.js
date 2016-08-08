@@ -99,6 +99,18 @@ Lines.prototype.getLineLength = function(y) {
   return this.getDistance([y, y+1]);
 };
 
+Lines.prototype.getLongestLineLength = function() {
+  var longest = 0;
+  var d = 0;
+  var p = this.index[this.length - 1];
+  var i = this.length;
+  while (i-- > 0) {
+    d = this.index[i] - this.index[i - 1];
+    longest = d > longest ? d : longest;
+  }
+  return longest;
+};
+
 Lines.prototype.getLine = function(y) {
   var offset = this.get(y);
   var point = { x: 0, y: y };
@@ -133,15 +145,16 @@ Lines.prototype.getPoint = function(point) {
 Lines.prototype.getOffset = function(offset) {
   var begin = 0;
   var end = this.length;
-  var prev = -2;
+
+  var p = -1;
   var i = -1;
 
   do {
-    prev = i;
+    p = i;
     i = begin + (end - begin) / 2 | 0;
     if (this.get(i) <= offset) begin = i;
     else end = i;
-  } while (prev !== i);
+  } while (p !== i);
 
   var line = this.getLine(i);
   var x = offset - line.offset;
@@ -162,7 +175,6 @@ Lines.prototype.insert = function(p, text) {
   var point = this.getPoint(p);
   var x = point.x;
   var y = point.y;
-  var lines = 0;
   var offset = point.offset;
 
   if (y === this.length) {
@@ -179,7 +191,6 @@ Lines.prototype.insert = function(p, text) {
   while (~(match = text.indexOf('\n', match + 1))) {
     matches.push(match + offset);
     last = match;
-    lines++;
   }
 
   shift += last + 1;
@@ -194,9 +205,12 @@ Lines.prototype.insert = function(p, text) {
     this.shift(y, shift);
   }
 
-  if (matches.length < 3) return lines;
+  if (matches.length < 3) return 0;
 
   this.index.splice.apply(this.index, matches);
+
+  var lines = this.index.length - this.length;
+
   this.length = this.index.length;
 
   return lines;
@@ -220,57 +234,53 @@ Lines.prototype.getArea = function(area) {
   ];
 };
 
-Lines.prototype.removeAreaRange = function(area) {
-  this.removeRange([
-    area.begin.y,
-    area.end.y
-  ]);
-};
-
-Lines.prototype.removeLine = function(y) {
-  this.removeRange([y,y]);
-};
-
 Lines.prototype.removeCharAt = function(p) {
   var a = this.getPoint(p);
-  var isEndOfLine = a.line.length === a.point.x;
-  if (isEndOfLine) {
-    this.index.splice(a.point.y, 1);
-    this.length = this.index.length;
-    if (a.point.y === this.length) {
-      this.tail += new Array(a.line.length).join('*');
+  if (a.point.y === this.length) {
+    this.tail = this.tail.slice(0, -1);
+    return false;
+  } else {
+    var isEndOfLine = a.line.length === a.point.x;
+    if (isEndOfLine) {
+      this.index.splice(a.point.y, 1);
+      this.length = this.index.length;
+      if (a.point.y === this.length) {
+        this.tail += new Array(a.line.length+1).join('*');
+      }
     }
+    this.shift(a.point.y, -1);
+    return isEndOfLine;
   }
-  this.shift(a.point.y, -1);
-  return isEndOfLine;
 };
 
 Lines.prototype.removeArea = function(area) {
-  var a = this.getPoint(area.begin);
-  var b = this.getPoint(area.end);
+  var begin = this.getPoint(area.begin);
+  var end = this.getPoint(area.end);
 
-  var x;
-  var sameLine = area.begin.y === area.end.y;
-  if (sameLine) {
-    x = area.end.x - area.begin.x;
+  var x = 0;
+
+  var dist = end.y - begin.y;
+  var sameLine = begin.y === end.y;
+  if (sameLine) x = end.x - begin.x;
+  else {
+    this.index.splice(begin.y, dist);
+  }
+
+  if (!sameLine) {
+    if (area.begin.y === this.length) {
+      this.tail = this.tail.slice(0, -x);
+    }
+    if (area.end.y === this.length) {
+      this.tail = this.tail.slice(end.x);
+      this.tail += new Array(begin.x + 1).join('*');
+    }
   } else {
-    var x = -area.begin.x + area.end.x;
+    if (area.begin.y === this.length) {
+      this.tail = this.tail.slice(0, begin.x) + this.tail.slice(end.x);
+    }
   }
 
-  var ya = area.begin.y + !!sameLine;
-  var yb = area.end.y - !sameLine;
-  if (yb - ya >= 0) {
-    this.removeRange([ya, yb]);
-  }
-
-  this.shift(area.begin.y, -x);
-};
-
-Lines.prototype.removeRange = function(range) {
-  var dist = this.getDistance([range[0], range[1] + 1]) + 1;
-  var length = (range[1] + 1) - range[0];
-  var lines = this.index.splice(range[0], length);
-  this.shift(range[0], -dist);
+  this.shift(area.begin.y, -(end.offset - begin.offset));
   this.length = this.index.length;
 };
 

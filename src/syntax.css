@@ -37,13 +37,6 @@ regexp * {
   font-style: normal !important;
 }
 
-/* yellow */
-string,
-string * {
-  color: #E6DB74 !important;
-  font-style: normal !important;
-}
-
 /* orange */
 regexp string,
 regexp string *,
@@ -56,9 +49,21 @@ regexp comment * {
 /* gray */
 comment,
 comment *,
+comment string,
+comment string *,
+comment string comment,
 comment regexp,
 comment regexp * {
   color: #75715E !important;
+  font-style: normal !important;
+}
+
+/* yellow */
+string,
+string comment,
+string comment *,
+string * {
+  color: #E6DB74 !important;
   font-style: normal !important;
 }
 

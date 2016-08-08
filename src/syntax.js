@@ -68,6 +68,7 @@ syntax.highlight = function highlight(code) {
 
   // console.time('replace 2nd');
   code = replace(syntax.replace.secondPass, code);
+  // code = code.slice(0, code.length - 10);
   // console.timeEnd('replace 2nd');
 
   // console.time('multiline');

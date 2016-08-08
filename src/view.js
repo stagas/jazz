@@ -50,6 +50,8 @@ View.prototype.render = function(range) {
   this.range = range;
   this.visible = true;
 
+  // dom.html(this, html);
+  // console.log(0, 'html is', html)
   if (html) dom.html(this, html);
   else if ('code' === this.name) return this.clear();
 

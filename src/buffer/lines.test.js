@@ -101,7 +101,7 @@ module.exports = function(t, Lines) {
 
   t('edge case 3', function() {
     var lines = new Lines;
-    lines.insertLine(0,'\n\nhello\nthere\n');
+    lines.insertLine(0,'\n\nhello\nthere\n!!');
     assert.equal(0, lines.getLineLength(0));
     assert.equal(0, lines.getLineLength(1));
     assert.equal(5, lines.getLineLength(2));
@@ -113,8 +113,40 @@ module.exports = function(t, Lines) {
     lines.removeCharAt({x:0,y:0});
     assert.equal(4, lines.getLineLength(0));
     assert.equal(5, lines.getLineLength(1));
-    // assert.equal(6, lines.getPoint({x:0,y:2}).offset);
+    assert.equal(2, lines.getLineLength(2));
+    assert.equal(2, lines.length);
+    lines.removeCharAt({x:10,y:2});
+    assert.equal(1, lines.getLineLength(2));
+    lines.removeCharAt({x:10,y:2});
+    assert.equal(0, lines.getLineLength(2));
+    lines.removeCharAt({x:10,y:2});
+    assert.equal(0, lines.getLineLength(2));
+    lines.removeCharAt({x:10,y:1});
+    assert.equal(1, lines.length);
+    assert.equal(5, lines.getLineLength(1));
   });
+
+  t('edge case 4', function() {
+    var lines = new Lines;
+    lines.insertLine(0,'hello');
+    assert.equal(5, lines.getLineLength(0));
+    lines.removeCharAt({x:0,y:0}); // ello
+    assert.equal(4, lines.getLineLength(0));
+    lines.removeCharAt({x:4,y:0}); // ell
+    assert.equal(3, lines.getLineLength(0));
+    lines.insert({x:2,y:0}, '\n'); // el\nl
+    assert.equal([2], lines.index);
+    assert.equal(2, lines.getLineLength(0));
+    assert.equal(1, lines.getLineLength(1));
+    lines.removeCharAt({x:0,y:1}); // el\n
+    assert.equal(0, lines.getLineLength(1));
+    assert.equal(2, lines.getLineLength(0));
+    lines.removeCharAt({x:10,y:0}); // el
+    assert.equal([], lines.index);
+    assert.equal(2, lines.getLineLength(0));
+    lines.removeCharAt({x:0,y:0}); // l
+    assert.equal(1, lines.getLineLength(0));
+  })
 
   t('insertLine', function() {
     var lines = new Lines;
@@ -192,12 +224,12 @@ module.exports = function(t, Lines) {
     var lines = new Lines;
     lines.insert({ x:0, y:0 }, 'hello\n world!\n!');
     assert.equal([5,13], lines.index);
-    lines.removeCharAt({x:6,y:0});
+    lines.removeCharAt({x:6,y:0}); // hello world!\n!
     assert.equal([12], lines.index);
     assert.equal('!', lines.tail);
-    lines.removeCharAt({x:12,y:0});
+    lines.removeCharAt({x:12,y:0}); // hello world!!
     assert.equal([], lines.index);
-    assert.equal(12, lines.getLineLength(0));
+    assert.equal(13, lines.getLineLength(0));
 
     var lines = new Lines;
     lines.insert({ x:0, y:0 }, 'hello\n\nworld!\n!');
@@ -217,11 +249,12 @@ module.exports = function(t, Lines) {
     lines.removeArea({
       begin: { x:3, y:0 },
       end: { x:3, y:1 }
-    });
+    }); // lorld!\n!
     assert.equal([7], lines.index);
   })
 // h e l r l d !   !
 // 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+
 /**/
 
 };

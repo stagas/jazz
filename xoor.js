@@ -1,3 +1,15 @@
+/**
+ *   ____      ____            ,_______,
+ *   \ = \    / = /            | = == = \
+ *    \   \  /   /  ,_,   ,_,  |   ___   \
+ *     \   \/   /  / = \ / = \ |  '---'  /
+ *     /   /\   \  \,_,/ \,_,/ |   ,    /
+ *    /   /  \   \ ___________ |   |\   \
+ *   / = /    \ = \            | = | \ = \
+ *  /___/      \___\           |,_,|  \___\
+ *
+ */
+
 var dom = require('dom');
 var diff = require('diff');
 var throttle = require('throttle');
@@ -20,6 +32,8 @@ var CodeView = require('./src/views/code');
 var MarkView = require('./src/views/mark');
 var RowsView = require('./src/views/rows');
 var FindView = require('./src/views/find');
+
+var SPECIAL_SEGMENTS = ['/*', '*/', '`'];
 
 module.exports = Xoor;
 
@@ -52,6 +66,7 @@ function Xoor(options) {
     page: new Box,
     pageRemainder: new Box,
     pageBounds: new Range,
+    longestLine: 0,
 
     gutter: 0,
     gutterMargin: 15,
@@ -78,7 +93,8 @@ function Xoor(options) {
   });
 
   this.views = {
-    gutter: new View('gutter', this, template.gutter),
+    // gutter: new View('gutter', this, template.gutter),
+    ruler: new View('ruler', this, template.ruler),
     caret: new View('caret', this, template.caret),
     code: new CodeView('code', this, template.code),
     mark: new MarkView('mark', this, template.mark),
@@ -211,14 +227,14 @@ Xoor.prototype.onFileOpen = function() {
 Xoor.prototype.onFileSet = function() {
   this.views.caret.render();
   this.views.code.clear();
-  this.views.code.renderVisible();
+  this.render();
 };
 
 Xoor.prototype.onBeforeFileChange = function() {
   this.history.save();
 };
 
-Xoor.prototype.onFileChange = function(editRange, editShift) {
+Xoor.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
   var _ = this;
 
   _.rows = this.buffer.loc;
@@ -233,6 +249,17 @@ Xoor.prototype.onFileChange = function(editRange, editShift) {
     _.onFindValue(_.findValue);
   }
 
+  if ((!editShift) && textBefore) {
+    if (textAfter) textBefore += textAfter;
+    for (var i = 0; i < SPECIAL_SEGMENTS.length; i++) {
+      if (~textBefore.indexOf(SPECIAL_SEGMENTS[i])) {
+        this.views.code.clearBelow(_.editLine);
+        this.buffer.updateRaw();
+        break;
+      }
+    }
+  }
+
   // this.history.save();
   this.render();
 };
@@ -241,7 +268,8 @@ Xoor.prototype.setCaretFromPx = function(px) {
   var _ = this;
   var g = new Point({ x: _.gutter, y: _.char.height/2 });
   var p = px['-'](g)['+'](_.scroll)['o/'](_.char);
-  p.x = Math.min(p.x, this.getLineLength(p.y));
+  p.y = Math.max(0, Math.min(p.y, this.buffer.loc));
+  p.x = Math.max(0, Math.min(p.x, this.getLineLength(p.y)));
   _.caret.set(p);
   return p;
 };
@@ -295,7 +323,9 @@ Xoor.prototype.onMouseDrag = function() {
 };
 
 Xoor.prototype.onMove = function(point) {
-  if (point) this.caret.set(point);
+  if (point) {
+    this.caret.set(point);
+  }
   this.followCaret();
   this.render();
   this.emit('move');
@@ -418,7 +448,7 @@ Xoor.prototype.animateScrollVertical = function(y) {
   _.animationScrollTarget = new Point({
     // x: Math.max(0, s.x + x),
     x: 0,
-    y: Math.max(0, s.y + y)
+    y: Math.min((_.rows + 1) * _.char.height - _.size.height, Math.max(0, s.y + y))
   });
 };
 
@@ -479,6 +509,7 @@ Xoor.prototype.delete = function() {
     this.caret.set(area.begin);
     this.buffer.deleteArea(area);
     this.markClear();
+    console.log('delete area', area)
   } else {
     this.buffer.deleteCharAt(this.caret);
   }
@@ -545,6 +576,7 @@ Xoor.prototype.suggest = function() {
   if (!area) return;
 
   var key = this.buffer.getArea(area);
+  if (!key) return;
 
   if (!this.suggestRoot
     || key.substr(0, this.suggestRoot.length) !== this.suggestRoot) {
@@ -577,11 +609,12 @@ Xoor.prototype.resize = function() {
   _.scroll.set(dom.getScroll($));
   _.size.set(dom.getSize($));
   _.char.set(dom.getCharSize($));
-  _.rows = this.file.buffer.loc;
-  _.code = this.file.buffer.text.length;
+  _.rows = _.buffer.loc;
+  _.code = _.buffer.text.length;
   _.page.set(_.size['^/'](_.char));
   _.pageRemainder.set(_.size['-'](_.page['*'](_.char)));
   _.pageBounds = [0, _.rows];
+  _.longestLine = _.buffer.lines.getLongestLineLength();
   _.gutter = (''+_.rows).length * _.char.width + _.gutterMargin;
 
   dom.style(_.views.caret, {
@@ -638,7 +671,8 @@ Xoor.prototype.clear = function() {
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
-  this.views.gutter.render();
+  // this.views.gutter.render();
+  this.views.ruler.render();
   this.views.caret.render();
   this.views.mark.render();
   this.views.code.render();

@@ -2,6 +2,8 @@ var dom = require('dom');
 var debounce = require('debounce');
 var Events = require('events');
 
+var THROTTLE = 16;
+
 var map = {
   8: 'backspace',
   9: 'tab',
@@ -52,8 +54,8 @@ function Text() {
     autocapitalize: 'none'
   });
 
+  this.throttleTime = 0;
   this.modifiers = {};
-
   this.bindEvents();
 }
 
@@ -96,14 +98,18 @@ Text.prototype.focus = function() {
 
 Text.prototype.oninput = function(e) {
   e.preventDefault();
-  this.emit('text', this.get());
   // forces caret to end of textarea so we can get .slice(-1) char
   setImmediate(() => this.node.selectionStart = this.node.value.length);
+  this.emit('text', this.get());
   this.clear();
   return false;
 };
 
 Text.prototype.onkeydown = function(e) {
+  var now = Date.now();
+  if (now - this.throttleTime < THROTTLE) return false;
+  this.throttleTime = now;
+
   var m = this.modifiers;
   m.shift = e.shiftKey;
   m.ctrl = e.ctrlKey;
@@ -124,6 +130,8 @@ Text.prototype.onkeydown = function(e) {
 };
 
 Text.prototype.onkeyup = function(e) {
+  this.throttleTime = 0;
+
   var m = this.modifiers;
 
   var keys = [];

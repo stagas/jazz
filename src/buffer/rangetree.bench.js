@@ -4,7 +4,7 @@ var Node = require('./rangetree');
 
 var size = 10000;
 var node = new Node([0,size]);
-var times = 10e4;
+var times = 10e3;
 
 var a,b;
 var res = bench(times, function() {

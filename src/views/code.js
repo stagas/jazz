@@ -22,7 +22,9 @@ Code.prototype.render = function() {
   var isEnter = shift > 0;
   var isBackspace = shift < 0;
   var isRange = g[0] !== -1 && g[1] - g[0] > 0;
+  var isEnd = y + isEnter === _.buffer.loc;
 
+  // if (isEnd) console.log('is end!')
   // randomize
   views.sort(random);
 
@@ -30,9 +32,11 @@ Code.prototype.render = function() {
 
   _.invisible = this.clearInvisible();
   if (_.invisible.length < 2) {
+    console.log('clear invisible')
     this.clear();
-    this.render();
-    return;
+    _.invisible = views;
+    // this.render();
+    // return;
   }
 
   if (isRange) {
@@ -61,8 +65,6 @@ Code.prototype.render = function() {
       var isBelow = r[0] > g[1];
 
       if (isCurrent) foundCurrent = true;
-
-      // debugger;
 
       if (isEnter) {
         if (isCurrent) shiftView(view, shift);
@@ -117,7 +119,7 @@ Code.prototype.render = function() {
     var r = view.range;
     if (!view.visible) continue;
 
-    var isInside = r[0] < y && r[1] > y;
+    var isInside = r[0] < y && r[1] >= y;
     var isBelow = r[0] > y;
     var isAbove = r[1] < y;
     var isSingle = r[0] === r[1];
@@ -136,13 +138,16 @@ Code.prototype.render = function() {
       else if (isInside) {
         splitView(view, y);
         this.renderLine(y, _.invisible);
-        this.renderLine(y+1, _.invisible);
+        if (!isEnd || y + 2 === _.buffer.loc) this.renderLine(y+1, _.invisible);
         y += 2;
       }
-      else if (isTouchBelow) shortenView(view, y+1);
+      else if (isTouchBelow) {
+        if (isEnd) view.render([y+1,y+1]);
+        else shortenView(view, y+1);
+      }
       else if (isBelow) shiftView(view, shift);
       else if (isAbove) noop();
-      else view.clear();
+      // else view.clear();
     } else if (isBackspace) {
       if (isCurrent) {
         shiftView(view, shift);
@@ -153,10 +158,13 @@ Code.prototype.render = function() {
       }
       else if (isInside) {
         splitView(view, y);
-        this.renderLine(y, _.invisible);
+        if (!isEnd) this.renderLine(y, _.invisible);
         y += 1;
       }
-      else if (isTouchBelow) shortenView(view, y);
+      else if (isTouchBelow) {
+        if (isEnd) view.render([y,y]);
+        else shortenView(view, y);
+      }
       else if (isBelow) shiftView(view, shift);
       else if (isAbove) noop();
       else view.clear();
@@ -166,7 +174,10 @@ Code.prototype.render = function() {
         splitView(view, y);
         this.renderLine(y, _.invisible);
       }
-      else if (isTouchBelow) shortenView(view, y);
+      else if (isTouchBelow) {
+        if (isEnd) view.render([y,y]);
+        else shortenView(view, y);
+      }
       else if (isBelow) noop();
       else if (isAbove) noop();
       else view.clear();
@@ -174,6 +185,21 @@ Code.prototype.render = function() {
   }
 
   this.renderVisible();
+};
+
+Code.prototype.clearBelow = function(y) {
+  // console.log('clear below!')
+  var views = this.views;
+  for (var i = 0; i < views.length; i++) {
+    var view = views[i];
+    var r = view.range;
+    if (!view.visible) continue;
+
+    var isInside = r[0] < y && r[1] >= y;
+    var isBelow = r[0] > y;
+    if (isInside) splitView(view, y+1);
+    else if (isBelow) view.clear();
+  }
 };
 
 function splitView(view, y) {
@@ -191,7 +217,7 @@ function shiftView(view, shift) {
 }
 
 function shortenView(view, y) {
-  if (view.range[0] === view.range[1]) {
+  if (view.range[0] <= view.range[1] + 1) {
     return view.clear();
   }
   view.range[0] = y + 1;

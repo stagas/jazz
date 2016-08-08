@@ -26,15 +26,16 @@ template.code = function(range, _) {
   var offset = _.buffer.lines.get(range[0]);
   var segment = _.buffer.segments.get(offset);
 
-  if (segment) {
-    var offset = segment.offset;
-    var node = segment.node;
-    var r = node.range.slice();
-    r[0] -= offset;
-    r[1] -= offset;
-    code = symbol[node.value] + code;
-    if (r[1] < code.length) {
-      code = insert(r[1], code, symbol[node.value + ' close']);
+  if (segment && segment.type) {
+    segment.range[0] -= offset;
+    segment.range[1] -= offset - 1; // -1 for the symbol below
+
+    if (segment.range[1] > 0) {
+      code = symbol[segment.type] + code;
+
+      if (segment.range[1] < code.length) {
+        code = insert(segment.range[1], code, symbol[segment.type + ' close']);
+      }
     }
   }
 
@@ -117,12 +118,16 @@ template.rows.style =
 template.code.style = function(range, _) {
   return {
     top: range[0] * _.char.height,
-    height: (range[1] - range[0] + 1) * _.char.height
+    height: //Math.min(
+      // (_.rows - range[0] + 1) * _.char.height,
+      (range[1] - range[0] + 1) * _.char.height
+    // )
   };
 };
 
+
 template.caret = function() {
-  return '';
+  return null;
 };
 
 template.caret.style = function(point, _) {
@@ -133,13 +138,24 @@ template.caret.style = function(point, _) {
 };
 
 template.gutter = function() {
-  return '';
+  return null;
 };
 
 template.gutter.style = function(point, _) {
   return {
     width: 1,
     height: _.rows * _.char.height,
+  };
+};
+
+template.ruler = function() {
+  return null;
+};
+
+template.ruler.style = function(point, _) {
+  return {
+    width: _.longestLine * _.char.width,
+    height: ((_.rows + _.page.height) * _.char.height) + _.pageRemainder.height,
   };
 };
 

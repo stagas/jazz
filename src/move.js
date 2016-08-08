@@ -1,6 +1,8 @@
+var Regexp = require('regexp');
 var Events = require('events');
 var Point = require('point');
-var parse = require('parse');
+
+var WORDS = Regexp.create(['words'], 'g');
 
 var move = {};
 
@@ -13,7 +15,7 @@ move.byWord = function(buffer, p, dx) {
     return move.byChars(buffer, p, -1); // move one char left
   }
 
-  var words = parse.words(line);
+  var words = Regexp.parse(line, WORDS);
   var word;
 
   if (dx < 0) words.reverse();
@@ -46,19 +48,19 @@ move.byChars = function(buffer, p, dx) {
     if (x < 0) { // when past left edge
       if (y > 0) { // and lines above
         y -= 1; // move up a line
-        x = lines.getLine(y).length; // and go to the end of line
+        x = lines.getLineLength(y); // and go to the end of line
       } else {
         x = 0;
       }
     }
   } else if (dx > 0) { // going right
     x += dx; // move right
-    while (x - lines.getLine(y).length > 0) { // while past line length
+    while (x - lines.getLineLength(y) > 0) { // while past line length
       if (y === lines.length) { // on end of file
-        x = lines.getLine(y).length; // go to end of line on last line
+        x = lines.getLineLength(y); // go to end of line on last line
         break; // and exit
       }
-      x -= lines.getLine(y).length + 1; // wrap this line length
+      x -= lines.getLineLength(y) + 1; // wrap this line length
       y += 1; // and move down a line
     }
   }
@@ -132,8 +134,8 @@ move.isBeginOfFile = function(_, p) {
 };
 
 move.isEndOfFile = function(buffer, p) {
-  var last = buffer.lines.length;
-  return p.y === last && p.x === buffer.lines.getLine(last).length;
+  var last = buffer.loc;
+  return p.y === last && p.x === buffer.lines.getLineLength(last);
 };
 
 module.exports = Move;
@@ -178,4 +180,3 @@ Move.prototype.pageUp = function(div) {
   this.editor.animateScrollVertical(-(size - remainder));
   return this.byLines(-page);
 };
-

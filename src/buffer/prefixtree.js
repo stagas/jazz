@@ -1,5 +1,5 @@
 // var WORD = /\w+/g;
-var WORD = /[a-zA-Z0-9]{2,}/g
+var WORD = /[a-zA-Z0-9]{1,}/g
 var rank = 0;
 
 module.exports = PrefixTreeNode;
@@ -24,7 +24,7 @@ PrefixTreeNode.prototype.getSortedChildren = function() {
     .filter((node) => node.value)
     .sort((a, b) => {
       var res = b.rank - a.rank;
-      if (res === 0) res = a.value.length - b.value.length;
+      if (res === 0) res = b.value.length - a.value.length;
       if (res === 0) res = a.value > b.value;
       return res;
     });
@@ -35,7 +35,7 @@ PrefixTreeNode.prototype.collect = function(key) {
   var node = this.find(key);
   if (node) {
     collection = node.getSortedChildren();
-    if (node.value) collection.unshift(node);
+    if (node.value) collection.push(node);
   }
   return collection;
 };
@@ -67,12 +67,14 @@ PrefixTreeNode.prototype.insert = function(s, value) {
   }
 
   while (i < n) {
-    node.children[s[i]] = new PrefixTreeNode;
-    node = node.children[s[i]];
+    node =
+    node.children[s[i]] =
+    node.children[s[i]] || new PrefixTreeNode;
     i++;
   }
 
   node.value = s;
+  node.rank++;
 };
 
 PrefixTreeNode.prototype.index = function(s) {

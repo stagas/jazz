@@ -1,71 +1,68 @@
-var RangeTree = require('./rangetree');
+var Regexp = require('regexp');
+
+var PHONY_ENDING = '`*/';
+
+var MULTILINE = Regexp.create([
+  Regexp.types.strings,
+  Regexp.types.comments,
+], 'g');
+
+var FILTERS = [
+  ['double comment', '/*', 2],
+  ['template string', '`', 1]
+];
 
 module.exports = Segments;
 
-function Segments(rules) {
-  this.tree = new RangeTree;
-  this.rules = rules || Segments.RULES;
+function Segments() {
+  this.index = [];
 }
 
-Segments.RULES = [
-  {
-    name: 'double comment',
-    open: '/*',
-    close: '*/'
-  },
-  {
-    name: 'template string',
-    open: '`',
-    close: '`'
-  }
-  // {
-  //   name: 'single comment',
-  //   open: '//',
-  //   close: '\n'
-  // }
-  // {
-  //   name: 'string',
-  //   regexp: /("(?:(?:\\\n|\\"|[^"\n]))*?")|('(?:(?:\\\n|\\'|[^'\n]))*?')|(`(?:(?:\\`|[^`]))*?`)/g,
-  // }
-];
+Segments.prototype.createIndex = function(s) {
+  this.index = Regexp.parse(s + PHONY_ENDING, MULTILINE);
+};
 
 Segments.prototype.get = function(offset) {
-  var steps = this.tree.get(offset);
-  var node = steps[0];
-  if ('HEAD' === node.value) return null;
-  else return {
-    node: node,
-    offset: offset
+  var index = this.index;
+
+  var begin = 0;
+  var end = index.length;
+  if (!end) return;
+
+  var p = -1;
+  var i = -1;
+
+  do {
+    p = i;
+    i = begin + (end - begin) / 2 | 0;
+    if (index[i].index <= offset) begin = i;
+    else end = i;
+  } while (p !== i);
+
+  var token = index[i];
+
+  var type;
+  for (var i = 0; i < FILTERS.length; i++) {
+    var f = FILTERS[i];
+    if (token[0].slice(0,f[2]) === f[1]) {
+      type = f[0];
+      break;
+    }
+  }
+
+  return {
+    index: p,
+    token: token,
+    type: type,
+    range: [token.index, token.index + token[0].length]
   };
 };
 
-Segments.prototype.set = function(text) {
-  var open, close;
-  var line, lineStart, lineComment;
-  for (var i = 0; i < this.rules.length; i++) {
-    var rule = this.rules[i];
-    var index = -1;
-    while (~(index = text.indexOf(rule.open, index + rule.open.length))) {
-      lineStart = text.lastIndexOf('\n', index);
-      line = text.substring(lineStart, index);
-      lineComment = Math.max(line.indexOf('//'), line.indexOf("'"), line.indexOf('"'));
-      if (lineComment > -1 && lineComment + lineStart < index) continue;
-      if (this.get(index)) {
-        continue;
-      }
-      open = index;
-      index = text.indexOf(rule.close, index + rule.open.length);
-
-      if (~index) {
-        if (this.get(index)) {
-          index = open;
-          continue;
-        }
-        close = index + rule.close.length + 1;
-        this.tree.insert([open, close], rule.name);
-      } else {
-        index = open;
-      }
-    }
+Segments.prototype.shift = function(offset, n) {
+  // console.time('shift segments')
+  var segment = this.get(offset);
+  for (var i = segment.index + 1; i < this.index.length; i++) {
+    this.index[i].index += n;
   }
+  // console.timeEnd('shift segments')
 };

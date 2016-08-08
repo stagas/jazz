@@ -140,6 +140,49 @@ module.exports = function(t, Buffer) {
     }
   })
 
+  t('edge case 3', function() {
+    for (var i = 1; i < 15; i++) {
+      Buffer.CHUNK_SIZE = i;
+      var buffer = new Buffer;
+      buffer.set('hello');
+      assert.equal('hello', buffer.get());
+      buffer.deleteCharAt({x:4,y:0});
+      assert.equal('hell', buffer.get());
+      buffer.deleteCharAt({x:3,y:0});
+      assert.equal('hel', buffer.get());
+      buffer.insert({x:3,y:0}, '\nlo');
+      assert.equal('hel\nlo', buffer.get());
+      buffer.deleteCharAt({x:1,y:1});
+      assert.equal('hel\nl', buffer.get());
+      buffer.deleteCharAt({x:0,y:1});
+      assert.equal('hel\n', buffer.get());
+      buffer.deleteCharAt({x:4,y:0});
+      assert.equal('hel', buffer.get());
+      buffer.deleteCharAt({x:2,y:0});
+      assert.equal('he', buffer.get());
+      buffer.deleteCharAt({x:1,y:0});
+      assert.equal('h', buffer.get());
+      buffer.deleteCharAt({x:0,y:0});
+      assert.equal('', buffer.get());
+    }
+  })
+
+  t('edge case 4', function() {
+    for (var i = 1; i < 15; i++) {
+      Buffer.CHUNK_SIZE = i;
+      var buffer = new Buffer;
+      buffer.set('hello');
+      assert.equal('hello', buffer.get());
+      buffer.deleteArea({
+        begin: {x:0,y:0},
+        end:   {x:5,y:0}
+      });
+      assert.equal('', buffer.get());
+      assert.equal([], buffer.lines.index);
+      assert.equal('', buffer.lines.tail);
+    }
+  })
+
   t('deleteArea', function() {
     repeat(times, function() {
       for (var i = 1; i < 10; i++) {
@@ -165,6 +208,7 @@ module.exports = function(t, Buffer) {
       }
     })
   })
+/**/
 };
 
 function repeat(times, fn) {

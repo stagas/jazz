@@ -67,14 +67,24 @@ Node.prototype.insert = function(range, value) {
     steps[i].range[1] += length;
   }
 
-  for (var i = 1; i < steps.length; i++) {
-    for (var j = 0; j < steps[i].children.length; j++) {
-      if (range[1] < steps[i].children[j].range[0] + steps[i].children[j].offset()) {
-        steps[i].children[j].range[0] += length;
-        steps[i].children[j].range[1] += length;
-      }
+  for (var i = 0; i < parent.children.length; i++) {
+    if (range[0] < parent.children[i].range[0] + parent.children[i].offset()) {
+      parent.children[i].range[0] += length;
+      parent.children[i].range[1] += length;
     }
   }
+  // for (var i = 0; i < steps.length; i++) {
+  //   steps[i].range[1] += length;
+  // }
+
+  // for (var i = 1; i < steps.length; i++) {
+  //   for (var j = 0; j < steps[i].children.length; j++) {
+  //     if (range[1] < steps[i].children[j].range[0] + steps[i].children[j].offset()) {
+  //       steps[i].children[j].range[0] += length;
+  //       steps[i].children[j].range[1] += length;
+  //     }
+  //   }
+  // }
 
   // console.log(value, 'parent', parent.value, 'offset', offset)
 

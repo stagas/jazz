@@ -11,7 +11,7 @@ t('insert', function() {
   node.insert([15,18], 'cat');
   var bar = node.insert([8,11], 'bar');
   var zoo = node.insert([9,10], 'zoo');
-
+  console.log(node)
   assert.equal('HEAD', node.get(6)[0].value);
   assert.equal('foo', node.get(7)[0].value);
   assert.equal('bar', node.get(8)[0].value);
@@ -22,9 +22,16 @@ t('insert', function() {
   assert.equal('bar', node.get(13)[0].value);
   assert.equal('zoo,bar,foo,HEAD', node.get(9).map(n=>n.value).join());
 
-  var dog = node.insert([5,15], 'dog');
-  assert.equal('dog', node.get(11)[0].value);
+  var dog = node.insert([1,15], 'dog');
+  assert.equal('dog', node.get(7)[0].value);
+  assert.equal('dog', node.get(15)[0].value);
+  assert.equal('foo', node.get(23)[0].value);
   console.log(node);
+  var thing = node.insert([0,9], 'thing');
+  assert.equal('thing', node.get(7)[0].value);
+  assert.equal('dog', node.get(25)[0].value);
+  assert.equal('foo', node.get(28)[0].value);
+
   // assert.equal('HEAD', node.get(0)[0].value);
   // assert.equal('HEAD', node.get(5)[0].value);
   // assert.equal('HEAD', node.get(6)[0].value);

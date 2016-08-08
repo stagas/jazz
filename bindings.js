@@ -57,7 +57,7 @@ var keys = module.exports = {
       this.buffer.moveAreaByLines(-1, { begin: this.caret.pos, end: this.caret.pos });
       this.move.byLines(-1);
     } else {
-      this.buffer.moveAreaByLines(-1, this.mark.area);
+      this.buffer.moveAreaByLines(-1, this.mark.get());
       this.mark.shiftByLines(-1);
       this.move.byLines(-1);
     }
@@ -67,7 +67,7 @@ var keys = module.exports = {
       this.buffer.moveAreaByLines(+1, { begin: this.caret.pos, end: this.caret.pos });
       this.move.byLines(+1);
     } else {
-      this.buffer.moveAreaByLines(+1, this.mark.area);
+      this.buffer.moveAreaByLines(+1, this.mark.get());
       this.mark.shiftByLines(+1);
       this.move.byLines(+1);
     }
@@ -80,31 +80,38 @@ var keys = module.exports = {
     this.delete();
   },
   'ctrl+backspace': function() {
+    if (this.move.isBeginOfFile()) return;
+    this.markClear();
     this.markBegin();
     this.move.byWord(-1);
     this.delete();
   },
   'shift+ctrl+backspace': function() {
+    this.markClear();
     this.markBegin();
     this.move.beginOfLine();
     this.delete();
   },
   'ctrl+delete': function() {
+    if (this.move.isEndOfFile()) return;
+    this.markClear();
     this.markBegin();
     this.move.byWord(+1);
-    this.delete();
+    this.backspace();
   },
   'shift+ctrl+delete': function() {
+    this.markClear();
     this.markBegin();
     this.move.endOfLine();
-    this.delete();
+    this.backspace();
   },
   'shift+delete': function() {
+    this.markClear();
     this.move.beginOfLine();
     this.markBegin();
     this.move.endOfLine();
     this.move.byChars(+1);
-    this.delete();
+    this.backspace();
   },
 
   'shift+ctrl+d': function() {
@@ -116,7 +123,7 @@ var keys = module.exports = {
     area.begin.x = 0;
     area.end.x = 0;
     var lines = area.end.y - area.begin.y;
-    var text = this.buffer.get([area.begin.y, area.end.y-1]);
+    var text = this.buffer.get([area.begin.y, area.end.y]);
     this.buffer.insert({ x: 0, y: this.caret.y }, text);
     if (clear) {
       this.markClear();
@@ -130,31 +137,19 @@ var keys = module.exports = {
   'shift+ctrl+up': function() {
     this.markBegin(false);
     var area = this.mark.get();
-    if (area.end.x > 0 || area.begin.y === area.end.y) area.end.y += 1;
-    area.begin.x = 0;
-    area.end.x = 0;
-    var text = this.buffer.get([area.begin.y, area.end.y-1]);
-    // this.views.code.clear();
-    this.buffer.deleteArea(area, true);
-    this.buffer.insert({ x:0, y:area.begin.y-1 }, text, -1);
-    this.mark.begin.y -= 1;
-    this.mark.end.y -= 1;
-    this.move.byLines(-1);
+    if (this.buffer.moveAreaByLines(-1, area)) {
+      this.mark.shiftByLines(-1);
+      this.move.byLines(-1);
+    }
   },
 
   'shift+ctrl+down': function() {
     this.markBegin(false);
     var area = this.mark.get();
-    if (area.end.x > 0 || area.begin.y === area.end.y) area.end.y += 1;
-    area.begin.x = 0;
-    area.end.x = 0;
-    var text = this.buffer.get([area.begin.y, area.end.y-1]);
-    // this.views.code.clear();
-    this.buffer.deleteArea(area, true);
-    this.buffer.insert({ x:0, y:area.begin.y+1 }, text, +1);
-    this.mark.begin.y += 1;
-    this.mark.end.y += 1;
-    this.move.byLines(+1);
+    if (this.buffer.moveAreaByLines(+1, area)) {
+      this.mark.shiftByLines(+1);
+      this.move.byLines(+1);
+    }
   },
 
   'tab': function() {
