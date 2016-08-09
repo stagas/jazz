@@ -458,7 +458,7 @@ Xoor.prototype.animationScrollFrame = function() {
 
   window.cancelAnimationFrame(_.animationFrame);
 
-  var speed = 0.29;
+  var speed = 0.36;
   var s = _.scroll;
   var t = _.animationScrollTarget;
 

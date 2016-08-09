@@ -182,7 +182,7 @@ html, body {
 
 .editor > .find > i {
   position: absolute;
-  border: 1px solid #fff;
+  border: 1px solid #ff1;
   border-radius: 4px;
   z-index: 50;
 }

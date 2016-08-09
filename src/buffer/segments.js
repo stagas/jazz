@@ -19,11 +19,12 @@ function Segments() {
 }
 
 Segments.prototype.createIndex = function(s) {
-  this.index = Regexp.parse(s + PHONY_ENDING, MULTILINE, function(token) {
+  this.index = Regexp.parse(s + PHONY_ENDING, MULTILINE);
+  /*, function(token) {
     for (var i = 0; i < FILTERS.length; i++) {
       if (token[0].substr(0,FILTERS[i][2]) === FILTERS[i][1]) return true;
     }
-  });
+  });*/
   return this.index.length;
 };
 

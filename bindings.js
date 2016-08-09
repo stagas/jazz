@@ -16,16 +16,16 @@ var keys = module.exports = {
   },
   'pageup': throttle(function() {
     this.move.pageUp();
-  }, 60),
+  }, 1000/13),
   'pagedown': throttle(function() {
     this.move.pageDown();
-  }, 60),
+  }, 1000/13),
   'ctrl+up': throttle(function() {
     this.move.pageUp(6);
-  }, 60),
+  }, 1000/13),
   'ctrl+down': throttle(function() {
     this.move.pageDown(6);
-  }, 60),
+  }, 1000/13),
   'left': function() {
     this.move.byChars(-1);
   },
