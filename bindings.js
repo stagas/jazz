@@ -50,6 +50,7 @@ var keys = module.exports = {
     this.move.beginOfFile();
     this.markBegin();
     this.move.endOfFile();
+    this.markEnd();
   },
 
   'ctrl+shift+up': function() {
@@ -172,6 +173,69 @@ var keys = module.exports = {
   'shift+f3': function() {
     this.findJump(-1);
   },
+
+  'ctrl+/': function() {
+    var clear = false;
+    var caret = this.caret.copy();
+    var area;
+    var text;
+    if (!this.mark.active) {
+      clear = true;
+      this.markClear();
+      this.move.beginOfLine();
+      this.markBegin();
+      this.move.endOfLine();
+      area = this.mark.get();
+      text = this.buffer.getArea(area);
+    } else {
+      this.markBegin(false);
+      area = this.mark.get();
+      area.begin.x = 0;
+      area.end.x = 0;
+      text = this.buffer.get([area.begin.y, area.end.y-1]);
+    }
+
+    if (text.substr(0,2) === '//') {
+      text = text.replace(/^.*?\/\/ (.+)/gm, '$1');
+    } else {
+      text = text.replace(/^.+/gm, '// $&');
+    }
+
+    this.insert(text);
+    this.mark.set(area);
+    this.mark.active = !clear;
+    this.caret.set(caret);
+    this.markEnd();
+    if (clear) {
+      this.markClear();
+    }
+  },
+
+  'shift+ctrl+/': function() {
+    var clear = false;
+    if (!this.mark.active) clear = true;
+    var caret = this.caret.copy();
+    this.markBegin(false);
+    var area = this.mark.get();
+    var text = this.buffer.getArea(area);
+    if (text.slice(0,2) === '/*' && text.slice(-2) === '*/') {
+      text = text.slice(2,-2);
+      area.end.x -= 2;
+      if (area.end.y === area.begin.y) area.end.x -= 2;
+    } else {
+      text = '/*' + text + '*/';
+      area.end.x += 2;
+      if (area.end.y === area.begin.y) area.end.x += 2;
+    }
+    this.insert(text);
+    this.mark.set(area);
+    this.mark.active = !clear;
+    this.caret.set(caret);
+    this.markEnd();
+    if (clear) {
+      this.markClear();
+    }
+  }
 };
 
 keys.single = {

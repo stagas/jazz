@@ -149,6 +149,7 @@ Xoor.prototype.bindHandlers = function() {
 Xoor.prototype.bindEvents = function() {
   this.bindHandlers()
   this.move.on('move', this.onMove);
+  this.file.on('raw', this.onFileSet); //TODO: should not need this event
   this.file.on('set', this.onFileSet);
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
@@ -227,10 +228,9 @@ Xoor.prototype.onFileOpen = function() {
 };
 
 Xoor.prototype.onFileSet = function() {
-  this.views.caret.render();
-  this.views.code.clear();
+  this.clear();
+  this.repaint();
   this.followCaret();
-  this.render();
 };
 
 Xoor.prototype.onBeforeFileChange = function() {
@@ -238,6 +238,7 @@ Xoor.prototype.onBeforeFileChange = function() {
 };
 
 Xoor.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
+  // console.log('change')
   var _ = this;
 
   _.rows = this.buffer.loc;

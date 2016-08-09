@@ -1,5 +1,5 @@
 var Events = require('events');
-
+var debounce = require('debounce');
 
 /*
    . .
@@ -12,74 +12,65 @@ module.exports = History;
 
 function History(editor) {
   this.editor = editor;
-
   this.log = [];
-  this.needle = -1;
-  this.timeout = false;
+  this.needle = 0;
+  this.timeout = true;
   this.timeStart = 0;
 }
 
 History.prototype.__proto__ = Events.prototype;
 
 History.prototype.save = function() {
-  if (this.needle === -1) {
-    this.actuallySave();
-    return;
-  }
-  if (this.timeout === false) {
-    this.timeStart = Date.now();
-  }
-  clearTimeout(this.timeout);
-  if (Date.now() - this.timeStart > 5000) {
-    return this.actuallySave();
-  }
-  this.timeout = setTimeout(() => {
-    this.actuallySave();
-  }, 700);
+  if (Date.now() - this.timeStart > 2000) this.actuallySave();
+  this.timeout = this.debouncedSave();
 };
 
+History.prototype.debouncedSave = debounce(function() {
+  this.actuallySave();
+}, 700);
+
 History.prototype.actuallySave = function() {
-  this.log = this.log.slice(0, ++this.needle);
+  // console.log('save', this.needle)
+  clearTimeout(this.timeout);
+  this.log = this.log.slice(0, this.needle++);
   this.log.push(this.commit());
+  this.needle = this.log.length;
+  this.timeStart = Date.now();
   this.timeout = false;
 };
 
 History.prototype.undo = function() {
-  if (this.timeout !== false) {
-    clearTimeout(this.timeout);
-    this.timeout = false;
-    this.actuallySave();
-  }
+  // console.log('undo', this.needle, this.log.length)
+  if (this.timeout !== false) this.actuallySave();
 
-  if (--this.needle < 0) {
-    this.needle = -1;
-    return;
-  }
+  if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
 
-  var commit = this.log[this.needle];
+  this.needle--;
 
-  this.checkout(commit);
+  if (this.needle < 0) this.needle = 0;
 
-  if (this.needle === 0) this.needle--;
+  this.checkout(this.needle);
 };
 
 History.prototype.redo = function() {
-  if (this.timeout !== false) return;
+  // console.log('redo', this.needle, this.log.length)
+  if (this.timeout !== false) return this.actuallySave();
 
-  if (this.needle === -1) this.needle = 0;
+  this.needle++;
 
-  if (++this.needle === this.log.length) {
-    this.needle = this.log.length - 1;
-    return;
-  }
+  if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
 
-  var commit = this.log[this.needle];
-
-  this.checkout(commit);
+  this.checkout(this.needle);
 };
 
-History.prototype.checkout = function(commit) {
+History.prototype.checkout = function(n) {
+  var commit = this.log[n];
+  if (!commit) return;
+
   var _ = this.editor;
+  _.mark.active = commit.markActive;
+  _.markEnd();
+  _.mark.set(commit.mark.copy());
   _.caret.set(commit.caret.copy());
   _.buffer.text = commit.text.copy();
   _.buffer.lines = commit.lines.copy();
@@ -93,5 +84,7 @@ History.prototype.commit = function() {
     text: _.buffer.text.copy(),
     lines: _.buffer.lines.copy(),
     caret: _.caret.copy(),
+    mark: _.mark.copy(),
+    markActive: _.mark.active
   };
 };

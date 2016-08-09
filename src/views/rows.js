@@ -21,5 +21,5 @@ Rows.prototype.render = function() {
 
     if (r[1] > rows) view.clear();
   }
-  this.renderAheadNew();
+  this.renderAhead();
 };

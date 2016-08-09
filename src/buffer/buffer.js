@@ -25,6 +25,7 @@ function Buffer() {
   this.segments = new Segments;
   this.indexer = new Indexer(this);
   this.changes = 0;
+  this.on('update', debounce(this.updateRaw.bind(this), 1500));
 }
 
 Buffer.prototype = {
@@ -42,7 +43,7 @@ Buffer.prototype.get = function(range) {
   return text;
 };
 
-Buffer.prototype.updateRaw = throttle(function() {
+Buffer.prototype.updateRaw = function() {
   if (this.changes) {
     this.changes = 0;
 
@@ -53,10 +54,10 @@ Buffer.prototype.updateRaw = throttle(function() {
     // console.time('segment index');
     this.segments.createIndex(this.raw);
     // console.timeEnd('segment index');
-
+    this.emit('raw');
     // console.timeEnd('update raw');
   }
-}, 1000/60);
+};
 
 Buffer.prototype.getLine = function(y) {
   return this.get([y,y]);
@@ -65,7 +66,7 @@ Buffer.prototype.getLine = function(y) {
 Buffer.prototype.set = function(text) {
   Buffer.call(this);
 
-  this.raw = text = this.normalizeEndLines(text);
+  this.raw = text = normalizeEOL(text);
   this.text.set(text);
   this.changes = 0;
 
@@ -88,9 +89,11 @@ Buffer.prototype.set = function(text) {
 Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
   var isEOL, lines, range, textBefore, textAfter;
 
+  this.changes++;
+
   this.emit('before update');
 
-  text = this.normalizeEndLines(text);
+  text = normalizeEOL(text);
 
   isEOL = '\n' === text && !isCtrlShift;
 
@@ -103,9 +106,6 @@ Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
   textAfter = this.get(range);
 
   this.prefix.index(textAfter);
-  this.segments.shift(point.offset, text.length);
-
-  this.changes++;
 
   this.emit('update', range, shift || +isEOL, textBefore, textAfter);
 
@@ -115,6 +115,8 @@ Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
 
 Buffer.prototype.deleteCharAt = function(point) {
   var isEOL, range, textBefore;
+
+  this.changes++;
 
   this.emit('before update');
 
@@ -126,9 +128,6 @@ Buffer.prototype.deleteCharAt = function(point) {
   this.text.removeCharAt(point.offset);
 
   this.prefix.index(this.get(range));
-  this.segments.shift(point.offset, -1);
-
-  this.changes++;
 
   this.emit('update', range, -isEOL, textBefore);
 };
@@ -164,13 +163,13 @@ Buffer.prototype.wordAt = function(point, inclusive) {
 Buffer.prototype.deleteArea = function(area, noUpdate) {
   var range;
 
+  this.changes++;
+
+  this.emit('before update');
+
   range = this.lines.getArea(area);
   this.lines.removeArea(area);
   this.text.remove([range[0].offset, range[1].offset]);
-
-  this.segments.shift(range[0].offset, range[0].offset - range[1].offset);
-
-  this.changes++;
 
   if (!noUpdate) {
     this.emit('update', [area.begin.y, area.end.y]);
@@ -194,9 +193,10 @@ Buffer.prototype.moveAreaByLines = function(y, area) {
   this.deleteArea(area);
 
   this.insert({ x:0, y:area.begin.y + y }, text, y, true);
+
   return true;
 };
 
-Buffer.prototype.normalizeEndLines = function(s) {
+function normalizeEOL(s) {
   return s.replace(exports.EOL, '\n');
-};
+}

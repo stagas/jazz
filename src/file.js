@@ -15,6 +15,7 @@ function File(editor) {
 File.prototype.__proto__ = Events.prototype;
 
 File.prototype.bindEvents = function() {
+  this.buffer.on('raw', this.emit.bind(this, 'raw'));
   this.buffer.on('set', this.emit.bind(this, 'set'));
   this.buffer.on('update', this.emit.bind(this, 'change'));
   this.buffer.on('before update', this.emit.bind(this, 'before change'));

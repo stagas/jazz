@@ -41,25 +41,33 @@ x- tweak autocomplete
 x- fix undo/redo rendering
 x- tweak next/prev search
 x- fix next/prev search bug with first selection
+x- undo/redo
+  x- select
+  x- better caret positioning
+x- fix segments
+x- fix nasty undo/redo bottom edge bug
 
 -- doing ---------------------
+
+- bindings
+  x- ctrl+/, shift+ctrl+/ -> comments
+  - cmd+d (mac for f3)
 
 
 
 -- todo ----------------------
 
-- implement replace
-- undo/redo
-  - select
-  - better caret positioning
 
 
 -- later ---------------------
 
 - optimize mark
-- optimize segment inserting
 - double click + continue selection select by words
 - refactor move.js
+- multiple carets/selections
+  - implement replace using select all matches + .insert()
 - optimizations for segment indexing(complex to implement):
   - only examine area from previous edit(by a debounce)
     rather than the entire line
+  - examine visible page first
+  - separate buckets for each type of regexp

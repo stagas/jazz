@@ -10,15 +10,12 @@ function PrefixTreeNode() {
   this.children = {};
 }
 
-PrefixTreeNode.prototype.incrementRank = function() {
-  this.rank = ++rank;
-};
-
 PrefixTreeNode.prototype.getSortedChildren = function() {
   var children = Object
     .keys(this.children)
     .map((key) => this.children[key]);
 
+  //TODO: only filter and sort in the end
   return children
     .reduce((p, n) => p.concat(n.getSortedChildren()), children)
     .filter((node) => node.value)
