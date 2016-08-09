@@ -14,12 +14,12 @@ exports = module.exports = Buffer;
 
 var EOL = exports.EOL = /\r\n|\r|\n/g;
 var N = exports.N = /\n/g;
-var CHUNK_SIZE = exports.CHUNK_SIZE = 15000;
+var CHUNK_SIZE = exports.CHUNK_SIZE = 5000;
 var WORDS = Regexp.create(['tokens'], 'g');
 
 function Buffer() {
   this.raw = '';
-  this.text = new SkipString;
+  this.text = new SkipString({ chunkSize: CHUNK_SIZE });
   this.lines = new Lines;
   this.prefix = new PrefixTree;
   this.segments = new Segments;
@@ -56,7 +56,7 @@ Buffer.prototype.updateRaw = throttle(function() {
 
     // console.timeEnd('update raw');
   }
-}, 16);
+}, 1000/60);
 
 Buffer.prototype.getLine = function(y) {
   return this.get([y,y]);
@@ -66,7 +66,7 @@ Buffer.prototype.set = function(text) {
   Buffer.call(this);
 
   this.raw = text = this.normalizeEndLines(text);
-  this.text.insertChunked(0, text, exports.CHUNK_SIZE);
+  this.text.set(text);
   this.changes = 0;
 
   console.time('segment index');

@@ -2,7 +2,7 @@ var dom = require('dom');
 var debounce = require('debounce');
 var Events = require('events');
 
-var THROTTLE = 16;
+var THROTTLE = 1000/60;
 
 var map = {
   8: 'backspace',

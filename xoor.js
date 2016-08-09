@@ -64,6 +64,7 @@ function Xoor(options) {
     char: new Box,
 
     page: new Box,
+    pagePoint: new Point,
     pageRemainder: new Box,
     pageBounds: new Range,
     longestLine: 0,
@@ -509,7 +510,6 @@ Xoor.prototype.delete = function() {
     this.caret.set(area.begin);
     this.buffer.deleteArea(area);
     this.markClear();
-    console.log('delete area', area)
   } else {
     this.buffer.deleteCharAt(this.caret);
   }

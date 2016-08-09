@@ -34,6 +34,7 @@ function SkipString(o) {
   this.levels = o.levels || 11;
   this.bias = o.bias || 1 / Math.E;
   this.head = new Node(null, this.levels);
+  this.chunkSize = o.chunkSize;
 }
 
 SkipString.prototype = {
@@ -46,6 +47,10 @@ SkipString.prototype.get = function(offset) {
   // great hack to do offset >= for .search()
   // we don't have fractions anyway so..
   return this.search(offset, true);
+};
+
+SkipString.prototype.set = function(text) {
+  this.insertChunked(0, text);
 };
 
 SkipString.prototype.search = function(offset, incl) {
@@ -236,9 +241,9 @@ SkipString.prototype.removeCharAt = function(offset) {
   return this.remove([offset, offset+1]);
 };
 
-SkipString.prototype.insertChunked = function(offset, text, chunkSize) {
-  for (var i = 0; i < text.length; i += chunkSize) {
-    var chunk = text.substr(i, chunkSize);
+SkipString.prototype.insertChunked = function(offset, text) {
+  for (var i = 0; i < text.length; i += this.chunkSize) {
+    var chunk = text.substr(i, this.chunkSize);
     this.insert(i + offset, chunk);
   }
 };
