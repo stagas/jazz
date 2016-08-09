@@ -195,10 +195,10 @@ var keys = module.exports = {
       text = this.buffer.get([area.begin.y, area.end.y-1]);
     }
 
-    if (text.substr(0,2) === '//') {
-      text = text.replace(/^.*?\/\/ (.+)/gm, '$1');
+    if (text.trimLeft().substr(0,2) === '//') {
+      text = text.replace(/^(.*?)\/\/ (.+)/gm, '$1$2');
     } else {
-      text = text.replace(/^.+/gm, '// $&');
+      text = text.replace(/^([\s]*)(.+)/gm, '$1// $2');
     }
 
     this.insert(text);
