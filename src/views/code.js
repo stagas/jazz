@@ -8,7 +8,7 @@ module.exports = Code;
 function Code(name, editor, template) {
   Render.call(this, name, editor, template);
 
-  this.createViews(50);
+  // this.createViews(50);
 }
 
 Code.prototype.__proto__ = Render.prototype;
@@ -26,23 +26,13 @@ Code.prototype.render = function() {
 
   // if (isEnd) console.log('is end!')
   // randomize
-  views.sort(random);
+  // views.sort(random);
 
   if (y < 0) return this.renderAhead();
 
-  _.invisible = this.clearInvisible();
-  if (_.invisible.length < 2) {
-    console.log('clear invisible')
-    this.clear();
-    _.invisible = views;
-    // this.render();
-    // return;
-  }
-
   if (isRange) {
     if (!shift) {
-      this.clear();
-      this.renderVisible();
+      this.renderPage(0, true);
       return;
     }
 
@@ -54,7 +44,7 @@ Code.prototype.render = function() {
 
     for (var i = 0; i < views.length; i++) {
       var view = views[i];
-      var r = view.range;
+      var r = view;
       if (!view.visible) continue;
 
       var isInside = r[0] < g[0] && r[1] >= g[0];
@@ -71,7 +61,7 @@ Code.prototype.render = function() {
         else if (isContained) shiftView(view, -size);
         else if (isInside) {
           splitView(view, g[0]-1);
-          this.renderRanges([g], _.invisible);
+          this.renderRange(g);
           foundCurrent = true;
           // this.renderVisible();
           // this.renderRanges([g], _.invisible);
@@ -89,7 +79,7 @@ Code.prototype.render = function() {
         else if (isContained) shiftView(view, size);
         else if (isInside) {
           splitView(view, g[0]-1);
-          this.renderRanges([g], _.invisible);
+          this.renderRange(g);
           foundCurrent = true;
           // this.renderVisible();
           // this.renderRanges([g], _.invisible);
@@ -109,14 +99,14 @@ Code.prototype.render = function() {
       this.clear();
     }
 
-    this.renderVisible();
+    this.renderPage(1, true);
 
     return;
   }
 
   for (var i = 0; i < views.length; i++) {
     var view = views[i];
-    var r = view.range;
+    var r = view;
     if (!view.visible) continue;
 
     var isInside = r[0] < y && r[1] >= y;
@@ -130,19 +120,19 @@ Code.prototype.render = function() {
     if (isEnter) {
       if (isCurrent) {
         if (_.getLineLength(y) > 0) {
-          view.render([y,y]);
+          view.render();
         } else {
           shiftView(view, shift);
         }
       }
       else if (isInside) {
         splitView(view, y);
-        this.renderLine(y, _.invisible);
-        if (!isEnd || y + 2 === _.buffer.loc) this.renderLine(y+1, _.invisible);
+        this.renderLine(y);
+        if (!isEnd || y + 2 === _.buffer.loc) this.renderLine(y+1);
         y += 2;
       }
       else if (isTouchBelow) {
-        if (isEnd) view.render([y+1,y+1]);
+        if (isEnd) view.render();
         else shortenView(view, y+1);
       }
       else if (isBelow) shiftView(view, shift);
@@ -153,29 +143,29 @@ Code.prototype.render = function() {
         shiftView(view, shift);
         if (_.caret.x > 0) {
           // alert('should render')
-          view.render([y,y]);
+          view.render();
         }
       }
       else if (isInside) {
         splitView(view, y);
-        if (!isEnd) this.renderLine(y, _.invisible);
+        if (!isEnd) this.renderLine(y);
         y += 1;
       }
       else if (isTouchBelow) {
-        if (isEnd) view.render([y,y]);
+        if (isEnd) view.render();
         else shortenView(view, y);
       }
       else if (isBelow) shiftView(view, shift);
       else if (isAbove) noop();
       else view.clear();
     } else {
-      if (isCurrent) view.render([y,y]);
+      if (isCurrent) view.render();
       else if (isInside) {
         splitView(view, y);
-        this.renderLine(y, _.invisible);
+        this.renderLine(y);
       }
       else if (isTouchBelow) {
-        if (isEnd) view.render([y,y]);
+        if (isEnd) view.render();
         else shortenView(view, y);
       }
       else if (isBelow) noop();
@@ -184,7 +174,7 @@ Code.prototype.render = function() {
     }
   }
 
-  this.renderVisible();
+  this.renderPage(1, true);
 };
 
 Code.prototype.clearBelow = function(y) {
@@ -192,7 +182,7 @@ Code.prototype.clearBelow = function(y) {
   var views = this.views;
   for (var i = 0; i < views.length; i++) {
     var view = views[i];
-    var r = view.range;
+    var r = view;
     if (!view.visible) continue;
 
     var isInside = r[0] < y && r[1] >= y;
@@ -203,25 +193,25 @@ Code.prototype.clearBelow = function(y) {
 };
 
 function splitView(view, y) {
-  if (view.range[0] === view.range[1]) {
+  if (view[0] === view[1]) {
     return view.clear();
   }
-  view.range[1] = y - 1;
+  view[1] = y - 1;
   view.style();
 }
 
 function shiftView(view, shift) {
-  view.range[0] += shift;
-  view.range[1] += shift;
+  view[0] += shift;
+  view[1] += shift;
   view.style();
 }
 
 function shortenView(view, y) {
-  if (view.range[0] <= view.range[1] + 1) {
+  if (view[0] <= view[1] + 1) {
     return view.clear();
   }
-  view.range[0] = y + 1;
-  view.render(view.range);
+  view[0] = y + 1;
+  view.render();
 }
 
 function random() {

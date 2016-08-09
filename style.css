@@ -121,6 +121,7 @@ html, body {
   color: #8e8e86;
   position: absolute;
   text-align: right;
+  z-index: 5;
 }
 
 .editor > .mark {

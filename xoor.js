@@ -693,10 +693,10 @@ Xoor.prototype.resize = function() {
 Xoor.prototype.clear = function() {
   // this.views.gutter.clear();
   // this.views.caret.clear();
-  this.views.mark.clear();
-  this.views.code.clear();
-  this.views.rows.clear();
-  this.views.find.clear();
+  // this.views.mark.clear();
+  // this.views.code.clear();
+  // this.views.rows.clear();
+  // this.views.find.clear();
 };
 
 Xoor.prototype.render = atomic(function() {
