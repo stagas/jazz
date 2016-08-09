@@ -36,6 +36,8 @@ var map = {
 
 module.exports = Text;
 
+Text.map = map;
+
 function Text() {
   Events.call(this);
 
@@ -107,7 +109,10 @@ Text.prototype.oninput = function(e) {
 
 Text.prototype.onkeydown = function(e) {
   var now = Date.now();
-  if (now - this.throttleTime < THROTTLE) return false;
+  if (now - this.throttleTime < THROTTLE) {
+    e.preventDefault();
+    return false;
+  }
   this.throttleTime = now;
 
   var m = this.modifiers;

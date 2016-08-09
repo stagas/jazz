@@ -12,7 +12,7 @@ var xoor = new Xoor(options);
 xoor.use(document.body);
 xoor.assign(bindings);
 
-xoor.open('./babel.js', function(err) {
+xoor.open('./xoor.js', function(err) {
   if (err) throw err;
 
   xoor.focus();

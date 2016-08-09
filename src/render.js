@@ -68,6 +68,23 @@ Render.prototype.renderLittleAhead = function() {
   this.renderRanges(_.visible.need, _.visible.outside);
 };
 
+Render.prototype.renderAheadNew = function() {
+  var views = this.views;
+  var _ = this.editor;
+
+  views.ranges = Range.ranges(views);
+
+  _.visible.range = _.getPageRange([-3,+3]);
+  _.visible.need = Range.XOOR(_.visible.range, views.ranges);
+  _.visible.outside = views.filter((v) => !v.visible)
+  if (_.visible.need.length > _.visible.outside.length) {
+    this.clear();
+    return this.renderAheadNew();
+  }
+
+  this.renderRanges(_.visible.need, _.visible.outside);
+};
+
 Render.prototype.renderAhead = function() {
   var views = this.views;
   var _ = this.editor;

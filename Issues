@@ -36,28 +36,30 @@ x- fix edge case shift+(ctrl)+delete
 x- fix edge case ctrl-shift lines
 x- bug when ctrl-shift an empty line
 x- don't scroll beyond view on pagedown
+x- fix edge case (bottom) inserting lines pushing content down
+x- tweak autocomplete
+x- fix undo/redo rendering
+x- tweak next/prev search
+x- fix next/prev search bug with first selection
 
 -- doing ---------------------
 
-- fix undo/redo rendering
 
 
 -- todo ----------------------
 
 - implement replace
+- undo/redo
+  - select
+  - better caret positioning
 
 
 -- later ---------------------
 
 - optimize mark
 - optimize segment inserting
-- fix edge case (bottom) inserting lines pushing content down
-- tweak autocomplete
-- fix next/prev search bug with first selection
-- tweak next/prev search
 - double click + continue selection select by words
 - refactor move.js
 - optimizations for segment indexing(complex to implement):
-  - bucket raws
   - only examine area from previous edit(by a debounce)
     rather than the entire line
