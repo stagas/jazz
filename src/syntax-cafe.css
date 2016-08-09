@@ -5,35 +5,35 @@
 operator,
 operator2,
 keyword {
-  color: #DF2266;
+  color: #efb451;
 }
 
 /* green */
 function {
-  color: #A0D92E;
+  color: #b3df02;
   font-style: normal;
 }
 
 /* blue */
 declare,
 builtin {
-  color: #61CCE0;
+  color: #ef3944;
 }
 
 /* purple */
 boolean,
 number,
 number operator {
-  color: #AB7FFB;
+  color: #c7543f;
 }
 
 /* orange */
 params {
-  color: #FD971F;
+  color: #bf9a45;
 }
 regexp,
 regexp * {
-  color: #FD971F !important;
+  color: #bd70f4 !important;
   font-style: normal !important;
 }
 
@@ -54,7 +54,7 @@ comment string *,
 comment string comment,
 comment regexp,
 comment regexp * {
-  color: #75715E !important;
+  color: #635240 !important;
   font-style: normal !important;
 }
 
@@ -63,16 +63,15 @@ string,
 string comment,
 string comment *,
 string * {
-  color: #E6DB74 !important;
+  color: #3ec2f8 !important; /*#13aaf9 !important;*/
   font-style: normal !important;
 }
 
 /* white */
 
-.editor,
 symbol,
-code {
-  color: #f8f8f2;
+.code {
+  color: #e9e3d1;
 }
 
 /* italic */
@@ -96,5 +95,5 @@ indent {
 .editor > .code,
 .editor > .dialog,
 .editor {
-  background: #272822;
+  background: #271e16;
 }
