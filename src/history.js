@@ -32,7 +32,7 @@ History.prototype.debouncedSave = debounce(function() {
 History.prototype.actuallySave = function() {
   // console.log('save', this.needle)
   clearTimeout(this.timeout);
-  this.log = this.log.slice(0, this.needle++);
+  this.log = this.log.slice(0, ++this.needle);
   this.log.push(this.commit());
   this.needle = this.log.length;
   this.timeStart = Date.now();
@@ -40,7 +40,6 @@ History.prototype.actuallySave = function() {
 };
 
 History.prototype.undo = function() {
-  // console.log('undo', this.needle, this.log.length)
   if (this.timeout !== false) this.actuallySave();
 
   if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
@@ -48,15 +47,16 @@ History.prototype.undo = function() {
   this.needle--;
 
   if (this.needle < 0) this.needle = 0;
+  // console.log('undo', this.needle, this.log.length - 1)
 
   this.checkout(this.needle);
 };
 
 History.prototype.redo = function() {
-  // console.log('redo', this.needle, this.log.length)
-  if (this.timeout !== false) return this.actuallySave();
+  if (this.timeout !== false) this.actuallySave();
 
   this.needle++;
+  // console.log('redo', this.needle, this.log.length - 1)
 
   if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
 
@@ -69,7 +69,7 @@ History.prototype.checkout = function(n) {
 
   this.editor.mark.active = commit.markActive;
   this.editor.mark.set(commit.mark.copy());
-  this.editor.caret.set(commit.caret.copy());
+  this.editor.setCaret(commit.caret.copy());
   this.editor.buffer.text = commit.text.copy();
   this.editor.buffer.lines = commit.lines.copy();
   this.emit('change');

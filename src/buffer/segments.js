@@ -31,9 +31,11 @@ module.exports = Segments;
 function Segments(buffer) {
   this.buffer = buffer;
   this.segments = [];
-  this.cache = {};
+  this.cache = {
+    offset: {},
+    range: {},
+  };
 }
-
 
 var Length = {
   'open comment': 2,
@@ -56,10 +58,6 @@ var Tag = {
 };
 
 Segments.prototype.get = function(y) {
-  if (y in this.cache) {
-    return this.cache[y];
-  }
-
   var open = false;
   var state = null;
   var waitFor = '';
@@ -80,8 +78,9 @@ Segments.prototype.get = function(y) {
 
     if (open) {
       if (waitFor === segment.type) {
-        point = this.buffer.lines.getOffset(segment.offset);
-        if (point.y >= y) return (this.cache[y] = Tag[state.type]);
+        point = this.getPointOffset(segment.offset);
+        if (!point) return;
+        if (point.y >= y) return Tag[state.type];
 
         // console.log('close', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
         last = segment;
@@ -90,7 +89,9 @@ Segments.prototype.get = function(y) {
         open = false;
       }
     } else {
-      point = this.buffer.lines.getOffset(segment.offset);
+      point = this.getPointOffset(segment.offset);
+      if (!point) return;
+
       range = point.line.range;
 
       if (last && last.point.y === point.y) {
@@ -99,9 +100,7 @@ Segments.prototype.get = function(y) {
       } else {
         close = 0;
       }
-      text = this.buffer.text.getRange([range[0], range[1]+1]);
-      valid = this.isValid(text, segment.offset - range[0], close);
-      // valid = true;
+      valid = this.isValidRange([range[0], range[1]+1], segment, close);
 
       if (valid) {
         if (NotOpen[segment.type]) continue;
@@ -114,9 +113,21 @@ Segments.prototype.get = function(y) {
     }
     if (point.y >= y) break;
   }
-  if (state && state.point.y < y) return (this.cache[y] = Tag[state.type]);
-  // return state && Tag[state.type];
-  return (this.cache[y] = null);
+  if (state && state.point.y < y) return Tag[state.type];
+  return;
+};
+
+Segments.prototype.getPointOffset = function(offset) {
+  if (offset in this.cache.offset) return this.cache.offset[offset]
+  return (this.cache.offset[offset] = this.buffer.lines.getOffset(offset));
+};
+
+Segments.prototype.isValidRange = function(range, segment, close) {
+  var key = range.join();
+  if (key in this.cache.range) return this.cache.range[key];
+  var text = this.buffer.text.getRange(range);
+  var valid = this.isValid(text, segment.offset - range[0], close);
+  return (this.cache.range[key] = valid);
 };
 
 Segments.prototype.isValid = function(text, offset, lastIndex) {
@@ -234,6 +245,11 @@ Segments.prototype.index = function(text) {
   var match;
 
   var segments = this.segments = [];
+
+  this.cache = {
+    offset: {},
+    range: {},
+  };
 
   while (match = TOKEN.exec(text)) {
     if (match['3']) segments.push(new Segment('template string', match.index));

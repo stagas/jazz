@@ -60,24 +60,32 @@ x- refactor move.js
 x- remember caret x
 x- follow caret and scroll horizontally
 x- fix shift+delete
+x- fix xoor.focus()
+x- fix edge case of inserting/deleting on ~empty file
+x- implement start working on empty file
+x- fix sometimes last character is missing from render
+x- fix delete/backspace mark on edges
+x- refactor syntax indents into method
+x- empty segments cache on raw
+x- fix find selects
+x- fix first line finds problem
+x- fix history (again, sigh..)
+x- cache segments
 
 -- doing ---------------------
+
+- highlight matching block
 
 
 
 -- todo ----------------------
 
-- cache segments
-  - cache should remember of all line states iterated above
-    last line changed, they don't change, and forget all below
-    ones
+- issue with cut/paste entire document and caret position/rendering
 
-- syntax: look behind for regexps (must be nothing, or ([=:;)
-- fix xoor.focus()
+
 
 -- later ---------------------
 
-- fix edge case of inserting/deleting on ~empty file
 - tweak skipstring to split on newlines, so segments can index by
   iterating, without using .raw
 - bindings
@@ -92,3 +100,5 @@ x- fix shift+delete
   ideally should be implicit but idk
 - syntax:
   !x- skip long lines entirely
+- syntax:
+  - look behind for regexps (must be nothing, or ([=:;)

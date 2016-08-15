@@ -78,5 +78,5 @@ View.prototype.clear = function() {
   this[0] = this[1] = -1;
   this.visible = false;
   dom.html(this, '');
-  dom.style(this, { visibility: 'hidden' });
+  dom.style(this, { top: 0, height: 0, visibility: 'hidden' });
 };

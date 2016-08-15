@@ -62,7 +62,7 @@ function Lines() {
 
 Lines.prototype.get = function(y) {
   if (y > this.length) {
-    throw new Error('line over length(' + this.length + '): ' + y);
+    return this.index[this.length - 1] + this.tail.length;
   }
   var line = this.index[y - 1] || 0;
 
@@ -73,7 +73,7 @@ Lines.prototype.getRange = function(range) {
   var a = this.get(range[0]);
   var b;
 
-  if (range[1] + 1 === this.length + 1) {
+  if (range[1] + 1 >= this.length + 1) {
     b = this.get(range[1]) + this.tail.length;
   } else {
     b = this.get(range[1] + 1);

@@ -71,12 +71,11 @@ Buffer.prototype.getHighlighted = function(range) {
         code.lastIndexOf('\uffbe')
       );
   } else {
-    code = this.syntax.highlight(code);
-    // + '\uffbe*/`');
-    // code = code.substring(
-    //   0,
-    //   code.lastIndexOf('\uffbe')
-    // );
+    code = this.syntax.highlight(code + '\uffbe*/`');
+    code = code.substring(
+      0,
+      code.lastIndexOf('\uffbe')
+    );
   }
   return code;
 };
@@ -84,11 +83,8 @@ Buffer.prototype.getHighlighted = function(range) {
 //TODO: this defeats the purpose of having a skiplist
 // need to get rid of in the future
 Buffer.prototype.updateRaw = function() {
-  if (this.changes) {
-    this.changes = 0;
-    this.raw = this.get();
-    this.emit('raw', this.raw);
-  }
+  this.raw = this.get();
+  this.emit('raw', this.raw);
 };
 
 Buffer.prototype.getOffsetLine = function(offset) {

@@ -72,7 +72,7 @@ function Xoor(options) {
     gutter: 0,
     gutterMargin: 15,
 
-    caret: new Point({ x: -1, y: -1 }),
+    caret: new Point({ x: 0, y: 0 }),
     code: 0,
     rows: 0,
     mark: new Area({
@@ -126,7 +126,7 @@ Xoor.prototype.use = function(node) {
   dom.onresize(this.onResize);
 
   this.input.use(node);
-  this.resize();
+  this.repaint();
 };
 
 Xoor.prototype.assign = function(bindings) {
@@ -156,7 +156,7 @@ Xoor.prototype.bindEvents = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.file.on('before change', this.onBeforeFileChange);
-  // this.history.on('change', this.onFileSet);
+  this.history.on('change', this.onFileSet);
   this.input.on('input', this.onInput);
   this.input.on('text', this.onText);
   this.input.on('keys', this.onKeys);
@@ -186,9 +186,7 @@ Xoor.prototype.onScroll = function(scroll) {
 
 Xoor.prototype.onMove = function(point, byEdit) {
   if (!byEdit) this.editing = false;
-  if (point) this.caret.set(point);
-
-  this.followCaret();
+  if (point) this.setCaret(point);
 
   if (!byEdit) {
     if (this.input.text.modifiers.shift || this.input.mouse.down) this.markSet();
@@ -196,7 +194,6 @@ Xoor.prototype.onMove = function(point, byEdit) {
   }
 
   this.emit('move');
-
   this.render();
 };
 
@@ -248,18 +245,17 @@ Xoor.prototype.onFileOpen = function() {
 };
 
 Xoor.prototype.onFileRaw = function(raw) {
-  this.views.code.clear();
-  this.render();
+  this.clear();
+  this.repaint();
 };
 
 Xoor.prototype.onFileSet = function() {
-  this.clear();
-  this.repaint();
+  this.buffer.updateRaw();
   this.followCaret();
 };
 
 Xoor.prototype.onBeforeFileChange = function() {
-  // this.history.save();
+  this.history.save();
 };
 
 Xoor.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
@@ -290,7 +286,7 @@ Xoor.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     }
   }
 */
-  // this.history.save();
+  this.history.save();
   this.render();
 };
 
@@ -301,7 +297,7 @@ Xoor.prototype.setCaretFromPx = function(px) {
   p.y = Math.max(0, Math.min(p.y, this.buffer.loc));
   p.x = Math.max(0, Math.min(p.x, this.getLineLength(p.y)));
 
-  this.caret.set(p);
+  this.setCaret(p);
   this.move.lastDeliberateX = p.x;
   this.onMove();
 
@@ -316,6 +312,11 @@ Xoor.prototype.onMouseDown = function() {
   if (this.input.text.modifiers.shift) this.markBegin();
   else this.markClear();
   this.setCaretFromPx(this.input.mouse.point);
+};
+
+Xoor.prototype.setCaret = function(p) {
+  this.caret.set(p);
+  this.followCaret();
 };
 
 Xoor.prototype.onMouseClick = function() {
@@ -334,7 +335,7 @@ Xoor.prototype.onMouseClick = function() {
     }
 
     if (area) {
-      this.caret.set(area.end);
+      this.setCaret(area.end);
       this.markSetArea(area);
       // this.render();
     }
@@ -386,7 +387,7 @@ Xoor.prototype.open = function(path, fn) {
 };
 
 Xoor.prototype.focus = function() {
-  this.input.focus();
+  setImmediate(this.input.focus.bind(this.input));
 };
 
 Xoor.prototype.getRange = function(range) {
@@ -405,11 +406,10 @@ Xoor.prototype.getLineLength = function(y) {
   return this.buffer.lines.getLineLength(y);
 };
 
-Xoor.prototype.followCaret = function(center) {
-  center = 0 //center || this.find.isOpen ? this.size.height / 2 | 0 : 0;
-
+Xoor.prototype.followCaret = atomic(function() {
+  // console.log('follow caret')
   var p = this.caret['*'](this.char);
-  var s = this.animationScrollTarget || this.scroll; //getScroll();
+  var s = this.animationScrollTarget || this.scroll;
 
   var top = s.y - p.y;
   var bottom = (p.y) - (s.y + this.size.height) + this.char.height;
@@ -422,19 +422,9 @@ Xoor.prototype.followCaret = function(center) {
   if (left < 0) left = 0;
   if (right < 0) right = 0;
 
-  if (!this.animationRunning && !this.find.isOpen) {
-    this.scrollBy(right - left, bottom - top);
-    // if (bottom > 0) this.scrollBy(0, bottom + center);
-    // else if (top > 0) this.scrollBy(0, -top - center);
-
-    // if (bottom > 0 || top > 0) this.render();
-  } else {
-    this.animateScrollBy(right - left, bottom - top);
-    // if (bottom > 0) this.animateScrollBy(0, bottom + center);
-    // else if (top > 0) this.animateScrollBy(0, -top - center);
-    // if (bottom > 0 || top > 0) this.render();
-  }
-};
+  if (!this.animationRunning && !this.find.isOpen) this.scrollBy(right - left, bottom - top);
+  else this.animateScrollBy(right - left, bottom - top);
+});
 
 Xoor.prototype.scrollTo = function(p) {
   dom.scrollTo(this.node, p.x, p.y);
@@ -500,13 +490,17 @@ Xoor.prototype.insert = function(text) {
 };
 
 Xoor.prototype.backspace = function() {
-  if (this.move.isBeginOfFile()) return;
+  if (this.move.isBeginOfFile()) {
+    if (this.mark.active) return this.delete();
+    return;
+  }
   if (this.mark.active) {
     var area = this.mark.get();
-    this.caret.set(area.begin);
+    this.setCaret(area.begin);
     this.buffer.deleteArea(area);
     this.markClear(true);
-    this.views.code.clear();
+    this.clear();
+    this.repaint();
   } else {
     this.move.byChars(-1, true);
     this.buffer.deleteCharAt(this.caret);
@@ -514,12 +508,17 @@ Xoor.prototype.backspace = function() {
 };
 
 Xoor.prototype.delete = function() {
-  if (this.move.isEndOfFile()) return;
+  if (this.move.isEndOfFile()) {
+    if (this.mark.active) return this.backspace();
+    return;
+  }
   if (this.mark.active) {
     var area = this.mark.get();
-    this.caret.set(area.begin);
+    this.setCaret(area.begin);
     this.buffer.deleteArea(area);
-    this.markClear();
+    this.markClear(true);
+    this.clear();
+    this.repaint();
   } else {
     this.buffer.deleteCharAt(this.caret);
   }
@@ -535,12 +534,14 @@ Xoor.prototype.findJump = function(jump) {
     this.findNeedle = this.findResults.length - 1;
   }
 
-  this.markClear();
   var result = this.findResults[this.findNeedle];
-  this.caret.set(result);
+  this.setCaret(result);
+  this.markClear(true);
   this.markBegin();
-  this.move.byChars(this.findValue.length);
-  this.render();
+  this.move.byChars(this.findValue.length, true);
+  this.markSet();
+  this.followCaret();
+  // this.render();
 };
 
 Xoor.prototype.onFindValue = function(value, noJump) {
@@ -684,19 +685,18 @@ Xoor.prototype.resize = function() {
 };
 
 Xoor.prototype.clear = function() {
-  // this.views.gutter.clear();
   // this.views.caret.clear();
-  // this.views.mark.clear();
-  // this.views.code.clear();
-  // this.views.rows.clear();
-  // this.views.find.clear();
+  // this.views.ruler.clear();
+  this.views.mark.clear();
+  this.views.code.clear();
+  this.views.rows.clear();
+  this.views.find.clear();
 };
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
-  // this.views.gutter.render();
-  this.views.ruler.render();
   this.views.caret.render();
+  this.views.ruler.render();
   this.views.mark.render();
   this.views.code.render();
   this.views.rows.render();

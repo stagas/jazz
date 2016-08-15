@@ -54,13 +54,13 @@ template.find = function(range, e) {
 
   var begin = 0;
   var end = results.length;
-  var prev = -2;
+  var prev = -1;
   var i = -1;
 
   do {
     prev = i;
     i = begin + (end - begin) / 2 | 0;
-    if (results[i].y <= range[0]) begin = i;
+    if (results[i].y < range[0]) begin = i;
     else end = i;
   } while (prev !== i);
 
@@ -68,14 +68,13 @@ template.find = function(range, e) {
 
   var html = '';
   var r;
-
   while (results[i] && results[i].y < range[1]) {
     r = results[i++];
     html += '<i style="'
-      + 'width:' + width + ';'
-      + 'top:' + (r.y * e.char.height) + 'px;'
-      + 'left:' + (r.x * e.char.width + e.gutter) + 'px;'
-      + '"></i>';
+          + 'width:' + width + ';'
+          + 'top:' + (r.y * e.char.height) + 'px;'
+          + 'left:' + (r.x * e.char.width + e.gutter) + 'px;'
+          + '"></i>';
   }
 
   return html;

@@ -1,5 +1,10 @@
+function foo() {
+  with(something) {
+    inside(123);
+  }
+}
 
-     var Syntax = require('../src/syntax');
+var Syntax = require('../src/syntax');
 var syntax = new Syntax;
 
 var x=5/5;

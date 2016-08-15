@@ -47,9 +47,11 @@ var keys = module.exports = {
   },
 
   'ctrl+a': function() {
-    this.move.beginOfFile();
+    this.markClear(true);
+    this.move.beginOfFile(null, true);
     this.markBegin();
-    this.move.endOfFile();
+    this.move.endOfFile(null, true);
+    this.markSet();
   },
 
   'ctrl+shift+up': function() {
@@ -81,35 +83,40 @@ var keys = module.exports = {
   },
   'ctrl+backspace': function() {
     if (this.move.isBeginOfFile()) return;
-    this.markClear();
+    this.markClear(true);
     this.markBegin();
     this.move.byWord(-1, true);
+    this.markSet();
     this.delete();
   },
   'shift+ctrl+backspace': function() {
-    this.markClear();
+    this.markClear(true);
     this.markBegin();
     this.move.beginOfLine(null, true);
+    this.markSet();
     this.delete();
   },
   'ctrl+delete': function() {
     if (this.move.isEndOfFile()) return;
-    this.markClear();
+    this.markClear(true);
     this.markBegin();
     this.move.byWord(+1, true);
+    this.markSet();
     this.backspace();
   },
   'shift+ctrl+delete': function() {
-    this.markClear();
+    this.markClear(true);
     this.markBegin();
     this.move.endOfLine(null, true);
+    this.markSet();
     this.backspace();
   },
   'shift+delete': function() {
     this.markClear(true);
     this.move.beginOfLine(null, true);
     this.markBegin();
-    this.move.byLines(+1, true);
+    this.move.endOfLine(null, true);
+    this.move.byChars(+1, true);
     this.markSet();
     this.backspace();
   },
@@ -205,7 +212,7 @@ var keys = module.exports = {
     this.mark.active = !clear;
 
     if (caret.x) caret.addRight(add);
-    this.caret.set(caret);
+    this.setCaret(caret);
 
     if (clear) {
       this.markClear();
@@ -233,7 +240,7 @@ var keys = module.exports = {
     area.end.x += add;
     this.mark.set(area);
     this.mark.active = !clear;
-    this.caret.set(caret.addRight(add));
+    this.setCaret(caret.addRight(add));
     if (clear) {
       this.markClear();
     }

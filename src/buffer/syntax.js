@@ -70,12 +70,33 @@ Syntax.prototype.highlight = function(code, offset) {
   // console.log(0, 'highlight', code)
 
   //TODO: make method
+  code = this.createIndents(code);
+
+  code = this.createBlocks(code);
+
+  code = entities(code);
+
+  for (var key in syntax) {
+    code = code.replace(syntax[key].regexp, syntax[key].replacer);
+  }
+
+  code = this.restoreBlocks(code);
+
+  // code = code.replace(/\ueeee/g, function() {
+  //   return long.shift().slice(0, this.maxLine) + '...line too long to display';
+  // });
+
+  return code;
+};
+
+Syntax.prototype.createIndents = function(code) {
   var lines = code.split(/\n/g);
   var line;
   var long = [];
   var match;
   var firstIndent = 0;
   var i = 0;
+
   // for (; i < lines.length; i++) {
   //   line = lines[i];
   //   if (line.length > this.maxLine) {
@@ -99,22 +120,7 @@ Syntax.prototype.highlight = function(code, offset) {
     if (!line.length && lines[i-1].length && lines[i-1][0] === ' ') lines[i] = '  ';
   }
 
-  // }
   code = lines.join('\n');
-
-  code = this.createBlocks(code);
-
-  code = entities(code);
-
-  for (var key in syntax) {
-    code = code.replace(syntax[key].regexp, syntax[key].replacer);
-  }
-
-  code = this.restoreBlocks(code);
-
-  // code = code.replace(/\ueeee/g, function() {
-  //   return long.shift().slice(0, this.maxLine) + '...line too long to display';
-  // });
 
   return code;
 };
