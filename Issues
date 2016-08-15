@@ -96,8 +96,6 @@ x- highlight matching block
   - cmd+d (mac for f3)
 - optimize mark
 - double click + continue selection select by words
-- multiple carets/selections
-  - implement replace using select all matches + .insert()
 - on scroll, clear raw debounce,
   maybe also have a debounced jobs list to add tasks and clear in bulk
   ideally should be implicit but idk
@@ -105,3 +103,9 @@ x- highlight matching block
   !x- skip long lines entirely
 - syntax:
   - look behind for regexps (must be nothing, or ([=:;)
+
+-- very later (v2) -----------
+
+- multiple carets/selections
+  - implement replace using select all matches + .insert()
+- code folding

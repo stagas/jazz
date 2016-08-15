@@ -1,5 +1,7 @@
 var throttle = require('throttle');
 
+var PAGING_THROTTLE = window.pagingthrottle = 30;
+
 var keys = module.exports = {
   'ctrl+z': function() {
     this.history.undo();
@@ -16,16 +18,16 @@ var keys = module.exports = {
   },
   'pageup': throttle(function() {
     this.move.pageUp();
-  }, 60),
+  }, PAGING_THROTTLE),
   'pagedown': throttle(function() {
     this.move.pageDown();
-  }, 60),
+  }, PAGING_THROTTLE),
   'ctrl+up': throttle(function() {
     this.move.pageUp(6);
-  }, 60),
+  }, PAGING_THROTTLE),
   'ctrl+down': throttle(function() {
     this.move.pageDown(6);
-  }, 60),
+  }, PAGING_THROTTLE),
   'left': function() {
     this.move.byChars(-1);
   },

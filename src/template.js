@@ -169,7 +169,7 @@ template.code.style = function(range, e) {
 };
 
 template.caret = function() {
-  return null;
+  return false;
 };
 
 template.caret.style = function(point, e) {
@@ -191,7 +191,7 @@ template.gutter.style = function(point, e) {
 };
 
 template.ruler = function() {
-  return null;
+  return false;
 };
 
 template.ruler.style = function(point, e) {

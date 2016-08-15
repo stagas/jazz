@@ -35,6 +35,7 @@ var RowsView = require('./src/views/rows');
 var FindView = require('./src/views/find');
 var BlockView = require('./src/views/block');
 
+var SCROLL_SPEED = 0.30;
 var SPECIAL_SEGMENTS = ['/*', '*/', '`'];
 
 module.exports = Xoor;
@@ -459,7 +460,7 @@ Xoor.prototype.animateScrollBy = function(x, y) {
 Xoor.prototype.animationScrollFrame = function() {
   window.cancelAnimationFrame(this.animationFrame);
 
-  var speed = 0.3257; // adjust precision to keep caret ~static when paging up/down
+  var speed = SCROLL_SPEED; // adjust precision to keep caret ~static when paging up/down
   var s = this.scroll;
   var t = this.animationScrollTarget;
 
@@ -475,9 +476,7 @@ Xoor.prototype.animationScrollFrame = function() {
   }
 
   this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
-  var cap = 80;
-  // dx = dx > 0 ? Math.min(dx * speed, cap) : Math.max(dx * speed, -cap);
-  // dy = dy > 0 ? Math.min(dy * speed, cap) : Math.max(dy * speed, -cap);
+
   dx *= speed;
   dy *= speed;
 

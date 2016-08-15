@@ -42,7 +42,7 @@ View.prototype.render = function(range) {
   // if (!diff(this.value, this.editor.layout[this.name])) return;
 
   var html = this.template(range, this.editor);
-  if (html === false) return;
+  if (html === false) return this.style();
 
   // if ('code' === this.name) html = trim.emptyLines(html).string;
 
@@ -53,6 +53,7 @@ View.prototype.render = function(range) {
   if (html) dom.html(this, html);
   else if ('code' === this.name || 'block' === this.name) return this.clear();
 
+  // console.log('render', this.name)
   this.style();
 };
 
@@ -75,6 +76,7 @@ View.prototype.valueOf = function() {
 };
 
 View.prototype.clear = function() {
+  if (!this.visible) return;
   this[0] = this[1] = -1;
   this.visible = false;
   // dom.html(this, '');
