@@ -1,13 +1,13 @@
-var Render = require('../render');
+var Layer = require('../layer');
 var template = require('../template');
 
 module.exports = Rows;
 
 function Rows(name, editor, template) {
-  Render.call(this, name, editor, template);
+  Layer.call(this, name, editor, template, 10);
 }
 
-Rows.prototype.__proto__ = Render.prototype;
+Rows.prototype.__proto__ = Layer.prototype;
 
 Rows.prototype.render = function() {
   var views = this.views;

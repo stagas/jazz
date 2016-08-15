@@ -16,8 +16,8 @@ function View(name, editor, template) {
 
   this[0] = this[1] = -1;
 
-  this.node = document.createElement('div');
-  this.node.className = name;
+  this.el = document.createElement('div');
+  this.el.className = name;
 
   var style = {
     top: 0,
@@ -44,21 +44,14 @@ View.prototype.render = function(range) {
   var html = this.template(range, this.editor);
   if (html === false) return;
 
-  // if ('code' === this.name) {
-  //   var result = trim.emptyLines(html);
-  //   range[0] += result.leading;
-  //   range[1] -= result.trailing - 1;
-  //   html = result.string;
-  // }
+  // if ('code' === this.name) html = trim.emptyLines(html).string;
 
   this[0] = range[0];
   this[1] = range[1];
   this.visible = true;
 
-  // dom.html(this, html);
-  // console.log(0, 'html is', html)
   if (html) dom.html(this, html);
-  // else if ('code' === this.name) return this.clear();
+  else if ('code' === this.name) return this.clear();
 
   this.style();
 };
@@ -84,5 +77,6 @@ View.prototype.valueOf = function() {
 View.prototype.clear = function() {
   this[0] = this[1] = -1;
   this.visible = false;
+  dom.html(this, '');
   dom.style(this, { visibility: 'hidden' });
 };

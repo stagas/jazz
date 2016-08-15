@@ -5,7 +5,7 @@
 operator,
 operator2,
 keyword {
-  color: #efb451;
+  color: #a13630; /*#937e41;*/
 }
 
 /* green */
@@ -17,19 +17,19 @@ function {
 /* blue */
 declare,
 builtin {
-  color: #ef3944;
+  color: #f63833;
 }
 
 /* purple */
 boolean,
 number,
 number operator {
-  color: #c7543f;
+  color: #ff9f4e;
 }
 
 /* orange */
 params {
-  color: #bf9a45;
+  color: #a090a0; /* #32c0f6; *//* #a0966c #bf9a45; */
 }
 regexp,
 regexp * {
@@ -54,16 +54,16 @@ comment string *,
 comment string comment,
 comment regexp,
 comment regexp * {
-  color: #635240 !important;
+  color: #635047 !important;
   font-style: normal !important;
 }
 
 /* yellow */
 string,
+string *,
 string comment,
-string comment *,
-string * {
-  color: #3ec2f8 !important; /*#13aaf9 !important;*/
+string comment * {
+  color: #3ea1fb !important; /*#13aaf9 !important;  #83bd7f*/
   font-style: normal !important;
 }
 

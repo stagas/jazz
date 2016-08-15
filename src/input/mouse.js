@@ -10,7 +10,7 @@ function Mouse() {
   this.node = null;
   this.clicks = 0;
   this.point = new Point;
-  this.down = new Point;
+  this.down = null;
   this.bindEvents();
 }
 

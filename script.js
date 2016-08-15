@@ -3,7 +3,7 @@ var Xoor = require('./xoor');
 
 var options = {
   debug: {
-    views: true,
+    // views: true,
   }
 };
 
@@ -12,7 +12,10 @@ var xoor = new Xoor(options);
 xoor.use(document.body);
 xoor.assign(bindings);
 
-xoor.open('./xoor.js', function(err) {
+// setTimeout(() => {
+
+xoor.open('./test/syntax.html.js', function(err) {
+// xoor.open('./babel.js', function(err) {
   if (err) throw err;
 
   xoor.focus();
@@ -22,3 +25,5 @@ xoor.open('./xoor.js', function(err) {
 
   console.log('ready');
 });
+
+// },2000)

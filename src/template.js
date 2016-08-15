@@ -1,17 +1,7 @@
-var syntax = require('./syntax');
-
-var symbol = {
-  'double comment': '\uffe1',
-  'double comment close': '\uffe2',
-  'template string': '\uffe3',
-  'template string close': '\uffe4'
-};
 
 var template = exports;
 
-template.code = function(range, _) {
-  var code = _.buffer.get(range);
-
+template.code = function(range, e) {
   // if (template.code.memoize.param === code) {
   //   return template.code.memoize.result;
   // } else {
@@ -19,27 +9,7 @@ template.code = function(range, _) {
   //   template.code.memoize.result = false;
   // }
 
-  if (code.length > 10000) {
-    return syntax.entities(code);
-  }
-
-  var offset = _.buffer.lines.get(range[0]);
-  var segment = _.buffer.segments.get(offset);
-
-  if (segment && segment.type) {
-    segment.range[0] -= offset;
-    segment.range[1] -= offset - 1; // -1 for the symbol below
-
-    if (segment.range[1] > 0) {
-      code = symbol[segment.type] + code;
-
-      if (segment.range[1] < code.length) {
-        code = insert(segment.range[1], code, symbol[segment.type + ' close']);
-      }
-    }
-  }
-
-  var html = syntax.highlight(code);
+  var html = e.buffer.getHighlighted(range);
 
   return html;
 };
@@ -50,7 +20,7 @@ template.code.memoize = {
   result: ''
 };
 
-template.rows = function(range, _) {
+template.rows = function(range, e) {
   var s = '';
   for (var i = range[0]; i <= range[1]; i++) {
     s += (i + 1) + '\n';
@@ -58,27 +28,29 @@ template.rows = function(range, _) {
   return s;
 };
 
-template.mark = function(range, _) {
-  var mark = _.mark.get();
+template.mark = function(range, e) {
+  var mark = e.mark.get();
+  if (range[0] > mark.end.y) return false;
+  if (range[1] < mark.begin.y) return false;
 
-  var offset = _.buffer.lines.getRange(range);
-  var area = _.buffer.lines.getArea(mark);
-  var code = _.buffer.text.getRange(offset);
+  var offset = e.buffer.lines.getRange(range);
+  var area = e.buffer.lines.getAreaOffsetRange(mark);
+  var code = e.buffer.text.getRange(offset);
 
-  area[0].offset -= offset[0];
-  area[1].offset -= offset[0];
+  area[0] -= offset[0];
+  area[1] -= offset[0];
 
-  var above = code.substring(0, area[0].offset);
-  var middle = code.substring(area[0].offset, area[1].offset);
-  var html = syntax.entities(above) + '<mark>' + syntax.entities(middle) + '</mark>';
+  var above = code.substring(0, area[0]);
+  var middle = code.substring(area[0], area[1]);
+  var html = e.syntax.entities(above) + '<mark>' + e.syntax.entities(middle) + '</mark>';
 
   html = html.replace(/\n/g, ' \n');
 
   return html;
 };
 
-template.find = function(range, _) {
-  var results = _.findResults;
+template.find = function(range, e) {
+  var results = e.findResults;
 
   var begin = 0;
   var end = results.length;
@@ -92,7 +64,7 @@ template.find = function(range, _) {
     else end = i;
   } while (prev !== i);
 
-  var width = _.findValue.length * _.char.width + 'px';
+  var width = e.findValue.length * e.char.width + 'px';
 
   var html = '';
   var r;
@@ -101,8 +73,8 @@ template.find = function(range, _) {
     r = results[i++];
     html += '<i style="'
       + 'width:' + width + ';'
-      + 'top:' + (r.y * _.char.height) + 'px;'
-      + 'left:' + (r.x * _.char.width + _.gutter) + 'px;'
+      + 'top:' + (r.y * e.char.height) + 'px;'
+      + 'left:' + (r.x * e.char.width + e.gutter) + 'px;'
       + '"></i>';
   }
 
@@ -115,12 +87,12 @@ template.find.style = function() {
 
 template.mark.style =
 template.rows.style =
-template.code.style = function(range, _) {
+template.code.style = function(range, e) {
   return {
-    top: range[0] * _.char.height,
+    top: range[0] * e.char.height,
     height: //Math.min(
-      // (_.rows - range[0] + 1) * _.char.height,
-      (range[1] - range[0] + 1) * _.char.height
+      // (e.rows - range[0] + 1) * e.char.height,
+      (range[1] - range[0] + 1) * e.char.height
     // )
   };
 };
@@ -130,10 +102,10 @@ template.caret = function() {
   return null;
 };
 
-template.caret.style = function(point, _) {
+template.caret.style = function(point, e) {
   return {
-    left: _.char.width * _.caret.x + _.gutter,
-    top: _.char.height * _.caret.y,
+    left: e.char.width * e.caret.x + e.gutter,
+    top: e.char.height * e.caret.y,
   };
 };
 
@@ -141,10 +113,10 @@ template.gutter = function() {
   return null;
 };
 
-template.gutter.style = function(point, _) {
+template.gutter.style = function(point, e) {
   return {
     width: 1,
-    height: _.rows * _.char.height,
+    height: e.rows * e.char.height,
   };
 };
 
@@ -152,10 +124,10 @@ template.ruler = function() {
   return null;
 };
 
-template.ruler.style = function(point, _) {
+template.ruler.style = function(point, e) {
   return {
-    width: _.longestLine * _.char.width,
-    height: ((_.rows + _.page.height) * _.char.height) + _.pageRemainder.height,
+    width: e.longestLine * e.char.width,
+    height: ((e.rows + e.page.height) * e.char.height) + e.pageRemainder.height,
   };
 };
 

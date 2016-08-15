@@ -167,7 +167,8 @@ Lines.prototype.getOffset = function(offset) {
 
   return {
     x: x,
-    y: i
+    y: i,
+    line: line
   };
 };
 
@@ -220,17 +221,17 @@ Lines.prototype.insertLine = function(y, text) {
   this.insert({ x:0, y:y }, text);
 };
 
-Lines.prototype.getAreaRange = function(area) {
+Lines.prototype.getArea = function(area) {
   return this.getRange([
     area.begin.y,
     area.end.y
   ]);
 };
 
-Lines.prototype.getArea = function(area) {
+Lines.prototype.getAreaOffsetRange = function(area) {
   return [
-    this.getPoint(area.begin),
-    this.getPoint(area.end)
+    this.getPoint(area.begin).offset,
+    this.getPoint(area.end).offset
   ];
 };
 
@@ -281,7 +282,12 @@ Lines.prototype.removeArea = function(area) {
   }
 
   this.shift(area.begin.y, -(end.offset - begin.offset));
+
+  var diff = this.length - this.index.length;
+
   this.length = this.index.length;
+
+  return diff;
 };
 
 Lines.prototype.shift = function(y, diff) {

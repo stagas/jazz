@@ -4,6 +4,34 @@ var Point = require('point');
 
 var WORDS = Regexp.create(['words'], 'g');
 
+module.exports = Move;
+
+function Move(editor) {
+  Events.call(this);
+  this.editor = editor;
+  this.lastDeliberateX = 0;
+}
+
+Move.prototype.__proto__ = Events.prototype;
+
+Move.prototype.pageDown = function(div) {
+  div = div || 1;
+  var page = this.editor.page.height / div | 0;
+  var size = this.editor.size.height / div | 0;
+  var remainder = size - page * this.editor.char.height | 0;
+  this.editor.animateScrollBy(0, size - remainder);
+  return this.byLines(page);
+};
+
+Move.prototype.pageUp = function(div) {
+  div = div || 1;
+  var page = this.editor.page.height / div | 0;
+  var size = this.editor.size.height / div | 0;
+  var remainder = size - page * this.editor.char.height | 0;
+  this.editor.animateScrollBy(0, -(size - remainder));
+  return this.byLines(-page);
+};
+
 var move = {};
 
 move.byWord = function(buffer, p, dx) {
@@ -65,6 +93,8 @@ move.byChars = function(buffer, p, dx) {
     }
   }
 
+  this.lastDeliberateX = x;
+
   return {
     x: x,
     y: y
@@ -90,9 +120,11 @@ move.byLines = function(buffer, p, dy) {
     }
   }
 
-  if (x > lines.getLine(y).length) {
-    x = lines.getLine(y).length;
-  }
+  // if (x > lines.getLine(y).length) {
+  //   x = lines.getLine(y).length;
+  // } else {
+  // }
+  x = Math.min(this.lastDeliberateX, lines.getLine(y).length);
 
   return {
     x: x,
@@ -101,6 +133,7 @@ move.byLines = function(buffer, p, dy) {
 };
 
 move.beginOfLine = function(_, p) {
+  this.lastDeliberateX = 0;
   return {
     x: 0,
     y: p.y
@@ -108,13 +141,16 @@ move.beginOfLine = function(_, p) {
 };
 
 move.endOfLine = function(buffer, p) {
+  var x = buffer.lines.getLine(p.y).length;
+  this.lastDeliberateX = Infinity;
   return {
-    x: buffer.lines.getLine(p.y).length,
+    x: x,
     y: p.y
   };
 };
 
 move.beginOfFile = function() {
+  this.lastDeliberateX = 0;
   return {
     x: 0,
     y: 0
@@ -123,8 +159,10 @@ move.beginOfFile = function() {
 
 move.endOfFile = function(buffer) {
   var last = buffer.lines.length;
+  var x = buffer.lines.getLine(last).length
+  this.lastDeliberateX = x;
   return {
-    x: buffer.lines.getLine(last).length,
+    x: x,
     y: last
   };
 };
@@ -138,18 +176,10 @@ move.isEndOfFile = function(buffer, p) {
   return p.y === last && p.x === buffer.lines.getLineLength(last);
 };
 
-module.exports = Move;
-
-function Move(editor) {
-  Events.call(this);
-  this.editor = editor;
-}
-
-Move.prototype.__proto__ = Events.prototype;
-
 Object.keys(move).forEach(function(method) {
-  Move.prototype[method] = function(param) {
-    var result = move[method](
+  Move.prototype[method] = function(param, byEdit) {
+    var result = move[method].call(
+      this,
       this.editor.buffer,
       this.editor.caret,
       param
@@ -157,26 +187,6 @@ Object.keys(move).forEach(function(method) {
 
     if ('is' === method.slice(0,2)) return result;
 
-    this.emit('move', result);
+    this.emit('move', result, byEdit);
   };
 });
-
-Move.prototype.pageDown = function(div) {
-  div = div || 1;
-  var _ = this.editor;
-  var page = _.page.height / div | 0;
-  var size = _.size.height / div | 0;
-  var remainder = size - page * _.char.height | 0;
-  this.editor.animateScrollVertical(size - remainder);
-  return this.byLines(page);
-};
-
-Move.prototype.pageUp = function(div) {
-  div = div || 1;
-  var _ = this.editor;
-  var page = _.page.height / div | 0;
-  var size = _.size.height / div | 0;
-  var remainder = size - page * _.char.height | 0;
-  this.editor.animateScrollVertical(-(size - remainder));
-  return this.byLines(-page);
-};

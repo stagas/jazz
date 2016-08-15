@@ -246,90 +246,38 @@ t('insertChunked', function() {
   })
 })
 
-// t('split', function() {
-//   repeat(50, function() {
-//     var node = new SkipString;
-//     var a = '12345';
-//     node.insert(0, a);
-//     assert.equal('12345', node.joinString());
-//     node.split(2);
-//     assert.equal('12,345', node.joinString());
-//     node.split(1);
-//     assert.equal('1,2,345', node.joinString());
-//     node.split(4);
-//     assert.equal('1,2,34,5', node.joinString());
-//   })
-// })
-
-/*
-t('remove', function() {
-  var node = new SkipString;
-  var a = '12345';
-  node.insert(0, a);
-  node.remove([0,0]);
-  var res = node.get(0);
-  assert.equal('2345', res.node.value);
-  assert.equal(1, res.offset);
-  var res = node.get(1);
-  assert.equal('2345', res.node.value);
-  assert.equal(2, res.offset);
-  console.log(node)
+t('gap insert', function() {
+  repeat(times, function() {
+    var node = new SkipString();
+    node.insert(5, 'foo');
+    assert.equal(null, node.get(4).node.value);
+    assert.equal('foo', node.get(5).node.value);
+    node.insert(15, 'bar');
+    assert.equal('foo', node.get(14).node.value);
+    assert.equal('bar', node.get(15).node.value);
+    node.insert(9, 'zoo');
+    assert.equal('zoo', node.get(14).node.value);
+    assert.equal('zoo', node.get(15).node.value);
+    assert.equal('bar', node.get(18).node.value);
+    node.insert(11, 'r');
+    assert.equal('zoro', node.get(14).node.value);
+    node.insert(50, 'x');
+    assert.equal('x', node.get(50).node.value);
+    node.insert(100, 'y');
+    assert.equal('foo', node.get(5).node.value);
+    assert.equal('zoro', node.get(9).node.value);
+    assert.equal('x', node.get(50).node.value);
+    assert.equal('y', node.get(100).node.value);
+    node.insert(200, 'z');
+    assert.equal('foo', node.get(5).node.value);
+    assert.equal('zoro', node.get(9).node.value);
+    assert.equal('x', node.get(50).node.value);
+    assert.equal('y', node.get(100).node.value);
+    assert.equal('z', node.get(200).node.value);
+  })
 })
 
-t('remove span 2', function() {
-  var node = new SkipString;
-  var a = '12345';
-  var b = '123';
-  node.insert(0, a);
-  node.insert(0, b);
-  node.remove([1,5]);
-  console.log(node.joinString());
-  console.log(node);
-  var res = node.get(1);
-  assert.equal('1', res.node.value);
-  // assert.equal(0, res.offset);
-  // var res = node.get(1);
-  // assert.equal('23', res.node.value);
-  // assert.equal(0, res.offset);
-  // var res = node.get(3);
-  // assert.equal('12', res.node.value);
-  // assert.equal(0, res.offset);
-  // var res = node.get(5);
-  // assert.equal('345', res.node.value);
-  // assert.equal(0, res.offset);
-})
-
-t('getRange', function() {
-  var node = new SkipString;
-  var a = '12345';
-  var b = '123';
-  node.insert(0, a);
-  node.insert(0, b);
-  var res = node.getRange(1,5);
-  assert.equal('2312', res);
-})
-
-t('join', function() {
-  var node = new SkipString;
-  var a = '12345';
-  var b = '1234';
-  var c = '123';
-  var d = '12';
-  var e = '1';
-  node.insert(0, a);
-  node.insert(0, b);
-  node.insert(0, c);
-  node.insert(0, d);
-  node.insert(0, e);
-  assert.equal('1,12,123,1234,12345', node.joinString());
-  node.join([1,node.length]);
-  assert.equal('1121231234', node.next[0].value);
-  assert.equal(10, node.next[0].width[0]);
-})
-}
-
-*/
-
+/**/
 };
 
 function repeat(times, fn) {

@@ -67,24 +67,20 @@ History.prototype.checkout = function(n) {
   var commit = this.log[n];
   if (!commit) return;
 
-  var _ = this.editor;
-  _.mark.active = commit.markActive;
-  _.markEnd();
-  _.mark.set(commit.mark.copy());
-  _.caret.set(commit.caret.copy());
-  _.buffer.text = commit.text.copy();
-  _.buffer.lines = commit.lines.copy();
+  this.editor.mark.active = commit.markActive;
+  this.editor.mark.set(commit.mark.copy());
+  this.editor.caret.set(commit.caret.copy());
+  this.editor.buffer.text = commit.text.copy();
+  this.editor.buffer.lines = commit.lines.copy();
   this.emit('change');
 };
 
 History.prototype.commit = function() {
-  var _ = this.editor;
-
   return {
-    text: _.buffer.text.copy(),
-    lines: _.buffer.lines.copy(),
-    caret: _.caret.copy(),
-    mark: _.mark.copy(),
-    markActive: _.mark.active
+    text: this.editor.buffer.text.copy(),
+    lines: this.editor.buffer.lines.copy(),
+    caret: this.editor.caret.copy(),
+    mark: this.editor.mark.copy(),
+    markActive: this.editor.mark.active
   };
 };

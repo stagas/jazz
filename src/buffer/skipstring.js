@@ -123,8 +123,9 @@ SkipString.prototype.insert = function(offset, value, level) {
 
   // if search falls in the middle of a string
   // insert it there instead of creating a new node
-  if (s.offset && s.offset < s.node.width[0]) {
-    return this.update(s, insert(s.offset, s.node.value, value));
+  if (s.offset && s.node.value && s.offset < s.node.value.length) {
+    this.update(s, insert(s.offset, s.node.value, value));
+    return s.node;
   }
 
   return this.splice(s, offset, value, level);

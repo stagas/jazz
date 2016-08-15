@@ -4,7 +4,8 @@ var BENCH = false;
 var BENCH_TIMES = 10e1;
 
 require.paths.push('/test');
-var syntax = require('../src/syntax');
+var Syntax = require('../src/buffer/syntax');
+var syntax = new Syntax;
 var suite = require('suite');
 var assert = require('assert');
 var test = require('test');
@@ -15,7 +16,8 @@ var el = setup({
   // 'lib/trim.test': ['lib/trim']
   // 'src/buffer/rangetree.test': ['src/buffer/rangetree'],
   // 'core/buffer/pair.test': ['core/buffer/pair.old'],
-  // 'core/buffer/skipranges.test': ['core/buffer/skipranges'],
+  // 'src/buffer/skiprange.test': ['src/buffer/skiprange'],
+  'src/buffer/blocks.test': ['src/buffer'],
   // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
   // 'src/buffer/lines.test': ['src/buffer/lines'],
   // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],

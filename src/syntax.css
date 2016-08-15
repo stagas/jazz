@@ -91,6 +91,10 @@ indent {
   background-repeat: repeat;
 }
 
+line {
+  color: inherit !important;
+}
+
 .editor > .rows,
 .editor > .mark,
 .editor > .code,

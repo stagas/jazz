@@ -1,74 +1,248 @@
-var Regexp = require('regexp');
 
-var PHONY_ENDING = '`*/';
+var Begin = /[\/'"`]/g;
 
-var MULTILINE = Regexp.create([
-  Regexp.types.strings,
-  Regexp.types.comments,
-], 'g');
+var Match = {
+  'single comment': ['//','\n'],
+  'double comment': ['/*','*/'],
+  'template string': ['`','`'],
+  'single quote string': ["'","'"],
+  'double quote string': ['"','"'],
+  'regexp': ['/','/'],
+};
 
-var FILTERS = [
-  ['double comment', '/*', 2],
-  ['template string', '`', 1]
-];
+var Skip = {
+  'single quote string': "\\",
+  'double quote string': "\\",
+  'single comment': false,
+  'double comment': false,
+  'regexp': "\\",
+};
+
+var Token = {};
+for (var key in Match) {
+  var M = Match[key];
+  Token[M[0]] = key;
+}
+
+var TOKEN = /(\/\*)|(\*\/)|(`)/g;
 
 module.exports = Segments;
 
-function Segments() {
-  this.index = [];
+function Segments(buffer) {
+  this.buffer = buffer;
+  this.segments = [];
+  this.cache = {};
 }
 
-Segments.prototype.createIndex = function(s) {
-  this.index = Regexp.parse(s + PHONY_ENDING, MULTILINE);
-  /*, function(token) {
-    for (var i = 0; i < FILTERS.length; i++) {
-      if (token[0].substr(0,FILTERS[i][2]) === FILTERS[i][1]) return true;
-    }
-  });*/
-  return this.index.length;
+
+var Length = {
+  'open comment': 2,
+  'close comment': 2,
+  'template string': 1,
 };
 
-Segments.prototype.get = function(offset) {
-  var index = this.index;
+var NotOpen = {
+  'close comment': true
+};
 
+var Closes = {
+  'open comment': 'close comment',
+  'template string': 'template string',
+};
+
+var Tag = {
+  'open comment': 'comment',
+  'template string': 'string',
+};
+
+Segments.prototype.get = function(y) {
+  if (y in this.cache) {
+    return this.cache[y];
+  }
+
+  var open = false;
+  var state = null;
+  var waitFor = '';
+  var point = { x:-1, y:-1 };
+  var close = 0;
+  var segment;
+  var range;
+  var text;
+  var valid;
+  var last;
+
+  var i = 0;
+
+  for (; i < this.segments.length; i++) {
+    segment = this.segments[i];
+
+    // cache state etc dynamically
+
+    if (open) {
+      if (waitFor === segment.type) {
+        point = this.buffer.lines.getOffset(segment.offset);
+        if (point.y >= y) return (this.cache[y] = Tag[state.type]);
+
+        // console.log('close', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
+        last = segment;
+        last.point = point;
+        state = null;
+        open = false;
+      }
+    } else {
+      point = this.buffer.lines.getOffset(segment.offset);
+      range = point.line.range;
+
+      if (last && last.point.y === point.y) {
+        close = last.point.x + Length[last.type];
+        // console.log('last one was', last.type, last.point.x, this.buffer.text.getRange([last.offset, last.offset + 10]))
+      } else {
+        close = 0;
+      }
+      text = this.buffer.text.getRange([range[0], range[1]+1]);
+      valid = this.isValid(text, segment.offset - range[0], close);
+      // valid = true;
+
+      if (valid) {
+        if (NotOpen[segment.type]) continue;
+        // console.log('open', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
+        open = true;
+        state = segment;
+        state.point = point;
+        waitFor = Closes[state.type];
+      }
+    }
+    if (point.y >= y) break;
+  }
+  if (state && state.point.y < y) return (this.cache[y] = Tag[state.type]);
+  // return state && Tag[state.type];
+  return (this.cache[y] = null);
+};
+
+Segments.prototype.isValid = function(text, offset, lastIndex) {
+  Begin.lastIndex = lastIndex;
+  var match = Begin.exec(text);
+  if (!match) return;
+
+  i = match.index;
+
+  last = i;
+
+  var valid = true;
+
+  outer:
+  for (; i < text.length; i++) {
+    var one = text[i];
+    var next = text[i + 1];
+    var two = one + next;
+    if (i === offset) return true;
+
+    var o = Token[two];
+    if (!o) o = Token[one];
+    if (!o) {
+      continue;
+    }
+
+    var waitFor = Match[o][1];
+
+    // console.log('start', i, o)
+    last = i;
+
+    switch (waitFor.length) {
+      case 1:
+        while (++i < text.length) {
+          one = text[i];
+
+          if (one === Skip[o]) {
+            ++i;
+            continue;
+          }
+
+          if (waitFor === one) {
+            i += 1;
+            break;
+          }
+
+          if ('\n' === one && !valid) {
+            valid = true;
+            i = last + 1;
+            continue outer;
+          }
+
+          if (i === offset) {
+            valid = false;
+            continue;
+          }
+        }
+        break;
+      case 2:
+        while (++i < text.length) {
+
+          one = text[i];
+          two = text[i] + text[i + 1];
+
+          if (one === Skip[o]) {
+            ++i;
+            continue;
+          }
+
+          if (waitFor === two) {
+            i += 2;
+            break;
+          }
+
+          if ('\n' === one && !valid) {
+            valid = true;
+            i = last + 2;
+            continue outer;
+          }
+
+          if (i === offset) {
+            valid = false;
+            continue;
+          }
+        }
+        break;
+    }
+  }
+  return valid;
+}
+
+Segments.prototype.getSegment = function(offset) {
   var begin = 0;
-  var end = index.length;
-  if (!end) return;
+  var end = this.segments.length;
 
   var p = -1;
   var i = -1;
+  var b;
 
   do {
     p = i;
     i = begin + (end - begin) / 2 | 0;
-    if (index[i].index <= offset) begin = i;
+    b = this.segments[i];
+    if (b.offset <= offset) begin = i;
     else end = i;
   } while (p !== i);
 
-  var token = index[i];
-
-  var type;
-  for (var i = 0; i < FILTERS.length; i++) {
-    var f = FILTERS[i];
-    if (token[0].slice(0,f[2]) === f[1]) {
-      type = f[0];
-      break;
-    }
-  }
-
   return {
-    index: p,
-    type: type,
-    token: token,
-    range: [token.index, token.index + token[0].length]
+    segment: b,
+    index: i
   };
 };
 
-Segments.prototype.shift = function(offset, n) {
-  // console.time('shift segments')
-  var segment = this.get(offset);
-  for (var i = segment.index + 1; i < this.index.length; i++) {
-    this.index[i].index += n;
+Segments.prototype.index = function(text) {
+  var match;
+
+  var segments = this.segments = [];
+
+  while (match = TOKEN.exec(text)) {
+    if (match['3']) segments.push(new Segment('template string', match.index));
+    else if (match['1']) segments.push(new Segment('open comment', match.index));
+    else if (match['2']) segments.push(new Segment('close comment', match.index));
   }
-  // console.timeEnd('shift segments')
 };
+
+function Segment(type, offset) {
+  this.type = type;
+  this.offset = offset;
+}

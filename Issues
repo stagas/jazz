@@ -46,28 +46,49 @@ x- undo/redo
   x- better caret positioning
 x- fix segments
 x- fix nasty undo/redo bottom edge bug
+x- improve syntax highlighting
+x- inserting segments/blocks
+x- improve view rendering
+x- bring back select
+x- render blocks indent properly
+  x- indent color grab from computedStyle of a <comment>
+x- fix copy/paste
+x- fix ctrl-shift
+x- fix find rendering
+x- fix ctrl-shift rendering
+x- refactor move.js
+x- remember caret x
+x- follow caret and scroll horizontally
+x- fix shift+delete
 
 -- doing ---------------------
-
-- bindings
-  x- ctrl+/, shift+ctrl+/ -> comments
-  - cmd+d (mac for f3)
 
 
 
 -- todo ----------------------
 
+- cache segments
+  - cache should remember of all line states iterated above
+    last line changed, they don't change, and forget all below
+    ones
 
+- syntax: look behind for regexps (must be nothing, or ([=:;)
+- fix xoor.focus()
 
 -- later ---------------------
 
+- fix edge case of inserting/deleting on ~empty file
+- tweak skipstring to split on newlines, so segments can index by
+  iterating, without using .raw
+- bindings
+  x- ctrl+/, shift+ctrl+/ -> comments
+  - cmd+d (mac for f3)
 - optimize mark
 - double click + continue selection select by words
-- refactor move.js
 - multiple carets/selections
   - implement replace using select all matches + .insert()
-- optimizations for segment indexing(complex to implement):
-  - only examine area from previous edit(by a debounce)
-    rather than the entire line
-  - examine visible page first
-  - separate buckets for each type of regexp
+- on scroll, clear raw debounce,
+  maybe also have a debounced jobs list to add tasks and clear in bulk
+  ideally should be implicit but idk
+- syntax:
+  !x- skip long lines entirely
