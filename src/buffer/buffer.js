@@ -28,7 +28,7 @@ function Buffer() {
   this.segments = new Segments(this);
   this.indexer = new Indexer(this);
   this.changes = 0;
-  // this.on('update', debounce(this.updateRaw.bind(this), 200));
+  this.on('update', debounce(this.updateRaw.bind(this), 200));
   this.on('raw', this.segments.index.bind(this.segments));
 }
 
