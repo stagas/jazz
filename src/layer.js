@@ -115,7 +115,7 @@ Layer.prototype.renderAhead = function(include) {
   if (aheadNeedRanges.length) {
     // if so, render further ahead to have some
     // margin to scroll without triggering new renders
-    this.renderPage(1.5, include);
+    this.renderPage(1, include);
   }
 };
 

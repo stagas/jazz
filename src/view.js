@@ -51,7 +51,7 @@ View.prototype.render = function(range) {
   this.visible = true;
 
   if (html) dom.html(this, html);
-  else if ('code' === this.name) return this.clear();
+  else if ('code' === this.name || 'block' === this.name) return this.clear();
 
   this.style();
 };
@@ -77,6 +77,6 @@ View.prototype.valueOf = function() {
 View.prototype.clear = function() {
   this[0] = this[1] = -1;
   this.visible = false;
-  dom.html(this, '');
+  // dom.html(this, '');
   dom.style(this, { top: 0, height: 0, visibility: 'hidden' });
 };

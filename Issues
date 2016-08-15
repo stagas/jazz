@@ -71,10 +71,13 @@ x- fix find selects
 x- fix first line finds problem
 x- fix history (again, sigh..)
 x- cache segments
+x- highlight matching block
+
 
 -- doing ---------------------
 
-- highlight matching block
+- review/cleanup main
+- refactor template
 
 
 

@@ -183,6 +183,12 @@ html, body {
   z-index: 50;
 }
 
+.editor > .block > i {
+  position: absolute;
+  border-bottom: 1px solid #aaa;
+  z-index: 60;
+}
+
 mark {
   color: #fff;
   background: #b41;

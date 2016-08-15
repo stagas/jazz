@@ -1,3 +1,4 @@
+var debounce = require('debounce');
 
 var template = exports;
 
@@ -84,18 +85,88 @@ template.find.style = function() {
   //
 };
 
+template.block = function(range, e) {
+  var offset = e.buffer.lines.get(range[0]);
+  var target = e.buffer.lines.getPoint(e.caret).offset;
+  var code = e.buffer.get(range);
+  var i = target - offset;
+  var char;
+
+  var Open = {
+    '{': 'curly',
+    '[': 'square',
+    '(': 'parens'
+  };
+
+  var Close = {
+    '}': 'curly',
+    ']': 'square',
+    ')': 'parens'
+  };
+
+  var open;
+  var close;
+
+  var count = 1;
+  i -= 1;
+  while (i > 0) {
+    char = code[i];
+    open = Open[char];
+    if (Close[char]) count++;
+    if (open && !--count) break;
+    i--;
+  }
+
+  if (!open) return '';
+
+  var begin = e.buffer.lines.getOffset(i + offset);
+
+  count = 1;
+  i += 1;
+
+  while (i < code.length) {
+    char = code[i];
+    close = Close[char];
+    if (Open[char] === open) count++;
+    if (open === close) count--;
+
+    if (!count) break;
+    i++;
+  }
+
+  if (!close) return '';
+
+  var end = e.buffer.lines.getOffset(i + offset);
+
+  var html = '';
+
+  html += '<i style="'
+        + 'width:' + e.char.width + 'px;'
+        + 'top:' + (begin.y * e.char.height) + 'px;'
+        + 'left:' + (begin.x * e.char.width + e.gutter) + 'px;'
+        + '"></i>';
+
+  html += '<i style="'
+        + 'width:' + e.char.width + 'px;'
+        + 'top:' + (end.y * e.char.height) + 'px;'
+        + 'left:' + (end.x * e.char.width + e.gutter) + 'px;'
+        + '"></i>';
+
+  return html;
+};
+
+template.block.style = function() {
+  //
+};
+
 template.mark.style =
 template.rows.style =
 template.code.style = function(range, e) {
   return {
     top: range[0] * e.char.height,
-    height: //Math.min(
-      // (e.rows - range[0] + 1) * e.char.height,
-      (range[1] - range[0] + 1) * e.char.height
-    // )
+    height: (range[1] - range[0] + 1) * e.char.height
   };
 };
-
 
 template.caret = function() {
   return null;

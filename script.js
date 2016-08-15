@@ -14,7 +14,8 @@ xoor.assign(bindings);
 
 // setTimeout(() => {
 
-xoor.open('./test/syntax.html.js', function(err) {
+xoor.open('./xoor.js', function(err) {
+// xoor.open('./test/syntax.html.js', function(err) {
 // xoor.open('./babel.js', function(err) {
   if (err) throw err;
 

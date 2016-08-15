@@ -33,6 +33,7 @@ var CodeView = require('./src/views/code');
 var MarkView = require('./src/views/mark');
 var RowsView = require('./src/views/rows');
 var FindView = require('./src/views/find');
+var BlockView = require('./src/views/block');
 
 var SPECIAL_SEGMENTS = ['/*', '*/', '`'];
 
@@ -102,6 +103,7 @@ function Xoor(options) {
     mark: new MarkView('mark', this, template.mark),
     rows: new RowsView('rows', this, template.rows),
     find: new FindView('find', this, template.find),
+    block: new BlockView('block', this, template.block),
   };
 
   dom.append(this.node, this.views, true);
@@ -457,14 +459,14 @@ Xoor.prototype.animateScrollBy = function(x, y) {
 Xoor.prototype.animationScrollFrame = function() {
   window.cancelAnimationFrame(this.animationFrame);
 
-  var speed = 0.3857; // adjust precision to keep caret ~static when paging up/down
+  var speed = 0.3257; // adjust precision to keep caret ~static when paging up/down
   var s = this.scroll;
   var t = this.animationScrollTarget;
 
   var dx = t.x - s.x;
   var dy = t.y - s.y;
 
-  if (/*dx === 0 && */Math.abs(dy) < 1) {
+  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
     this.animationRunning = false;
     this.animationScrollTarget = null;
     this.emit('animation end');
@@ -473,7 +475,9 @@ Xoor.prototype.animationScrollFrame = function() {
   }
 
   this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
-
+  var cap = 80;
+  // dx = dx > 0 ? Math.min(dx * speed, cap) : Math.max(dx * speed, -cap);
+  // dy = dy > 0 ? Math.min(dy * speed, cap) : Math.max(dy * speed, -cap);
   dx *= speed;
   dy *= speed;
 
@@ -676,6 +680,9 @@ Xoor.prototype.resize = function() {
   + '.editor > .find > i {'
   + '  height: ' + (this.char.height + 1) + 'px;'
   + '}'
+  + '.editor > .block > i {'
+  + '  height: ' + (this.char.height + 1) + 'px;'
+  + '}'
   + 'indent {'
   + '  background-image: url(' + dataURL + ');'
   + '}'
@@ -691,6 +698,7 @@ Xoor.prototype.clear = function() {
   this.views.code.clear();
   this.views.rows.clear();
   this.views.find.clear();
+  this.views.block.clear();
 };
 
 Xoor.prototype.render = atomic(function() {
@@ -701,5 +709,6 @@ Xoor.prototype.render = atomic(function() {
   this.views.code.render();
   this.views.rows.render();
   this.views.find.render();
+  this.views.block.render();
   this.emit('render');
 });
