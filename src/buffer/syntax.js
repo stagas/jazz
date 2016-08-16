@@ -61,7 +61,6 @@ function Syntax(o) {
   o = o || {};
   this.maxLine = o.maxLine || 300;
   this.blocks = [];
-  this.blocksMap = {};
 }
 
 Syntax.prototype.entities = entities;
@@ -117,7 +116,7 @@ Syntax.prototype.createIndents = function(code) {
   var last = true;
   for (; i < lines.length; i++) {
     line = lines[i];
-    if (!line.length && lines[i-1].length && lines[i-1][0] === ' ') lines[i] = '  ';
+    if (!line.length && lines[i-1].length && lines[i-1][0] === ' ') lines[i] = ' ';
   }
 
   code = lines.join('\n');
@@ -127,11 +126,10 @@ Syntax.prototype.createIndents = function(code) {
 
 Syntax.prototype.restoreBlocks = function(code) {
   var block;
-  var blocksMap = this.blocksMap;
-  return code.replace(
-    /\uffe1([a-z]*?)\uffe2/g,
-    (_, id) => {
-    block = blocksMap[id];
+  var blocks = this.blocks;
+  var n = 0;
+  return code.replace(/\uffeb/g, function() {
+    block = blocks[n++]
     return '<'+block.tag+'>'+entities(block.value)+'</'+block.tag+'>';
   });
 };
@@ -139,7 +137,6 @@ Syntax.prototype.restoreBlocks = function(code) {
 Syntax.prototype.createBlocks = function(code) {
   var block = {};
   var blocks = this.blocks = [];
-  var blocksMap = this.blocksMap = {};
 
   var s = '';
 
@@ -259,8 +256,7 @@ Syntax.prototype.createBlocks = function(code) {
       last = i;
 
       blocks.push(block);
-      blocksMap[block.id] = block;
-      s += '\uffe1'+block.id+'\uffe2';
+      s += '\uffeb';
       continue outer;
     }
   }

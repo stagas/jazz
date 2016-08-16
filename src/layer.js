@@ -57,7 +57,7 @@ Layer.prototype.outRangeViews = function(range) {
       views.push(view);
     }
   }
-  return views;
+  return views.sort((a,b) => a.lastUsed - b.lastUsed);
 };
 
 Layer.prototype.renderRanges = function(ranges, views) {
@@ -115,7 +115,7 @@ Layer.prototype.renderAhead = function(include) {
   if (aheadNeedRanges.length) {
     // if so, render further ahead to have some
     // margin to scroll without triggering new renders
-    this.renderPage(1, include);
+    this.renderPage(2, include);
   }
 };
 
@@ -136,7 +136,8 @@ Layer.prototype.spliceRange = function(range) {
     // debugger;
     if (view[1] < range[0] || view[0] > range[1]) continue;
 
-    if (view[0] < range[0]) {
+    if (view[0] < range[0] && view[1] > range[0]) {
+      //console.log('shorten', view.valueOf())
       view[1] = range[0] - 1;
       view.style();
     } else if (view[1] > range[1]) {

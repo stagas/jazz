@@ -13,6 +13,7 @@
 
 var dom = require('dom');
 var diff = require('diff');
+var debounce = require('debounce');
 var throttle = require('throttle');
 var atomic = require('atomic');
 var Events = require('events');
@@ -398,7 +399,7 @@ Xoor.prototype.getRange = function(range) {
 };
 
 Xoor.prototype.getPageRange = function(range) {
-  var p = (this.animationScrollTarget || this.scroll)['/'](this.char);
+  var p = this.scroll['/'](this.char);
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -698,16 +699,21 @@ Xoor.prototype.clear = function() {
   this.views.rows.clear();
   this.views.find.clear();
   this.views.block.clear();
+  console.log('clear')
 };
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
   this.views.caret.render();
-  this.views.ruler.render();
   this.views.mark.render();
   this.views.code.render();
   this.views.rows.render();
-  this.views.find.render();
-  this.views.block.render();
+  this.debouncedRender();
   this.emit('render');
 });
+
+Xoor.prototype.debouncedRender = debounce(function() {
+  this.views.ruler.render();
+  this.views.find.render();
+  this.views.block.render();
+}, 60);

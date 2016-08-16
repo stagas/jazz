@@ -6,7 +6,7 @@ var template = require('../template');
 module.exports = Code;
 
 function Code(name, editor, template) {
-  Layer.call(this, name, editor, template, 100);
+  Layer.call(this, name, editor, template, 20);
 }
 
 Code.prototype.__proto__ = Layer.prototype;

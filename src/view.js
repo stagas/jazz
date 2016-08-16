@@ -13,6 +13,7 @@ function View(name, editor, template) {
   this.template = template;
 
   this.visible = false;
+  this.lastUsed = 0;
 
   this[0] = this[1] = -1;
 
@@ -38,6 +39,8 @@ function View(name, editor, template) {
 View.prototype.render = function(range) {
   if (!range) range = this;
 
+  this.lastUsed = Date.now();
+
   // console.log(this.name, this.value, e.layout[this.name], diff(this.value, e.layout[this.name]))
   // if (!diff(this.value, this.editor.layout[this.name])) return;
 
@@ -58,6 +61,8 @@ View.prototype.render = function(range) {
 };
 
 View.prototype.style = function() {
+  this.lastUsed = Date.now();
+
   dom.style(
     this,
     merge(

@@ -1,5 +1,3 @@
-var debounce = require('debounce');
-
 var template = exports;
 
 template.code = function(range, e) {
