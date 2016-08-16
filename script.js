@@ -3,7 +3,7 @@ var Xoor = require('./xoor');
 
 var options = {
   debug: {
-    // views: true,
+    views: true,
   }
 };
 

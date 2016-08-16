@@ -145,6 +145,7 @@ Lines.prototype.getPoint = function(point) {
 Lines.prototype.getOffset = function(offset) {
   var begin = 0;
   var end = this.length;
+  if (!end) return;
 
   var p = -1;
   var i = -1;
