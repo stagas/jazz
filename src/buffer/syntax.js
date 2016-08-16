@@ -17,6 +17,18 @@ var syntax = map({
 
 var AnyBlockStart = /[\/'"`]/g;
 
+var AnyBlock = R([
+  'comment',
+  'string',
+  'regexp',
+], 'g');
+
+function identify(block) {
+  var one = block[0];
+  var two = one + block[1];
+  return Tag[two] || Tag[one];
+}
+
 var Blocks = {
   'single comment': ['//','\n'],
   'double comment': ['/*','*/'],
@@ -24,6 +36,15 @@ var Blocks = {
   'single quote string': ["'","'"],
   'double quote string': ['"','"'],
   'regexp': ['/','/'],
+};
+
+var Tag = {
+  '//': 'comment',
+  '/*': 'comment',
+  '`': 'string',
+  '"': 'string',
+  "'": 'string',
+  '/': 'regexp',
 };
 
 var Tags = {
@@ -130,11 +151,21 @@ Syntax.prototype.restoreBlocks = function(code) {
   var n = 0;
   return code.replace(/\uffeb/g, function() {
     block = blocks[n++]
-    return '<'+block.tag+'>'+entities(block.value)+'</'+block.tag+'>';
+    var tag = identify(block);
+    return '<'+tag+'>'+entities(block)+'</'+tag+'>';
   });
 };
 
 Syntax.prototype.createBlocks = function(code) {
+  this.blocks = [];
+  code = code.replace(AnyBlock, (block) => {
+    this.blocks.push(block);
+    return '\uffeb';
+  });
+  return code;
+};
+
+Syntax.prototype._createBlocks = function(code) {
   var block = {};
   var blocks = this.blocks = [];
 

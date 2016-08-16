@@ -3,11 +3,11 @@ var bench = require('../../test/bench');
 var print = require('../../lib/print');
 var read = require('fs').readFileSync;
 
-var TIMES = 1//20e2;
+var TIMES = 10e3;
 
 var code =
-  // read(__dirname + '/../lib/regexp.js')
-  read(__dirname + '/../../babel.js', 'utf8');
+  read(__dirname + '/../../test/syntax.html.js', 'utf8');
+  // read(__dirname + '/../../babel.js', 'utf8');
 
 var syntax = new Syntax;
 
