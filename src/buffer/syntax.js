@@ -15,28 +15,7 @@ var syntax = map({
   'number':   R(['special','number'], 'g'),
 }, compile);
 
-var AnyBlockStart = /[\/'"`]/g;
-
-var AnyBlock = R([
-  'comment',
-  'string',
-  'regexp',
-], 'g');
-
-function identify(block) {
-  var one = block[0];
-  var two = one + block[1];
-  return Tag[two] || Tag[one];
-}
-
-var Blocks = {
-  'single comment': ['//','\n'],
-  'double comment': ['/*','*/'],
-  'template string': ['`','`'],
-  'single quote string': ["'","'"],
-  'double quote string': ['"','"'],
-  'regexp': ['/','/'],
-};
+var Blocks = R(['comment','string','regexp'], 'g');
 
 var Tag = {
   '//': 'comment',
@@ -46,35 +25,6 @@ var Tag = {
   "'": 'string',
   '/': 'regexp',
 };
-
-var Tags = {
-  'single comment': 'comment',
-  'double comment': 'comment',
-  'template string': 'string',
-  'single quote string': 'string',
-  'double quote string': 'string',
-  'regexp': 'regexp',
-};
-
-var Skip = {
-  'single quote string': "\\",
-  'double quote string': "\\",
-  'single comment': false,
-  'double comment': false,
-  'regexp': "\\",
-};
-
-var Cancel = {
-  'single quote string': '\n',
-  'double quote string': '\n',
-  'regexp': '\n',
-};
-
-var Tokens = {};
-for (var key in Blocks) {
-  var B = Blocks[key];
-  Tokens[B[0]] = key;
-}
 
 module.exports = Syntax;
 
@@ -89,11 +39,8 @@ Syntax.prototype.entities = entities;
 Syntax.prototype.highlight = function(code, offset) {
   // console.log(0, 'highlight', code)
 
-  //TODO: make method
   code = this.createIndents(code);
-
   code = this.createBlocks(code);
-
   code = entities(code);
 
   for (var key in syntax) {
@@ -158,141 +105,11 @@ Syntax.prototype.restoreBlocks = function(code) {
 
 Syntax.prototype.createBlocks = function(code) {
   this.blocks = [];
-  code = code.replace(AnyBlock, (block) => {
+  code = code.replace(Blocks, (block) => {
     this.blocks.push(block);
     return '\uffeb';
   });
   return code;
-};
-
-Syntax.prototype._createBlocks = function(code) {
-  var block = {};
-  var blocks = this.blocks = [];
-
-  var s = '';
-
-  // var cols = 0;
-
-  var i = 0;
-  var last = 0;
-  var skip = 0;
-  var match;
-
-  outer:
-  while (i < code.length) {
-    // cols = 0;
-
-    AnyBlockStart.lastIndex = i + skip;
-    match = AnyBlockStart.exec(code);
-    if (!match) {
-      s += code.substring(i);
-      break;
-    }
-
-    var lastLineOffset = code.lastIndexOf('\n', match.index);
-    // if (match.index - lastLineOffset > 500) {
-    //   s += code.substring(last, lastLineOffset + 500) + '...line too long to display';
-    //   i = code.indexOf('\n', match.index);
-    //   last = i;
-    //   continue;
-    // }
-
-    i = match.index;
-    s += code.substring(last, i);
-    last = i;
-    skip = 0;
-
-    inner:
-    for (; i < code.length; i++) {
-      var one = code[i];
-      var next = code[i + 1];
-      var two = one + next;
-
-      var o = Tokens[two];
-      if (!o) o = Tokens[one];
-      if (!o) {
-        // if ('\n' === one) cols = 0;
-        // else if (cols++ > this.maxLine) {
-        //   s += '...line too long to display';
-        //   i = code.indexOf('\n', i) - 1;
-        //   cols = 0;
-        //   continue;
-        // }
-        s += one;
-        continue;
-      }
-
-      last = i;
-
-      var B = Blocks[o];
-      var waitFor = B[1];
-
-      i += waitFor.length - 1;
-
-      switch (waitFor.length) {
-        case 1:
-          while (++i < code.length) {
-            one = code[i];
-            // cols++;
-            // if ('\n' === one) cols = 0;
-            // if (cols > this.maxLine) break;
-            if (one === Skip[o]) {
-              ++i;
-              continue;
-            }
-            if (waitFor === one) {
-              i += 1;
-              break;
-            }
-            if (i === code.length - 1) {
-              i = last;
-              skip = 1;
-              continue outer;
-            }
-            if (one === Cancel[o]) {
-              i = last + 1;
-              continue outer;
-            }
-          }
-          break;
-        case 2:
-          while (++i < code.length) {
-            one = code[i];
-            two = code[i] + code[i + 1];
-            // cols++;
-            // if ('\n' === one) cols = 0;
-            // if (cols > this.maxLine) break;
-            if (one === Skip[o]) {
-              ++i;
-              continue;
-            }
-            if (waitFor === two) {
-              i += 2;
-              break;
-            }
-          }
-          break;
-      }
-
-      if (code[i-1] === '\n') i -= 1;
-
-      block = block.next = {
-        id: createId(),
-        offset: last,
-        length: i - last,
-        value: code.substring(last, i),
-        tag: Tags[o],
-      };
-
-      last = i;
-
-      blocks.push(block);
-      s += '\uffeb';
-      continue outer;
-    }
-  }
-
-  return s;
 };
 
 function createId() {
@@ -341,4 +158,10 @@ function replace(pass, code) {
 
 function insert(offset, string, part) {
   return string.slice(0, offset) + part + string.slice(offset);
+}
+
+function identify(block) {
+  var one = block[0];
+  var two = one + block[1];
+  return Tag[two] || Tag[one];
 }

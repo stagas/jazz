@@ -83,8 +83,7 @@ x- highlight matching block
 
 -- todo ----------------------
 
-- issue with cut/paste entire document and caret position/rendering
-
+- undo/redo and caret off visible range, does not rerender
 
 
 -- later ---------------------

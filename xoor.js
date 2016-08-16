@@ -11,8 +11,15 @@
  *
  */
 
+var DefaultOptions = {
+  debug_layers: false,
+  scroll_speed: 0.30
+};
+
 var dom = require('dom');
 var diff = require('diff');
+var merge = require('merge');
+var clone = require('clone');
 var debounce = require('debounce');
 var throttle = require('throttle');
 var atomic = require('atomic');
@@ -36,7 +43,6 @@ var RowsView = require('./src/views/rows');
 var FindView = require('./src/views/find');
 var BlockView = require('./src/views/block');
 
-var SCROLL_SPEED = 0.30;
 var SPECIAL_SEGMENTS = ['/*', '*/', '`'];
 
 module.exports = Xoor;
@@ -44,8 +50,7 @@ module.exports = Xoor;
 function Xoor(options) {
   Events.call(this);
 
-  this.options = options || {};
-  this.options.debug = this.options.debug || {};
+  this.options = merge(clone(DefaultOptions), options || {});
 
   Object.assign(this, {
     node: document.createDocumentFragment(),
@@ -75,9 +80,11 @@ function Xoor(options) {
     gutter: 0,
     gutterMargin: 15,
 
-    caret: new Point({ x: 0, y: 0 }),
     code: 0,
     rows: 0,
+
+    caret: new Point({ x: 0, y: 0 }),
+
     mark: new Area({
       begin: new Point({ x: -1, y: -1 }),
       end: new Point({ x: -1, y: -1 })
@@ -131,10 +138,22 @@ Xoor.prototype.use = function(node) {
 
   this.input.use(node);
   this.repaint();
+  return this;
 };
 
 Xoor.prototype.assign = function(bindings) {
   this.bindings = bindings;
+  return this;
+};
+
+Xoor.prototype.open = function(path, fn) {
+  this.file.open(path, fn);
+  return this;
+};
+
+Xoor.prototype.focus = function() {
+  setImmediate(this.input.focus.bind(this.input));
+  return this;
 };
 
 Xoor.prototype.bindMethods = function() {
@@ -386,20 +405,12 @@ Xoor.prototype.markClear = function(force) {
   });
 };
 
-Xoor.prototype.open = function(path, fn) {
-  this.file.open(path, fn);
-};
-
-Xoor.prototype.focus = function() {
-  setImmediate(this.input.focus.bind(this.input));
-};
-
 Xoor.prototype.getRange = function(range) {
   return Range.clamp(range, this.pageBounds);
 };
 
 Xoor.prototype.getPageRange = function(range) {
-  var p = this.scroll['/'](this.char);
+  var p = (this.animationScrollTarget || this.scroll)['/'](this.char);
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -426,8 +437,10 @@ Xoor.prototype.followCaret = atomic(function() {
   if (left < 0) left = 0;
   if (right < 0) right = 0;
 
-  if (!this.animationRunning && !this.find.isOpen) this.scrollBy(right - left, bottom - top);
-  else this.animateScrollBy(right - left, bottom - top);
+  if (!this.animationRunning && !this.find.isOpen)
+    this.scrollBy(right - left, bottom - top);
+  else
+    this.animateScrollBy(right - left, bottom - top);
 });
 
 Xoor.prototype.scrollTo = function(p) {
@@ -461,7 +474,7 @@ Xoor.prototype.animateScrollBy = function(x, y) {
 Xoor.prototype.animationScrollFrame = function() {
   window.cancelAnimationFrame(this.animationFrame);
 
-  var speed = SCROLL_SPEED; // adjust precision to keep caret ~static when paging up/down
+  var speed = this.options.scroll_speed; // adjust precision to keep caret ~static when paging up/down
   var s = this.scroll;
   var t = this.animationScrollTarget;
 
@@ -469,6 +482,7 @@ Xoor.prototype.animationScrollFrame = function() {
   var dy = t.y - s.y;
 
   if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+    // this.scrollTo(this.animationScrollTarget);
     this.animationRunning = false;
     this.animationScrollTarget = null;
     this.emit('animation end');
@@ -638,7 +652,7 @@ Xoor.prototype.resize = function() {
   this.pageRemainder.set(this.size['-'](this.page['*'](this.char)));
   this.pageBounds = [0, this.rows];
   this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
-  this.gutter = (''+this.rows).length * this.char.width + this.gutterMargin;
+  this.gutter = Math.max(3, (''+this.rows).length) * this.char.width + this.gutterMargin;
 
   dom.style(this.views.caret, {
     height: this.char.height
@@ -705,6 +719,7 @@ Xoor.prototype.clear = function() {
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
   this.views.caret.render();
+  this.views.ruler.render();
   this.views.mark.render();
   this.views.code.render();
   this.views.rows.render();
@@ -713,7 +728,6 @@ Xoor.prototype.render = atomic(function() {
 });
 
 Xoor.prototype.debouncedRender = debounce(function() {
-  this.views.ruler.render();
   this.views.find.render();
   this.views.block.render();
 }, 60);

@@ -26,7 +26,7 @@ function View(name, editor, template) {
     visibility: 'hidden'
   };
 
-  if (this.editor.options.debug.views && this.name === 'code') {
+  if (this.editor.options.debug_layers) {
     style.background = '#'
     + (Math.random() * 12 | 0).toString(16)
     + (Math.random() * 12 | 0).toString(16)
