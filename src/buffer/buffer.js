@@ -1,5 +1,6 @@
 var debounce = require('debounce');
 var throttle = require('throttle');
+var atomic = require('atomic');
 var parse = require('parse');
 var Area = require('area');
 var Range = require('range');
@@ -20,16 +21,12 @@ var CHUNK_SIZE = exports.CHUNK_SIZE = 5000;
 var WORDS = Regexp.create(['tokens'], 'g');
 
 function Buffer() {
-  this.raw = '';
-  this.text = new SkipString({ chunkSize: CHUNK_SIZE });
-  this.lines = new Lines;
   this.syntax = new Syntax;
-  this.prefix = new PrefixTree;
-  this.segments = new Segments(this);
   this.indexer = new Indexer(this);
-  this.changes = 0;
-  this.on('update', debounce(this.updateRaw.bind(this), 200));
+  this.segments = new Segments(this);
+  this.on('update', debounce(this.updateRaw.bind(this), 300));
   this.on('raw', this.segments.index.bind(this.segments));
+  this.set('');
 }
 
 Buffer.prototype = {
@@ -102,29 +99,19 @@ Buffer.prototype.getLine = function(y) {
 };
 
 Buffer.prototype.set = function(text) {
-  Buffer.call(this);
+  this.changes = 0;
 
   this.raw = text = normalizeEOL(text);
   this.emit('raw', this.raw);
 
-  console.time('text insert');
   this.text = new SkipString({ chunkSize: CHUNK_SIZE });
   this.text.set(text);
-  this.changes = 0;
-  console.timeEnd('text insert');
 
-  console.time('prefix index');
   this.prefix = new PrefixTree;
   this.prefix.index(this.raw);
-  console.timeEnd('prefix index');
 
-  console.time('lines index');
+  this.lines = new Lines;
   this.lines.insert({ x:0, y:0 }, this.raw);
-  console.timeEnd('lines index');
-
-  console.time('segments index');
-  this.segments.index(this.raw);
-  console.timeEnd('segments index');
 
   this.emit('set');
 };

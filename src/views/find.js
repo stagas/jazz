@@ -4,12 +4,12 @@ var template = require('./template');
 module.exports = Find;
 
 function Find(name, editor, template) {
-  Layer.call(this, name, editor, template, 2);
+  Layer.call(this, name, editor, template, 4);
 }
 
 Find.prototype.__proto__ = Layer.prototype;
 
 Find.prototype.render = function() {
   if (!this.editor.find.isOpen || !this.editor.findResults.length) return;
-  this.renderAhead(true);
+  this.renderPage(0);
 };

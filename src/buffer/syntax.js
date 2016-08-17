@@ -62,6 +62,8 @@ Syntax.prototype.highlight = function(code, offset) {
 
 Syntax.prototype.createIndents = function(code) {
   var lines = code.split(/\n/g);
+  if (lines.length <= 2) return code;
+
   var line;
   var long = [];
   var match;

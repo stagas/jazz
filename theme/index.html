@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="color-picker.css">
+    <link rel="stylesheet" href="theme.css">
+    <title>Theme Editor</title>
+  </head>
+  <body class="editor">
+
+<div id="pickers"></div>
+<div id="colors"></div>
+<button id="randomize">randomize</button>
+
+<div id="code">
+<div class="code"><params><declare>function</declare><function> foo</function><symbol>(</symbol><symbol>)</symbol> <symbol>{</symbol></params>
+<indent>  </indent><keyword>with</keyword><symbol>(</symbol>something<symbol>)</symbol> <symbol>{</symbol>
+<indent>    </indent>inside<symbol>(</symbol><number>123</number><symbol>)</symbol>;
+<indent>  </indent><symbol>}</symbol>
+<symbol>}</symbol>
+
+<declare>var</declare> Syntax <operator>=</operator> require<symbol>(</symbol><string>'../src/syntax'</string><symbol>)</symbol>;
+<declare>var</declare> syntax <operator>=</operator> <keyword>new</keyword> Syntax;
+
+<declare>var</declare> x<operator>=</operator><number>5</number><operator>/</operator><number>5</number>;
+<declare>var</declare> code <operator>=</operator> <string>'/* above */\n\nvar foo = "bar";\n\n'</string>
+<indent>  </indent><comment>// + broken3.toString() + '\n\n'</comment>
+<indent>  </indent><comment>// + broken2.toString() + '\n\n'</comment>
+<indent>  </indent><operator>+</operator> broken<operator>.</operator>toString<symbol>(</symbol><symbol>)</symbol> <operator>+</operator> <string>'\n\n'</string>
+<indent>  </indent><operator>+</operator> sample<operator>.</operator>toString<symbol>(</symbol><symbol>)</symbol>;
+<indent> </indent>
+<declare>var</declare> div <operator>=</operator> <builtin>document</builtin><operator>.</operator>createElement<symbol>(</symbol><string>'div'</string><symbol>)</symbol>;
+div<operator>.</operator>className <operator>=</operator> <string>'code'</string>;
+
+syntax<operator>.</operator>set<symbol>(</symbol>code<symbol>)</symbol>;
+
+<declare>var</declare> offset <operator>=</operator> <number>125</number>;
+<declare>var</declare> html <operator>=</operator> syntax<operator>.</operator>highlight<symbol>(</symbol>code<operator>.</operator>slice<symbol>(</symbol>offset<symbol>)</symbol><symbol>,</symbol> offset<symbol>)</symbol>;
+
+div<operator>.</operator>innerHTML <operator>=</operator> html;
+
+<builtin>document</builtin><operator>.</operator>body<operator>.</operator>appendChild<symbol>(</symbol>div<symbol>)</symbol>;
+
+
+<params><declare>function</declare><function> sample</function><symbol>(</symbol>block<symbol>,</symbol> cls<symbol>)</symbol> <symbol>{</symbol></params>
+<indent>  </indent><keyword>try</keyword> <symbol>{</symbol>
+<indent>    </indent><keyword>if</keyword> <symbol>(</symbol>cls<operator>.</operator>search<symbol>(</symbol><regexp>/\bno\-highlight\b/)</regexp> <operator>!</operator><operator>=</operator> <operator>-</operator><number>1</number><symbol>)</symbol>
+<indent>      </indent><keyword>return</keyword> process<symbol>(</symbol>block<symbol>,</symbol> <number>true</number><symbol>,</symbol> <number>0x0F</number><symbol>)</symbol> <operator>+</operator>
+<indent>             </indent><comment>// ` class="${cls}"`;</comment>
+<indent>  </indent><symbol>}</symbol> <keyword>catch</keyword> <symbol>(</symbol>e<symbol>)</symbol> <symbol>{</symbol>
+<indent>    </indent><comment>// handle exception</comment>
+<indent>  </indent><symbol>}</symbol>
+<indent> </indent>
+<indent>  </indent><keyword>for</keyword> <symbol>(</symbol><declare>var</declare> i <operator>=</operator> <number>0</number> <operator>/</operator> <number>2</number>; i <operator>&lt;</operator> classes<operator>.</operator>length; i<operator>++</operator><symbol>)</symbol> <symbol>{</symbol>
+<indent>    </indent><keyword>if</keyword> <symbol>(</symbol>checkCondition<symbol>(</symbol>classes<symbol>[</symbol>i<symbol>]</symbol><symbol>)</symbol> <operator>===</operator> <number>undefined</number><symbol>)</symbol>
+<indent>      </indent><builtin>console</builtin><operator>.</operator>log<symbol>(</symbol><string>'undefined'</string><symbol>)</symbol>;
+<indent>  </indent><symbol>}</symbol>
+<symbol>}</symbol>
+
+</div>
+</div>
+
+    <script src="../lib/xhr-require.js"></script>
+    <script src="theme.js"></script>
+  </body>
+</html>

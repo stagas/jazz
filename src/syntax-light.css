@@ -1,0 +1,116 @@
+
+/*** syntax ***/
+
+/*
+background: #D9D1B1
+color: #000000
+keyword: #7A3B3B
+function: #256F75
+declare: #634256
+number: #134D26
+params: #082663
+comment: #998E6E
+string: #C43C3C
+*/
+
+/* red */
+operator,
+operator2,
+keyword {
+  color: #7A3B3B;
+}
+
+/* green */
+function {
+  color: #256F75;
+  font-style: normal;
+}
+
+/* blue */
+declare,
+builtin {
+  color: #634256;
+}
+
+/* purple */
+boolean,
+number,
+number operator {
+  color: #134D26;
+}
+
+/* orange */
+params {
+  color: #082663;
+}
+regexp,
+regexp * {
+  color: #082663 !important;
+  font-style: normal !important;
+}
+
+/* orange */
+regexp string,
+regexp string *,
+regexp comment,
+regexp comment * {
+  color: #FD971F !important;
+  font-style: normal !important;
+}
+
+/* gray */
+comment,
+comment *,
+comment string,
+comment string *,
+comment string comment,
+comment regexp,
+comment regexp * {
+  color: #998E6E !important;
+  font-style: normal !important;
+}
+
+/* yellow */
+string,
+string comment,
+string comment *,
+string * {
+  color: #C43C3C !important;
+  font-style: normal !important;
+}
+
+/* white */
+
+.editor,
+symbol,
+code {
+  color: #000000;
+}
+
+/* italic */
+params,
+declare {
+  font-style: italic;
+}
+
+symbol {
+  font-style: normal;
+}
+
+indent {
+  display: inline-block;
+  margin-bottom: 0px;
+  background-repeat: repeat;
+}
+
+line {
+  color: inherit !important;
+}
+
+.editor > .rows,
+.editor > .mark,
+.editor > .code,
+.editor > .dialog,
+.editor {
+  background: #D9D1B1;
+}

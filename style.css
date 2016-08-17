@@ -59,7 +59,6 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  // transform: translateZ(0);
 }
 
 .editor * {
@@ -147,6 +146,7 @@ html, body {
   border-radius: 3px;
   box-shadow: 0 0px 3px 2px rgba(0,0,0,.1);
   z-index: 100;
+  transform: translateZ(0);
 }
 
 .editor > .dialog > .input {

@@ -113,16 +113,18 @@ function Xoor(options) {
 
 Xoor.prototype.__proto__ = Events.prototype;
 
-Xoor.prototype.use = function(el) {
+Xoor.prototype.use = function(el, scrollEl) {
   dom.append(el, this.el);
 
   this.el = el;
 
-  dom.onscroll(this.el, throttle(this.onScroll, 20));
+  dom.onscroll(scrollEl || this.el, this.onScroll);
   dom.onresize(this.onResize);
 
   this.input.use(this.el);
-  this.repaint();
+
+  window.requestAnimationFrame(this.repaint);
+
   return this;
 };
 
@@ -143,7 +145,7 @@ Xoor.prototype.set = function(text, path) {
 };
 
 Xoor.prototype.focus = function() {
-  setImmediate(this.input.focus.bind(this.input));
+  setImmediate(this.input.focus);
   return this;
 };
 
@@ -151,6 +153,7 @@ Xoor.prototype.bindMethods = function() {
   this.animationScrollFrame = this.animationScrollFrame.bind(this);
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
+  this.repaint = this.repaint.bind(this);
   this.focus = this.focus.bind(this);
 };
 
@@ -260,13 +263,14 @@ Xoor.prototype.onFileOpen = function() {
 
 Xoor.prototype.onFileRaw = function(raw) {
   this.clear();
-  this.repaint();
+  this.render();
 };
 
 Xoor.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
   this.buffer.updateRaw();
   this.followCaret();
+  this.render();
 };
 
 Xoor.prototype.onBeforeFileChange = function() {
@@ -540,7 +544,7 @@ Xoor.prototype.findJump = function(jump) {
   this.move.byChars(this.findValue.length, true);
   this.markSet();
   this.followCaret();
-  // this.render();
+  this.render();
 };
 
 Xoor.prototype.onFindValue = function(value, noJump) {
@@ -566,9 +570,10 @@ Xoor.prototype.onFindValue = function(value, noJump) {
 };
 
 Xoor.prototype.onFindKey = function(e) {
-  if (114 === e.which) { // f3
+  if (~[33, 34, 114].indexOf(e.which)) { // pageup, pagedown, f3
     this.input.text.onkeydown(e);
   }
+
   if (70 === e.which && e.ctrlKey) { // ctrl+f
     e.preventDefault();
     return false;
@@ -697,10 +702,10 @@ Xoor.prototype.resize = function() {
   this.emit('resize');
 };
 
-Xoor.prototype.clear = function() {
+Xoor.prototype.clear = atomic(function() {
   // console.log('clear')
   this.views.clear();
-};
+});
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')

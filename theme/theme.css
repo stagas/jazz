@@ -1,0 +1,36 @@
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+#pickers {
+  position: fixed;
+  left: 0;
+  width: 300px;
+  top: 0;
+}
+
+.Scp {
+  float: left;
+}
+
+#randomize {
+  position: fixed;
+  top: 450px;
+  left: 160px;
+  padding: 30px;
+}
+
+#colors {
+  white-space: pre;
+  position: fixed;
+  left: 350px;
+}
+#code {
+  font-size: 14px;
+  white-space: pre;
+  float: right;
+  margin-right: 100px;
+}

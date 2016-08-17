@@ -16,6 +16,7 @@ function Input(editor) {
 Input.prototype.__proto__ = Events.prototype;
 
 Input.prototype.bindEvents = function() {
+  this.focus = this.focus.bind(this);
   this.text.on(['key', 'text'], this.emit.bind(this, 'input'));
   this.text.on('text', this.emit.bind(this, 'text'));
   this.text.on('keys', this.emit.bind(this, 'keys'));

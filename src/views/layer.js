@@ -77,6 +77,10 @@ Layer.prototype.renderRange = function(range, include) {
 
   var needRanges = Range.NOT(range, inViews);
   var needViews = needRanges.length - outViews.length;
+  // if ('code' === this.name) console.log('need:', needViews, needRanges.join(' '));
+  // if ('code' === this.name) console.log('have:', this.views.join(' '));
+  // if ('code' === this.name) console.log('out:', outViews.join(' '));
+  // if ('code' === this.name) console.log('range', range, inViews.join(' '));
   if (needViews > 0) {
     this.clear();
     this.renderRanges([visibleRange], this.views);
@@ -138,12 +142,13 @@ Layer.prototype.spliceRange = function(range) {
     // debugger;
     if (view[1] < range[0] || view[0] > range[1]) continue;
 
-    if (view[0] < range[0] && view[1] > range[0]) {
-      //console.log('shorten', view.valueOf())
+    if (view[0] < range[0] && view[1] >= range[0]) { // shorten below
       view[1] = range[0] - 1;
       view.style();
-    } else if (view[1] > range[1]) {
+    } else if (view[1] > range[1]) { // shorten above
       view[0] = range[1] + 1;
+      view.render();
+    } else if (view[0] === range[0] && view[1] === range[1]) { // current line
       view.render();
     } else {
       view.clear();

@@ -2,7 +2,7 @@ var bindings = require('./bindings');
 var Xoor = require('./xoor');
 
 var options = {
-  debug_layers: true,
+  // debug_layers: true,
   center: true,
   hide_rows: true,
 };
@@ -14,13 +14,7 @@ xoor.assign(bindings);
 xoor.focus();
 
 // setTimeout(() => {
-
-// xoor.open('./xoor.js', function(err) {
-// xoor.open('./test/syntax.html.js', function(err) {
-xoor.open('./xoor.js', function(err) {
-  // if (err) throw err;
-
-  console.log('ready');
-});
-
+// xoor.open('./xoor.js');
+xoor.open('./babel.js');
+// xoor.open('./test/syntax.html.js');
 // },2000)
