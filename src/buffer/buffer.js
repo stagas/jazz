@@ -59,6 +59,8 @@ var BLOCK_END = {
 
 Buffer.prototype.getHighlighted = function(range) {
   var code = this.get(range);
+  // return this.syntax.entities(code);
+
   var block = this.segments.get(range[0]);
   // console.timeEnd('get segment')
   if (block) {

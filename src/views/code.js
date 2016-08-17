@@ -1,7 +1,7 @@
 var dom = require('dom');
 var Range = require('range');
-var Layer = require('../layer');
-var template = require('../template');
+var Layer = require('./layer');
+var template = require('./template');
 
 module.exports = Code;
 
@@ -36,20 +36,3 @@ Code.prototype.render = function() {
   this.updateRange(g);
   this.renderPage(0);
 };
-
-Code.prototype.clearBelow = function(y) {
-  // console.log('clear below!')
-  var views = this.views;
-  for (var i = 0; i < views.length; i++) {
-    var view = views[i];
-    var r = view;
-    if (!view.visible) continue;
-
-    var isInside = r[0] < y && r[1] >= y;
-    var isBelow = r[0] > y;
-    if (isInside) this.spliceView(view, [y+1,y+1]);
-    // else if (isBelow) view.clear();
-  }
-};
-
-function noop() {/* noop */}

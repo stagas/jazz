@@ -37,4 +37,5 @@ File.prototype.open = function(path, fn) {
 
 File.prototype.set = function(text) {
   this.buffer.set(text);
+  this.emit('set');
 };

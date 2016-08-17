@@ -47,11 +47,10 @@ html, body {
 }
 
 .editor {
-  position: relative;
-  overflow: scroll;
+  position: absolute;
+  top: 0;
+  left: 0;
   white-space: pre;
-  width: 100%;
-  height: 100%;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   font-size: 14px;
   -webkit-touch-callout: none;
@@ -60,6 +59,7 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  // transform: translateZ(0);
 }
 
 .editor * {
@@ -69,12 +69,18 @@ html, body {
   font-size: inherit;
 }
 
-.editor > .mark,
-.editor > .code {
+.editor > .layer > .mark,
+.editor > .layer > .code {
   position: absolute;
   cursor: text;
   padding-right: 8px;
   overflow: hidden;
+}
+
+.editor > .layer {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .editor > .caret {
@@ -113,14 +119,14 @@ html, body {
   box-shadow: 0px 0px 8px 6px #222;
 }
 
-.editor > .rows {
+.editor > .layer > .rows {
   color: #8e8e86;
   position: absolute;
   text-align: right;
   z-index: 5;
 }
 
-.editor > .mark {
+.editor > .layer > .mark {
   color: transparent;
   background: transparent;
 }
@@ -172,14 +178,14 @@ html, body {
   color: #999;
 }
 
-.editor > .find > i {
+.editor > .layer > .find > i {
   position: absolute;
   border: 1px solid #ff1;
   border-radius: 4px;
   z-index: 50;
 }
 
-.editor > .block > i {
+.editor > .layer > .block > i {
   position: absolute;
   border-bottom: 1px solid #aaa;
   z-index: 60;

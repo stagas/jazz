@@ -13,7 +13,8 @@
 
 var DefaultOptions = {
   debug_layers: false,
-  scroll_speed: 0.30
+  scroll_speed: 0.30,
+  center: false
 };
 
 var dom = require('dom');
@@ -30,20 +31,12 @@ var Range = require('range');
 var Area = require('area');
 var Box = require('box');
 
-var template = require('./src/template');
 var History = require('./src/history');
 var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
-var View = require('./src/view');
 var Text = require('./src/input/text');
-var CodeView = require('./src/views/code');
-var MarkView = require('./src/views/mark');
-var RowsView = require('./src/views/rows');
-var FindView = require('./src/views/find');
-var BlockView = require('./src/views/block');
-
-var SPECIAL_SEGMENTS = ['/*', '*/', '`'];
+var Views = require('./src/views');
 
 module.exports = Xoor;
 
@@ -53,12 +46,14 @@ function Xoor(options) {
   this.options = merge(clone(DefaultOptions), options || {});
 
   Object.assign(this, {
-    node: document.createDocumentFragment(),
+    el: document.createDocumentFragment(),
 
     file: new File,
     move: new Move(this),
+    views: new Views(this),
     input: new Input(this),
     history: new History(this),
+
     bindings: {},
 
     find: new Dialog('Find', Text.map),
@@ -104,19 +99,8 @@ function Xoor(options) {
     animationScrollTarget: null,
   });
 
-  this.views = {
-    // gutter: new View('gutter', this, template.gutter),
-    ruler: new View('ruler', this, template.ruler),
-    caret: new View('caret', this, template.caret),
-    code: new CodeView('code', this, template.code),
-    mark: new MarkView('mark', this, template.mark),
-    rows: new RowsView('rows', this, template.rows),
-    find: new FindView('find', this, template.find),
-    block: new BlockView('block', this, template.block),
-  };
-
-  dom.append(this.node, this.views, true);
   dom.append(this.views.caret, this.input.text);
+  dom.append(this, this.views);
 
   // useful shortcuts
   this.buffer = this.file.buffer;
@@ -129,14 +113,15 @@ function Xoor(options) {
 
 Xoor.prototype.__proto__ = Events.prototype;
 
-Xoor.prototype.use = function(node) {
-  node.appendChild(this.node);
-  this.node = node;
+Xoor.prototype.use = function(el) {
+  dom.append(el, this.el);
 
-  dom.onscroll(this.node, this.onScroll);
+  this.el = el;
+
+  dom.onscroll(this.el, throttle(this.onScroll, 20));
   dom.onresize(this.onResize);
 
-  this.input.use(node);
+  this.input.use(this.el);
   this.repaint();
   return this;
 };
@@ -148,6 +133,12 @@ Xoor.prototype.assign = function(bindings) {
 
 Xoor.prototype.open = function(path, fn) {
   this.file.open(path, fn);
+  return this;
+};
+
+Xoor.prototype.set = function(text, path) {
+  this.file.set(text);
+  this.file.path = path || this.file.path;
   return this;
 };
 
@@ -273,6 +264,7 @@ Xoor.prototype.onFileRaw = function(raw) {
 };
 
 Xoor.prototype.onFileSet = function() {
+  this.setCaret({ x:0, y:0 });
   this.buffer.updateRaw();
   this.followCaret();
 };
@@ -297,20 +289,9 @@ Xoor.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     this.onFindValue(this.findValue, true);
   }
 
-/*
-  if ((!editShift) && textBefore) {
-    if (textAfter) textBefore += textAfter;
-    for (var i = 0; i < SPECIAL_SEGMENTS.length; i++) {
-      if (~textBefore.indexOf(SPECIAL_SEGMENTS[i])) {
-        this.views.code.clearBelow(e.editLine);
-        this.buffer.updateRaw();
-        break;
-      }
-    }
-  }
-*/
   this.history.save();
   this.render();
+  this.emit('change');
 };
 
 Xoor.prototype.setCaretFromPx = function(px) {
@@ -444,7 +425,7 @@ Xoor.prototype.followCaret = atomic(function() {
 });
 
 Xoor.prototype.scrollTo = function(p) {
-  dom.scrollTo(this.node, p.x, p.y);
+  dom.scrollTo(this.el, p.x, p.y);
 };
 
 Xoor.prototype.scrollBy = function(x, y) {
@@ -640,7 +621,7 @@ Xoor.prototype.repaint = function() {
 };
 
 Xoor.prototype.resize = function() {
-  var $ = this.node;
+  var $ = this.el;
 
   this.offset.set(dom.getOffset($));
   this.scroll.set(dom.getScroll($));
@@ -652,7 +633,18 @@ Xoor.prototype.resize = function() {
   this.pageRemainder.set(this.size['-'](this.page['*'](this.char)));
   this.pageBounds = [0, this.rows];
   this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
-  this.gutter = Math.max(3, (''+this.rows).length) * this.char.width + this.gutterMargin;
+  this.gutter = Math.max(
+    this.options.hide_rows ? 1 : (''+this.rows).length,
+    (this.options.center
+      ? (this.page.width - 81) / 2 | 0 : 0)
+    + (this.options.hide_rows
+      ? 0 : Math.max(4, (''+this.rows).length))
+  ) * this.char.width + (this.options.hide_rows ? 0 : this.gutterMargin);
+
+  // dom.style(this.el, {
+  //   width: this.longestLine * this.char.width,
+  //   height: this.rows * this.char.height
+  // });
 
   dom.style(this.views.caret, {
     height: this.char.height
@@ -682,19 +674,19 @@ Xoor.prototype.resize = function() {
   var dataURL = canvas.toDataURL();
 
   dom.css(''
-  + '.editor > .find,'
-  + '.editor > .mark,'
-  + '.editor > .code {'
+  + '.editor > .layer > .find,'
+  + '.editor > .layer > .mark,'
+  + '.editor > .layer > .code {'
   + '  padding-left: ' + this.gutter + 'px;'
   + '}'
-  + '.editor > .rows {'
+  + '.editor > .layer > .rows {'
   + '  padding-right: ' + this.gutterMargin + 'px;'
   + '  width: ' + this.gutter + 'px;'
   + '}'
-  + '.editor > .find > i {'
+  + '.editor > .layer > .find > i {'
   + '  height: ' + (this.char.height + 1) + 'px;'
   + '}'
-  + '.editor > .block > i {'
+  + '.editor > .layer > .block > i {'
   + '  height: ' + (this.char.height + 1) + 'px;'
   + '}'
   + 'indent {'
@@ -706,28 +698,12 @@ Xoor.prototype.resize = function() {
 };
 
 Xoor.prototype.clear = function() {
-  // this.views.caret.clear();
-  // this.views.ruler.clear();
-  this.views.mark.clear();
-  this.views.code.clear();
-  this.views.rows.clear();
-  this.views.find.clear();
-  this.views.block.clear();
-  console.log('clear')
+  // console.log('clear')
+  this.views.clear();
 };
 
 Xoor.prototype.render = atomic(function() {
   // console.log('render')
-  this.views.caret.render();
-  this.views.ruler.render();
-  this.views.mark.render();
-  this.views.code.render();
-  this.views.rows.render();
-  this.debouncedRender();
+  this.views.render();
   this.emit('render');
 });
-
-Xoor.prototype.debouncedRender = debounce(function() {
-  this.views.find.render();
-  this.views.block.render();
-}, 60);

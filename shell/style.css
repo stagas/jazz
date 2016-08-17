@@ -1,0 +1,37 @@
+
+#filelist {
+  position: fixed;
+  display: block;
+  left: -85%;
+  top: 0;
+  width: 85%;
+  height: 100%;
+  background: #eee;
+  z-index: 1000;
+  color: #000;
+  transform: translateZ(0);
+  transition: left .3s;
+}
+
+#filelist.open {
+  display: block;
+  left: 0;
+}
+
+#filelist button {
+  box-sizing: border-box;
+  display: block;
+  padding: 10px 20px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+  font-size: 13px;
+}
+#newfile {
+  position: absolute;
+  right: 25px;
+  top: 10px;
+  color: #000;
+  font-size: 40px;
+  cursor: pointer;
+}

@@ -102,6 +102,8 @@ x- highlight matching block
   !x- skip long lines entirely
 - syntax:
   - look behind for regexps (must be nothing, or ([=:;)
+- pick a name: camel - disco - dogma - guru - echo - prime - dis - xoor
+- syntax highlight theme editor
 
 -- very later (v2) -----------
 

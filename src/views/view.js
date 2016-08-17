@@ -23,7 +23,7 @@ function View(name, editor, template) {
   var style = {
     top: 0,
     height: 0,
-    visibility: 'hidden'
+    opacity: 0
   };
 
   if (this.editor.options.debug_layers) {
@@ -66,7 +66,7 @@ View.prototype.style = function() {
   dom.style(
     this,
     merge(
-      { visibility: 'visible' },
+      { opacity: 1 },
       this.template.style(this, this.editor)
     )
   );
@@ -85,5 +85,5 @@ View.prototype.clear = function() {
   this[0] = this[1] = -1;
   this.visible = false;
   // dom.html(this, '');
-  dom.style(this, { top: 0, height: 0, visibility: 'hidden' });
+  dom.style(this, { top: 0, height: 0, opacity: 0 });
 };

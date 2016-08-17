@@ -6,6 +6,7 @@ var View = require('./view');
 module.exports = Layer;
 
 function Layer(name, editor, template, length) {
+  this.dom = dom(name + ' layer');
   this.name = name;
   this.editor = editor;
   this.template = template;
@@ -18,6 +19,7 @@ Layer.prototype.create = function(length) {
   var views = new Array(length);
   for (var i = 0; i < length; i++) {
     views[i] = new View(this.name, this.editor, this.template);
+    dom.append(this, views[i]);
   }
   return views;
 };
@@ -115,7 +117,7 @@ Layer.prototype.renderAhead = function(include) {
   if (aheadNeedRanges.length) {
     // if so, render further ahead to have some
     // margin to scroll without triggering new renders
-    this.renderPage(2, include);
+    this.renderPage(1, include);
   }
 };
 

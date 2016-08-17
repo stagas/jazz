@@ -1,5 +1,5 @@
-var Layer = require('../layer');
-var template = require('../template');
+var Layer = require('./layer');
+var template = require('./template');
 
 module.exports = Block;
 

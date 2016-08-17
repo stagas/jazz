@@ -4,18 +4,20 @@ var R = Regexp.create;
 //NOTE: order matters
 var syntax = map({
   'operator': R(['operator'], 'g', entities),
-  'indent':   R(['indent'],   'gm'),
   'params':   R(['params'],   'g'),
   'declare':  R(['declare'],  'g'),
   'function': R(['function'], 'g'),
   'keyword':  R(['keyword'],  'g'),
   'builtin':  R(['builtin'],  'g'),
+  'indent':   R(['indent'],   'gm'),
   'symbol':   R(['symbol'],   'g'),
   'string':   R(['template string'], 'g'),
   'number':   R(['special','number'], 'g'),
 }, compile);
 
-var Blocks = R(['comment','string','regexp'], 'g');
+var Indent = compile(R(['indent'], 'gm'), 'indent');
+
+var Blocks = R(['comment','string','regexp'], 'gm');
 
 var Tag = {
   '//': 'comment',
@@ -49,6 +51,8 @@ Syntax.prototype.highlight = function(code, offset) {
 
   code = this.restoreBlocks(code);
 
+  code = code.replace(Indent.regexp, Indent.replacer);
+
   // code = code.replace(/\ueeee/g, function() {
   //   return long.shift().slice(0, this.maxLine) + '...line too long to display';
   // });
@@ -81,10 +85,11 @@ Syntax.prototype.createIndents = function(code) {
   for (var j = 0; j < i; j++) {
     lines[j] = new Array(match.index + 1).join(' ');
   }
-  var last = true;
+  var prev;
   for (; i < lines.length; i++) {
     line = lines[i];
-    if (!line.length && lines[i-1].length && lines[i-1][0] === ' ') lines[i] = ' ';
+    prev = lines[i-1];
+    if (!line.length && prev.length && prev[0] === ' ' && prev[prev.length-1] !== '/') lines[i] = ' ';
   }
 
   code = lines.join('\n');
