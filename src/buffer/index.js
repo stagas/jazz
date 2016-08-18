@@ -5,7 +5,7 @@ var parse = require('parse');
 var Area = require('area');
 var Range = require('range');
 var Regexp = require('regexp');
-var Events = require('events');
+var Event = require('event');
 var Lines = require('./lines');
 var Syntax = require('./syntax');
 var Segments = require('./segments');
@@ -35,7 +35,7 @@ Buffer.prototype = {
   }
 };
 
-Buffer.prototype.__proto__ = Events.prototype;
+Buffer.prototype.__proto__ = Event.prototype;
 
 Buffer.prototype.get = function(range) {
   if (!range) return this.text.getRange();

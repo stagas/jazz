@@ -60,7 +60,7 @@ x- refactor move.js
 x- remember caret x
 x- follow caret and scroll horizontally
 x- fix shift+delete
-x- fix xoor.focus()
+x- fix jazz.focus()
 x- fix edge case of inserting/deleting on ~empty file
 x- implement start working on empty file
 x- fix sometimes last character is missing from render
@@ -72,6 +72,7 @@ x- fix first line finds problem
 x- fix history (again, sigh..)
 x- cache segments
 x- highlight matching block
+x- undo/redo and caret off visible range, does not rerender
 
 
 -- doing ---------------------
@@ -83,11 +84,15 @@ x- highlight matching block
 
 -- todo ----------------------
 
-- undo/redo and caret off visible range, does not rerender
-
+- support tabs, tab width, indent change
+  - indent align on enter
+- autofill matching bracket/curly/parens on edit with caret inbetween
 
 -- later ---------------------
 
+- bug: sometimes when there's one line, it blinks below like a double line
+- blinking caret
+- highlight html/css/text
 - tweak skipstring to split on newlines, so segments can index by
   iterating, without using .raw
 - bindings
@@ -102,7 +107,7 @@ x- highlight matching block
   !x- skip long lines entirely
 - syntax:
   - look behind for regexps (must be nothing, or ([=:;)
-- pick a name: camel - disco - dogma - guru - echo - prime - dis - xoor - scrub
+- pick a name: camel - disco - dogma - guru - echo - prime - dis - jazz - scrub
 - syntax highlight theme editor
 
 -- very later (v2) -----------

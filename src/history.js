@@ -1,4 +1,4 @@
-var Events = require('events');
+var Event = require('event');
 var debounce = require('debounce');
 
 /*
@@ -18,7 +18,7 @@ function History(editor) {
   this.timeStart = 0;
 }
 
-History.prototype.__proto__ = Events.prototype;
+History.prototype.__proto__ = Event.prototype;
 
 History.prototype.save = function() {
   if (Date.now() - this.timeStart > 2000) this.actuallySave();

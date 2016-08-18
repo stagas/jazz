@@ -7,7 +7,6 @@
   border: none;
   background: none;
   list-style: none;
-  line-height: 16px;
   font-size: 100%;
   font-weight: normal;
   font-family: sans-serif;
@@ -28,11 +27,6 @@ html, body {
   height: 100%;
 }
 
-@font-face {
-  font-family: Amiga;
-  src: url("vendor/amigafonts/ttf/mO'sOul_v1.0.ttf") format("truetype");
-}
-
 #debug {
   //display: none;
   position: fixed;
@@ -51,8 +45,8 @@ html, body {
   top: 0;
   left: 0;
   white-space: pre;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-  font-size: 14px;
+  font-family: Roboto Mono, Ubuntu Mono, monospace;
+  font-size: 9pt;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;

@@ -1,5 +1,5 @@
 var dom = require('dom');
-var Events = require('events');
+var Event = require('event');
 var Range = require('range');
 var View = require('./view');
 
@@ -13,7 +13,7 @@ function Layer(name, editor, template, length) {
   this.views = this.create(length);
 }
 
-Layer.prototype.__proto__ = Events.prototype;
+Layer.prototype.__proto__ = Event.prototype;
 
 Layer.prototype.create = function(length) {
   var views = new Array(length);

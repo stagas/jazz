@@ -1,5 +1,5 @@
 var Regexp = require('regexp');
-var Events = require('events');
+var Event = require('event');
 var Point = require('point');
 
 var WORDS = Regexp.create(['words'], 'g');
@@ -7,12 +7,12 @@ var WORDS = Regexp.create(['words'], 'g');
 module.exports = Move;
 
 function Move(editor) {
-  Events.call(this);
+  Event.call(this);
   this.editor = editor;
   this.lastDeliberateX = 0;
 }
 
-Move.prototype.__proto__ = Events.prototype;
+Move.prototype.__proto__ = Event.prototype;
 
 Move.prototype.pageDown = function(div) {
   div = div || 1;

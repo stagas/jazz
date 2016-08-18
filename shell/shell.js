@@ -1,15 +1,15 @@
 var db = require('idb');
-var Events = require('events');
+var Event = require('event');
 var throttle = require('throttle');
 var debounce = require('debounce');
 var bindings = require('../bindings');
-var Editor = require('../xoor');
+var Editor = require('../jazz');
 
 var options = {
   // debug_layers: true
 };
 
-var shell = new Events;
+var shell = new Event;
 
 shell.wipsave = debounce(function(pane) {
   // var name = '__wip__' + pane.editor.file.path;
@@ -67,7 +67,7 @@ shell.render = function() {
 
 shell.panes.push(shell.createPane());
 shell.activePane = shell.panes[shell.panes.length - 1];
-shell.activePane.editor.open('../xoor.js');
+shell.activePane.editor.open('../jazz.js');
 
 shell.load = function(path) {
   // db.get(path)

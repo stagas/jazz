@@ -1,20 +1,21 @@
 var open = require('open');
-var Events = require('events');
+var save = require('save');
+var Event = require('event');
 var Buffer = require('./buffer');
 
 module.exports = File;
 
 function File(editor) {
-  Events.call(this);
+  Event.call(this);
 
   this.path = 'untitled';
   this.buffer = new Buffer;
-  this.bindEvents();
+  this.bindEvent();
 }
 
-File.prototype.__proto__ = Events.prototype;
+File.prototype.__proto__ = Event.prototype;
 
-File.prototype.bindEvents = function() {
+File.prototype.bindEvent = function() {
   this.buffer.on('raw', this.emit.bind(this, 'raw'));
   this.buffer.on('set', this.emit.bind(this, 'set'));
   this.buffer.on('update', this.emit.bind(this, 'change'));
@@ -35,7 +36,13 @@ File.prototype.open = function(path, fn) {
   });
 };
 
+File.prototype.save = function(fn) {
+  save(this.path, this.buffer.get(), fn || noop);
+};
+
 File.prototype.set = function(text) {
   this.buffer.set(text);
   this.emit('set');
 };
+
+function noop() {/* noop */}

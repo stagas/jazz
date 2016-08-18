@@ -246,6 +246,10 @@ var keys = module.exports = {
     if (clear) {
       this.markClear();
     }
+  },
+
+  'ctrl+s': function() {
+    console.log('should save');
   }
 };
 

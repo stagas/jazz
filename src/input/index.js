@@ -1,21 +1,21 @@
-var Events = require('events');
+var Event = require('event');
 var Mouse = require('./mouse');
 var Text = require('./text');
 
 module.exports = Input;
 
 function Input(editor) {
-  Events.call(this);
+  Event.call(this);
 
   this.editor = editor;
   this.mouse = new Mouse(this);
   this.text = new Text;
-  this.bindEvents();
+  this.bindEvent();
 }
 
-Input.prototype.__proto__ = Events.prototype;
+Input.prototype.__proto__ = Event.prototype;
 
-Input.prototype.bindEvents = function() {
+Input.prototype.bindEvent = function() {
   this.focus = this.focus.bind(this);
   this.text.on(['key', 'text'], this.emit.bind(this, 'input'));
   this.text.on('text', this.emit.bind(this, 'text'));

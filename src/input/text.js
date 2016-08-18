@@ -1,6 +1,6 @@
 var dom = require('dom');
 var debounce = require('debounce');
-var Events = require('events');
+var Event = require('event');
 
 var THROTTLE = 1000/60;
 
@@ -19,6 +19,9 @@ var map = {
   65: 'a',
   68: 'd',
   70: 'f',
+  77: 'm',
+  78: 'n',
+  83: 's',
   89: 'y',
   90: 'z',
   114: 'f3',
@@ -40,7 +43,7 @@ module.exports = Text;
 Text.map = map;
 
 function Text() {
-  Events.call(this);
+  Event.call(this);
 
   this.node = document.createElement('textarea');
 
@@ -59,12 +62,12 @@ function Text() {
 
   this.throttleTime = 0;
   this.modifiers = {};
-  this.bindEvents();
+  this.bindEvent();
 }
 
-Text.prototype.__proto__ = Events.prototype;
+Text.prototype.__proto__ = Event.prototype;
 
-Text.prototype.bindEvents = function() {
+Text.prototype.bindEvent = function() {
   this.oncut = this.oncut.bind(this);
   this.oncopy = this.oncopy.bind(this);
   this.onpaste = this.onpaste.bind(this);
@@ -109,6 +112,7 @@ Text.prototype.oninput = function(e) {
 };
 
 Text.prototype.onkeydown = function(e) {
+  // console.log(e.which);
   var now = Date.now();
   if (now - this.throttleTime < THROTTLE) {
     e.preventDefault();

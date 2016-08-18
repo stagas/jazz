@@ -72,7 +72,7 @@ template.find = function(range, e) {
     html += '<i style="'
           + 'width:' + width + ';'
           + 'top:' + (r.y * e.char.height) + 'px;'
-          + 'left:' + (r.x * e.char.width + e.gutter) + 'px;'
+          + 'left:' + (r.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
           + '"></i>';
   }
 
@@ -115,7 +115,7 @@ template.block = function(range, e) {
     i--;
   }
 
-  if (!open) return '';
+  if (!open) return ' ';
 
   var begin = e.buffer.lines.getOffset(i + offset);
 
@@ -132,7 +132,7 @@ template.block = function(range, e) {
     i++;
   }
 
-  if (!close) return '';
+  if (!close) return ' ';
 
   var end = e.buffer.lines.getOffset(i + offset);
 
@@ -141,13 +141,13 @@ template.block = function(range, e) {
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (begin.y * e.char.height) + 'px;'
-        + 'left:' + (begin.x * e.char.width + e.gutter) + 'px;'
+        + 'left:' + (begin.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (end.y * e.char.height) + 'px;'
-        + 'left:' + (end.x * e.char.width + e.gutter) + 'px;'
+        + 'left:' + (end.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   return html;
@@ -172,7 +172,7 @@ template.caret = function() {
 
 template.caret.style = function(point, e) {
   return {
-    left: e.char.width * e.caret.x + e.gutter,
+    left: e.char.width * e.caret.x + e.gutter + e.options.margin_left,
     top: e.char.height * e.caret.y,
   };
 };

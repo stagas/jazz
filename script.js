@@ -1,20 +1,21 @@
 var bindings = require('./bindings');
-var Xoor = require('./xoor');
+var Jazz = require('./jazz');
 
 var options = {
   // debug_layers: true,
-  center: true,
+  // center: true,
   hide_rows: true,
+  // margin_left: 150,
 };
 
-var xoor = new Xoor(options);
+var jazz = new Jazz(options);
 
-xoor.use(document.body);
-xoor.assign(bindings);
-xoor.focus();
+jazz.use(document.body);
+jazz.assign(bindings);
+jazz.focus();
 
 // setTimeout(() => {
-// xoor.open('./xoor.js');
-xoor.open('./babel.js');
-// xoor.open('./test/syntax.html.js');
+jazz.open('./jazz.js');
+// jazz.open('./babel.js');
+// jazz.open('./test/syntax.html.js');
 // },2000)

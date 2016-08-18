@@ -1,22 +1,22 @@
-var Events = require('events');
+var Event = require('event');
 var debounce = require('debounce');
 var Point = require('point');
 
 module.exports = Mouse;
 
 function Mouse() {
-  Events.call(this);
+  Event.call(this);
 
   this.node = null;
   this.clicks = 0;
   this.point = new Point;
   this.down = null;
-  this.bindEvents();
+  this.bindEvent();
 }
 
-Mouse.prototype.__proto__ = Events.prototype;
+Mouse.prototype.__proto__ = Event.prototype;
 
-Mouse.prototype.bindEvents = function() {
+Mouse.prototype.bindEvent = function() {
   this.onmaybedrag = this.onmaybedrag.bind(this);
   this.ondrag = this.ondrag.bind(this);
   this.ondown = this.ondown.bind(this);
