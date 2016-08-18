@@ -34,8 +34,6 @@ var Views = require('./src/views');
 module.exports = Jazz;
 
 function Jazz(options) {
-  Event.call(this);
-
   this.options = merge(clone(DefaultOptions), options || {});
 
   Object.assign(this, {
