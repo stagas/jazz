@@ -7,6 +7,7 @@ var DefaultOptions = {
   scroll_speed: 0.30,
   center: false,
   margin_left: 0,
+  gutter_margin: 15,
 };
 
 require('set-immediate');
@@ -64,7 +65,6 @@ function Jazz(options) {
     longestLine: 0,
 
     gutter: 0,
-    gutterMargin: 15,
 
     code: 0,
     rows: 0,
@@ -634,8 +634,8 @@ Jazz.prototype.resize = function() {
     (this.options.center
       ? (this.page.width - 81) / 2 | 0 : 0)
     + (this.options.hide_rows
-      ? 0 : Math.max(4, (''+this.rows).length))
-  ) * this.char.width + (this.options.hide_rows ? 0 : this.gutterMargin);
+      ? 0 : Math.max(3, (''+this.rows).length))
+  ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin);
 
   // dom.style(this.el, {
   //   width: this.longestLine * this.char.width,
@@ -676,7 +676,7 @@ Jazz.prototype.resize = function() {
   + '  padding-left: ' + (this.options.margin_left + this.gutter) + 'px;'
   + '}'
   + '.editor > .layer > .rows {'
-  + '  padding-right: ' + this.gutterMargin + 'px;'
+  + '  padding-right: ' + this.options.gutter_margin + 'px;'
   + '  margin-left: ' + this.options.margin_left + 'px;'
   + '  width: ' + this.gutter + 'px;'
   + '}'
