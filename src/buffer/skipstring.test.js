@@ -234,7 +234,6 @@ t('insertChunked', function() {
       node.insert(6, '2')
       node.insert(7, '3')
       node.insert(8, '4')
-      console.log(node.getRange([3,9]))
       // node.removeCharAt(1);
       // assert.equal('01234567890123', node.toString())
       // assert.equal('12345', node.get(0).node.value);
