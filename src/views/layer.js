@@ -1,12 +1,13 @@
-var dom = require('dom');
-var Event = require('event');
-var Range = require('range');
+var dom = require('../../lib/dom');
+var Event = require('../../lib/event');
+var Range = require('../../lib/range');
 var View = require('./view');
+var css = require('../style.css');
 
 module.exports = Layer;
 
 function Layer(name, editor, template, length) {
-  this.dom = dom(name + ' layer');
+  this.dom = dom(`${css.layer}`);
   this.name = name;
   this.editor = editor;
   this.template = template;
@@ -139,13 +140,15 @@ Layer.prototype.renderAhead = function(include) {
 Layer.prototype.spliceRange = function(range) {
   for (var i = 0; i < this.views.length; i++) {
     var view = this.views[i];
-    // debugger;
-    if (view[1] < range[0] || view[0] > range[1]) continue;
 
-    if (view[0] < range[0] && view[1] >= range[0]) { // shorten below
+    if (view[1] < range[0] || view[0] > range[1]) {
+      continue;
+    }
+
+    if (view[0] < range[0] && view[1] >= range[0]) { // shorten above
       view[1] = range[0] - 1;
       view.style();
-    } else if (view[1] > range[1]) { // shorten above
+    } else if (view[1] > range[1]) { // shorten below
       view[0] = range[1] + 1;
       view.render();
     } else if (view[0] === range[0] && view[1] === range[1]) { // current line
@@ -168,12 +171,6 @@ Layer.prototype.shiftViewsBelow = function(y, dy) {
 };
 
 Layer.prototype.updateRange = function(range) {
-  // for (var i = 0; i < this.views.length; i++) {
-  //   var view = this.views[i];
-  //   if (view[0] >= range[0] && view[1] <= range[1]) {
-  //     view.render();
-  //   }
-  // }
   this.spliceRange(range);
   this.renderRange(range);
 };

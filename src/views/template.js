@@ -172,6 +172,7 @@ template.caret = function() {
 
 template.caret.style = function(point, e) {
   return {
+    opacity: +e.hasFocus,
     left: e.char.width * e.caret.x + e.gutter + e.options.margin_left,
     top: e.char.height * e.caret.y,
   };
@@ -194,7 +195,7 @@ template.ruler = function() {
 
 template.ruler.style = function(point, e) {
   return {
-    width: e.longestLine * e.char.width,
+    // width: e.longestLine * e.char.width,
     height: ((e.rows + e.page.height) * e.char.height) + e.pageRemainder.height,
   };
 };

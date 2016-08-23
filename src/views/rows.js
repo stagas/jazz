@@ -4,7 +4,7 @@ var template = require('./template');
 module.exports = Rows;
 
 function Rows(name, editor, template) {
-  Layer.call(this, name, editor, template, 20);
+  Layer.call(this, name, editor, template, 5);
 }
 
 Rows.prototype.__proto__ = Layer.prototype;

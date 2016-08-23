@@ -62,7 +62,7 @@ function Lines() {
 
 Lines.prototype.get = function(y) {
   if (y > this.length) {
-    return this.index[this.length - 1] + this.tail.length;
+    return this.index[this.length - 1] + this.tail.length + 1;
   }
   var line = this.index[y - 1] || 0;
 

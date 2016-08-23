@@ -1,5 +1,5 @@
-var dom = require('dom');
-var Range = require('range');
+var dom = require('../../lib/dom');
+var Range = require('../../lib/range');
 var Layer = require('./layer');
 var template = require('./template');
 

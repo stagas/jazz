@@ -3,34 +3,39 @@
  */
 
 var DefaultOptions = {
+  theme: 'western',
   debug_layers: false,
   scroll_speed: 0.30,
+  hide_rows: false,
   center: false,
-  margin_left: 0,
-  gutter_margin: 15,
+  margin_left: 15,
+  gutter_margin: 20,
 };
 
-require('set-immediate');
-var dom = require('dom');
-var diff = require('diff');
-var merge = require('merge');
-var clone = require('clone');
-var debounce = require('debounce');
-var throttle = require('throttle');
-var atomic = require('atomic');
-var Event = require('event');
-var Dialog = require('dialog');
-var Point = require('point');
-var Range = require('range');
-var Area = require('area');
-var Box = require('box');
+require('./lib/set-immediate');
+var dom = require('./lib/dom');
+var diff = require('./lib/diff');
+var merge = require('./lib/merge');
+var clone = require('./lib/clone');
+var debounce = require('./lib/debounce');
+var throttle = require('./lib/throttle');
+var atomic = require('./lib/atomic');
+var Event = require('./lib/event');
+var Dialog = require('./lib/dialog');
+var Point = require('./lib/point');
+var Range = require('./lib/range');
+var Area = require('./lib/area');
+var Box = require('./lib/box');
 
+var DefaultBindings = require('./src/input/bindings');
 var History = require('./src/history');
 var Input = require('./src/input');
 var File = require('./src/file');
 var Move = require('./src/move');
 var Text = require('./src/input/text');
 var Views = require('./src/views');
+var theme = require('./src/theme');
+var css = require('./src/style.css');
 
 module.exports = Jazz;
 
@@ -40,13 +45,14 @@ function Jazz(options) {
   Object.assign(this, {
     el: document.createDocumentFragment(),
 
+    id: 'jazz_' + (Math.random() * 10e6 | 0).toString(36),
     file: new File,
     move: new Move(this),
     views: new Views(this),
     input: new Input(this),
     history: new History(this),
 
-    bindings: {},
+    bindings: { single: {} },
 
     find: new Dialog('Find', Text.map),
     findValue: '',
@@ -62,14 +68,14 @@ function Jazz(options) {
     pagePoint: new Point,
     pageRemainder: new Box,
     pageBounds: new Range,
+
     longestLine: 0,
-
     gutter: 0,
-
     code: 0,
     rows: 0,
 
     caret: new Point({ x: 0, y: 0 }),
+    hasFocus: false,
 
     mark: new Area({
       begin: new Point({ x: -1, y: -1 }),
@@ -98,6 +104,8 @@ function Jazz(options) {
   this.buffer.mark = this.mark;
   this.syntax = this.buffer.syntax;
 
+  theme(this.options.theme);
+
   this.bindMethods();
   this.bindEvent();
 }
@@ -105,16 +113,28 @@ function Jazz(options) {
 Jazz.prototype.__proto__ = Event.prototype;
 
 Jazz.prototype.use = function(el, scrollEl) {
-  dom.append(el, this.el);
+  if (this.ref) {
+    this.el.removeAttribute('id');
+    this.el.classList.remove(css.editor);
+    this.el.classList.remove(this.options.theme);
+    this.offScroll();
+    this.ref.forEach(ref => {
+      dom.append(el, ref);
+    });
+  } else {
+    this.ref = [].slice.call(this.el.children);
+    dom.append(el, this.el);
+    dom.onresize(this.onResize);
+  }
 
   this.el = el;
-
-  dom.onscroll(scrollEl || this.el, this.onScroll);
-  dom.onresize(this.onResize);
-
+  this.el.setAttribute('id', this.id);
+  this.el.classList.add(css.editor);
+  this.el.classList.add(this.options.theme);
+  this.offScroll = dom.onscroll(scrollEl || this.el, this.onScroll);
   this.input.use(this.el);
 
-  window.requestAnimationFrame(this.repaint);
+  setTimeout(this.repaint, 0);
 
   return this;
 };
@@ -124,8 +144,13 @@ Jazz.prototype.assign = function(bindings) {
   return this;
 };
 
-Jazz.prototype.open = function(path, fn) {
-  this.file.open(path, fn);
+Jazz.prototype.open = function(path, root, fn) {
+  this.file.open(path, root, fn);
+  return this;
+};
+
+Jazz.prototype.save = function(fn) {
+  this.file.save(fn);
   return this;
 };
 
@@ -137,6 +162,11 @@ Jazz.prototype.set = function(text, path) {
 
 Jazz.prototype.focus = function() {
   setImmediate(this.input.focus);
+  return this;
+};
+
+Jazz.prototype.blur = function() {
+  setImmediate(this.input.blur);
   return this;
 };
 
@@ -164,7 +194,9 @@ Jazz.prototype.bindEvent = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.file.on('before change', this.onBeforeFileChange);
-  this.history.on('change', this.onFileSet);
+  this.history.on('change', this.onHistoryChange);
+  this.input.on('blur', this.onBlur);
+  this.input.on('focus', this.onFocus);
   this.input.on('input', this.onInput);
   this.input.on('text', this.onText);
   this.input.on('keys', this.onKeys);
@@ -209,6 +241,22 @@ Jazz.prototype.onResize = function() {
   this.repaint();
 };
 
+Jazz.prototype.onFocus = function(text) {
+  this.hasFocus = true;
+  this.emit('focus');
+  this.views.caret.render();
+};
+
+Jazz.prototype.onBlur = function(text) {
+  this.hasFocus = false;
+  setTimeout(() => {
+    if (!this.hasFocus) {
+      this.emit('blur');
+      this.views.caret.render();
+    }
+  }, 5);
+};
+
 Jazz.prototype.onInput = function(text) {
   this.render();
 };
@@ -219,14 +267,25 @@ Jazz.prototype.onText = function(text) {
 };
 
 Jazz.prototype.onKeys = function(keys, e) {
-  if (!(keys in this.bindings)) return;
-  e.preventDefault();
-  this.bindings[keys].call(this, e);
+  if (keys in this.bindings) {
+    e.preventDefault();
+    this.bindings[keys].call(this, e);
+  }
+  else if (keys in DefaultBindings) {
+    e.preventDefault();
+    DefaultBindings[keys].call(this, e);
+  }
 };
 
 Jazz.prototype.onKey = function(key, e) {
-  if (!(key in this.bindings.single)) return;
-  this.bindings.single[key].call(this, e);
+  if (key in this.bindings.single) {
+    e.preventDefault();
+    this.bindings.single[key].call(this, e);
+  }
+  else if (key in DefaultBindings.single) {
+    e.preventDefault();
+    DefaultBindings.single[key].call(this, e);
+  }
 };
 
 Jazz.prototype.onCut = function(e) {
@@ -264,6 +323,12 @@ Jazz.prototype.onFileSet = function() {
   this.repaint();
 };
 
+Jazz.prototype.onHistoryChange = function() {
+  this.clear();
+  this.repaint();
+  this.followCaret();
+};
+
 Jazz.prototype.onBeforeFileChange = function() {
   this.history.save();
 };
@@ -290,7 +355,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 };
 
 Jazz.prototype.setCaretFromPx = function(px) {
-  var g = new Point({ x: this.gutter + this.options.margin_left, y: this.char.height/2 });
+  var g = new Point({ x: this.marginLeft, y: this.char.height/2 })['+'](this.offset);
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
   p.y = Math.max(0, Math.min(p.y, this.buffer.loc));
@@ -304,10 +369,13 @@ Jazz.prototype.setCaretFromPx = function(px) {
 };
 
 Jazz.prototype.onMouseUp = function() {
-  this.focus();
+  setTimeout(() => {
+    if (!this.hasFocus) this.blur();
+  }, 5);
 };
 
 Jazz.prototype.onMouseDown = function() {
+  setTimeout(this.focus.bind(this), 10);
   if (this.input.text.modifiers.shift) this.markBegin();
   else this.markClear();
   this.setCaretFromPx(this.input.mouse.point);
@@ -386,7 +454,7 @@ Jazz.prototype.getRange = function(range) {
 };
 
 Jazz.prototype.getPageRange = function(range) {
-  var p = (this.animationScrollTarget || this.scroll)['/'](this.char);
+  var p = (this.animationScrollTarget || this.scroll)['_/'](this.char);
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -397,16 +465,15 @@ Jazz.prototype.getLineLength = function(y) {
   return this.buffer.lines.getLineLength(y);
 };
 
-Jazz.prototype.followCaret = atomic(function() {
-  // console.log('follow caret')
-  var p = this.caret['*'](this.char);
+Jazz.prototype.followCaret = function() {
+  var p = this.caret['_*'](this.char);
   var s = this.animationScrollTarget || this.scroll;
 
   var top = s.y - p.y;
   var bottom = (p.y) - (s.y + this.size.height) + this.char.height;
 
-  var left = s.x - p.x;
-  var right = (p.x) - (s.x + this.size.width - 100) + this.char.width + this.gutter + this.options.margin_left;
+  var left = (s.x + this.char.width) - p.x;
+  var right = (p.x) - (s.x + this.size.width - this.marginLeft) + this.char.width * 2;
 
   if (bottom < 0) bottom = 0;
   if (top < 0) top = 0;
@@ -417,15 +484,20 @@ Jazz.prototype.followCaret = atomic(function() {
     this.scrollBy(right - left, bottom - top);
   else
     this.animateScrollBy(right - left, bottom - top);
-});
+};
 
 Jazz.prototype.scrollTo = function(p) {
   dom.scrollTo(this.el, p.x, p.y);
 };
 
 Jazz.prototype.scrollBy = function(x, y) {
-  this.scroll.x += x;
-  this.scroll.y += y;
+  this.scroll.set(Point.low({
+    x: 0,
+    y: 0
+  }, {
+    x: this.scroll.x + x,
+    y: this.scroll.y + y
+  }));
   this.scrollTo(this.scroll);
 };
 
@@ -485,7 +557,7 @@ Jazz.prototype.insert = function(text) {
 
 Jazz.prototype.backspace = function() {
   if (this.move.isBeginOfFile()) {
-    if (this.mark.active) return this.delete();
+    if (this.mark.active && !this.move.isEndOfFile()) return this.delete();
     return;
   }
   if (this.mark.active) {
@@ -494,7 +566,7 @@ Jazz.prototype.backspace = function() {
     this.buffer.deleteArea(area);
     this.markClear(true);
     this.clear();
-    this.repaint();
+    this.render();
   } else {
     this.move.byChars(-1, true);
     this.buffer.deleteCharAt(this.caret);
@@ -503,7 +575,7 @@ Jazz.prototype.backspace = function() {
 
 Jazz.prototype.delete = function() {
   if (this.move.isEndOfFile()) {
-    if (this.mark.active) return this.backspace();
+    if (this.mark.active && !this.move.isBeginOfFile()) return this.backspace();
     return;
   }
   if (this.mark.active) {
@@ -512,7 +584,7 @@ Jazz.prototype.delete = function() {
     this.buffer.deleteArea(area);
     this.markClear(true);
     this.clear();
-    this.repaint();
+    this.render();
   } else {
     this.buffer.deleteCharAt(this.caret);
   }
@@ -622,11 +694,14 @@ Jazz.prototype.resize = function() {
   this.offset.set(dom.getOffset($));
   this.scroll.set(dom.getScroll($));
   this.size.set(dom.getSize($));
-  this.char.set(dom.getCharSize($));
+
+  // this is a weird fix when doing multiple .use()
+  if (this.char.width === 0) this.char.set(dom.getCharSize($, css.code));
+
   this.rows = this.buffer.loc;
   this.code = this.buffer.text.length;
   this.page.set(this.size['^/'](this.char));
-  this.pageRemainder.set(this.size['-'](this.page['*'](this.char)));
+  this.pageRemainder.set(this.size['-'](this.page['_*'](this.char)));
   this.pageBounds = [0, this.rows];
   this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
   this.gutter = Math.max(
@@ -636,6 +711,7 @@ Jazz.prototype.resize = function() {
     + (this.options.hide_rows
       ? 0 : Math.max(3, (''+this.rows).length))
   ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin);
+  this.marginLeft = this.gutter + this.options.margin_left;
 
   // dom.style(this.el, {
   //   width: this.longestLine * this.char.width,
@@ -669,26 +745,25 @@ Jazz.prototype.resize = function() {
 
   var dataURL = canvas.toDataURL();
 
-  dom.css(''
-  + '.editor > .layer > .find,'
-  + '.editor > .layer > .mark,'
-  + '.editor > .layer > .code {'
-  + '  padding-left: ' + (this.options.margin_left + this.gutter) + 'px;'
-  + '}'
-  + '.editor > .layer > .rows {'
-  + '  padding-right: ' + this.options.gutter_margin + 'px;'
-  + '  margin-left: ' + this.options.margin_left + 'px;'
-  + '  width: ' + this.gutter + 'px;'
-  + '}'
-  + '.editor > .layer > .find > i {'
-  + '  height: ' + (this.char.height + 1) + 'px;'
-  + '}'
-  + '.editor > .layer > .block > i {'
-  + '  height: ' + (this.char.height + 1) + 'px;'
-  + '}'
-  + 'indent {'
-  + '  background-image: url(' + dataURL + ');'
-  + '}'
+  dom.css(this.id, `
+    #${this.id} > .${css.ruler},
+    #${this.id} > .${css.layer} > .${css.find},
+    #${this.id} > .${css.layer} > .${css.mark},
+    #${this.id} > .${css.layer} > .${css.code} {
+      padding-left: ${this.options.margin_left + this.gutter}px;
+    }
+    #${this.id} > .${css.layer} > .${css.rows} {
+      padding-right: ${this.options.gutter_margin}px;
+      margin-left: ${this.options.margin_left}px;
+      width: ${this.gutter}px;
+    }
+    #${this.id} > .${css.layer} > .${css.find} > i,
+    #${this.id} > .${css.layer} > .${css.block} > i {
+      height: ${this.char.height + 1}px;
+    }
+    indent {
+      background-image: url(${dataURL});
+    }`
   );
 
   this.emit('resize');

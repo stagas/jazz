@@ -1,7 +1,8 @@
-var dom = require('dom');
-var diff = require('diff');
-var merge = require('merge');
-var trim = require('trim');
+var dom = require('../../lib/dom');
+var diff = require('../../lib/diff');
+var merge = require('../../lib/merge');
+var trim = require('../../lib/trim');
+var css = require('../style.css');
 
 module.exports = View;
 
@@ -18,7 +19,7 @@ function View(name, editor, template) {
   this[0] = this[1] = -1;
 
   this.el = document.createElement('div');
-  this.el.className = name;
+  this.el.className = `${css[name]}`;
 
   var style = {
     top: 0,
@@ -26,7 +27,8 @@ function View(name, editor, template) {
     opacity: 0
   };
 
-  if (this.editor.options.debug_layers) {
+  if (this.editor.options.debug_layers
+  && ~this.editor.options.debug_layers.indexOf(name)) {
     style.background = '#'
     + (Math.random() * 12 | 0).toString(16)
     + (Math.random() * 12 | 0).toString(16)
@@ -47,11 +49,15 @@ View.prototype.render = function(range) {
   var html = this.template(range, this.editor);
   if (html === false) return this.style();
 
-  // if ('code' === this.name) html = trim.emptyLines(html).string;
-
   this[0] = range[0];
   this[1] = range[1];
   this.visible = true;
+
+  // if ('code' === this.name) {
+  //   var res = trim.emptyLines(html)
+  //   range[0] += res.leading;
+  //   html = res.string;
+  // }
 
   if (html) dom.html(this, html);
   else if ('code' === this.name || 'block' === this.name) return this.clear();

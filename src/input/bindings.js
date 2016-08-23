@@ -1,6 +1,6 @@
-var throttle = require('throttle');
+var throttle = require('../../lib/throttle');
 
-var PAGING_THROTTLE = window.pagingthrottle = 30;
+var PAGING_THROTTLE = 75;
 
 var keys = module.exports = {
   'ctrl+z': function() {
@@ -75,6 +75,10 @@ var keys = module.exports = {
       this.mark.shiftByLines(+1);
       this.move.byLines(+1, true);
     }
+  },
+
+  'enter': function() {
+    this.insert('\n');
   },
 
   'backspace': function() {
@@ -247,19 +251,10 @@ var keys = module.exports = {
       this.markClear();
     }
   },
-
-  'ctrl+s': function() {
-    console.log('should save');
-  }
 };
 
 keys.single = {
-  // 'shift': function() {
-  //   console.log('shift')
-  //   this.markBegin();
-  // },
-  // 'shift:up': function() {
-  // }
+  //
 };
 
 // selection keys

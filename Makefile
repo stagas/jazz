@@ -1,27 +1,28 @@
-build:
-	@NODE_PATH=lib \
-		watchify \
+dev: install
+	@make dev-build & \
+		./node_modules/.bin/live-server \
+		--no-browser \
+		--wait=200 \
+		--watch=dist/jazz.js,examples,test
+
+dev-build:
+	@./node_modules/.bin/watchify \
+		--plugin [ css-modulesify -o dist/jazz.css ] \
 		--verbose \
 		--detect-globals=false \
 		--standalone Jazz \
 		--node \
 		--debug \
-		--entry jazz.js \
+		--entry index.js \
 		--outfile dist/jazz.js
 
-dev:
-	@live-server --no-browser
-
-devs:
-	@live-server
+install: package.json
+	@npm install
 
 todo:
-	@grep --color=always -nd recurse TODO lib src jazz.js
+	@grep -A 1 --color=always -nd recurse TODO lib src index.js
 
 test:
 	@xdg-open http://localhost:8080/test/
 
-#fetch:
-#	@wget -P deps -nc -i Lib
-
-.PHONY: dev devs todo test
+.PHONY: theme todo test

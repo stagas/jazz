@@ -1,6 +1,6 @@
-var Regexp = require('regexp');
-var Event = require('event');
-var Point = require('point');
+var Regexp = require('../lib/regexp');
+var Event = require('../lib/event');
+var Point = require('../lib/point');
 
 var WORDS = Regexp.create(['words'], 'g');
 

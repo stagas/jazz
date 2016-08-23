@@ -1,11 +1,11 @@
-var debounce = require('debounce');
-var throttle = require('throttle');
-var atomic = require('atomic');
-var parse = require('parse');
-var Area = require('area');
-var Range = require('range');
-var Regexp = require('regexp');
-var Event = require('event');
+var debounce = require('../../lib/debounce');
+var throttle = require('../../lib/throttle');
+var atomic = require('../../lib/atomic');
+var parse = require('../../lib/parse');
+var Area = require('../../lib/area');
+var Range = require('../../lib/range');
+var Regexp = require('../../lib/regexp');
+var Event = require('../../lib/event');
 var Lines = require('./lines');
 var Syntax = require('./syntax');
 var Segments = require('./segments');
@@ -57,6 +57,7 @@ var BLOCK_END = {
 Buffer.prototype.getHighlighted = function(range) {
   var code = this.get(range);
   // return this.syntax.entities(code);
+  // return this.syntax.highlight(code);
 
   var block = this.segments.get(range[0]);
   // console.timeEnd('get segment')
@@ -142,6 +143,8 @@ Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
   this.prefix.index(after);
   if (isCtrlShift) range = [Math.max(0, range[0]-1), range[1]];
 
+  this.segments.shift(point.offset, text.length);
+
   //TODO: i think shift should be 'lines'
   this.emit('update', range, shift, before, after);
 
@@ -158,7 +161,7 @@ Buffer.prototype.deleteCharAt = function(point) {
 
   point = this.lines.getPoint(point);
   isEOL = this.lines.removeCharAt(point);
-  range = [point.y, point.y + isEOL];
+  range = Range.clamp([0, this.lines.length], [point.y, point.y + isEOL]);
 
   before = this.get(range);
 
@@ -167,6 +170,8 @@ Buffer.prototype.deleteCharAt = function(point) {
   after = this.get(range);
 
   this.prefix.index(after);
+
+  this.segments.shift(point.offset, -1);
 
   this.emit('update', range, -isEOL, before);
 };
@@ -218,6 +223,8 @@ Buffer.prototype.deleteArea = function(area, noUpdate) {
   range = [area.begin.y, area.end.y];
 
   this.text.remove(offsets);
+
+  this.segments.shift(offsets[0], offsets[0]-offsets[1]);
 
   if (!noUpdate) {
     this.emit('update', range);

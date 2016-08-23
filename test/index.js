@@ -4,28 +4,18 @@ var BENCH = false;
 var BENCH_TIMES = 10e1;
 
 require.paths.push('/test');
-var Syntax = require('../src/buffer/syntax');
-var syntax = new Syntax;
 var suite = require('suite');
 var assert = require('assert');
 var test = require('test');
 var _bench = require('bench');
 
 var el = setup({
-  // 'lib/dom/diff.test': ['lib/dom/diff']
-  // 'lib/trim.test': ['lib/trim']
-  // 'src/buffer/rangetree.test': ['src/buffer/rangetree'],
-  // 'core/buffer/pair.test': ['core/buffer/pair.old'],
-  // 'src/buffer/skiprange.test': ['src/buffer/skiprange'],
-  'src/buffer/blocks.test': ['src/buffer'],
-  // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
-  // 'src/buffer/lines.test': ['src/buffer/lines'],
-  // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
-  // 'src/buffer/test': ['src/buffer'],
-  // 'html/code.test': ['html/code'],
-  // 'html/mark.test': ['html/mark'],
-  // 'html/nums.test': ['html/nums'],
-  // 'range/mask.test': ['range/mask'],
+  'lib/diff.test': ['lib/diff'],
+  'lib/trim.test': ['lib/trim'],
+  'src/buffer/skipstring.test': ['src/buffer/skipstring'],
+  'src/buffer/lines.test': ['src/buffer/lines'],
+  'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
+  'src/buffer/test': ['src/buffer'],
 });
 
 append(document.body, el);
@@ -53,8 +43,8 @@ var render = {
       + '<div style="display: block; color: #28a; margin: 6px 0;">' + res.error.message + '</div>'
       + '<pre style="display: inline-block; text-align:left; font-size: 8pt; margin: 0 0 7px;">'
       + (res.error.meta && res.error.meta.left != null && res.error.meta.right != null
-      ? '<b>Expected:</b> ' + syntax.highlight(res.error.meta.left)
-      + '\n<b>  Actual:</b> ' + syntax.highlight(res.error.meta.right)
+      ? '<b>Expected:</b> ' + safe(res.error.meta.left)
+      + '\n<b>  Actual:</b> ' + safe(res.error.meta.right)
       : '')
       + '</pre>'
     }).join(' ');

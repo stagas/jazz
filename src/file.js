@@ -1,6 +1,6 @@
-var open = require('open');
-var save = require('save');
-var Event = require('event');
+var open = require('../lib/open');
+var save = require('../lib/save');
+var Event = require('../lib/event');
 var Buffer = require('./buffer');
 
 module.exports = File;
@@ -8,6 +8,7 @@ module.exports = File;
 function File(editor) {
   Event.call(this);
 
+  this.root = '';
   this.path = 'untitled';
   this.buffer = new Buffer;
   this.bindEvent();
@@ -22,14 +23,15 @@ File.prototype.bindEvent = function() {
   this.buffer.on('before update', this.emit.bind(this, 'before change'));
 };
 
-File.prototype.open = function(path, fn) {
-  open(path, (err, text) => {
+File.prototype.open = function(path, root, fn) {
+  this.path = path;
+  this.root = root;
+  open(root + path, (err, text) => {
     if (err) {
       this.emit('error', err);
       fn && fn(err);
       return;
     }
-    this.path = path;
     this.buffer.set(text);
     this.emit('open');
     fn && fn(null, this);
@@ -37,7 +39,7 @@ File.prototype.open = function(path, fn) {
 };
 
 File.prototype.save = function(fn) {
-  save(this.path, this.buffer.get(), fn || noop);
+  save(this.root + this.path, this.buffer.get(), fn || noop);
 };
 
 File.prototype.set = function(text) {

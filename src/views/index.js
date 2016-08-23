@@ -1,4 +1,4 @@
-var debounce = require('debounce');
+var debounce = require('../../lib/debounce');
 var template = require('./template');
 var CodeView = require('./code');
 var MarkView = require('./mark');
@@ -27,6 +27,7 @@ function Views(editor) {
 
   this.block.render = debounce(this.block.render, 60);
 
+  //TODO: needs to be set dynamically
   if (this.editor.options.hide_rows) this.rows.render = noop;
 }
 

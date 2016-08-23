@@ -1,0 +1,48 @@
+.dialog {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  align-content: center;
+  position: fixed;
+  bottom: 0px;
+  width: 70%;
+  right: 10px;
+  color: #666;
+  padding: 10px 11px 11px 10px;
+  border: 1px solid #2c2c2c;
+  border-bottom: none;
+  border-radius: 3px;
+  background: #333;
+  box-shadow: 0 0px 3px 2px rgba(0,0,0,.1);
+  z-index: 100;
+  transform: translateZ(0);
+}
+
+.dialog > .input {
+  display: flex;
+  color: inherit;
+  flex-grow: 1;
+  background: #f1f1f1;
+  border: none;
+  box-shadow: inset 1px 2px 3px -1px rgba(0,0,0,.4);
+  border-radius: 2px;
+  padding: 5px 6px;
+  margin: 0px;
+}
+
+.dialog > .input > .text {
+  flex-grow: 1;
+  border: none;
+  color: inherit;
+}
+
+.dialog > .label {
+  margin-right: 10px;
+}
+
+.dialog > .input > .info {
+  padding: 0 0 0 6px;
+  margin-left: 6px;
+  border-left: 1px solid #c9c9c9;
+  color: #999;
+}

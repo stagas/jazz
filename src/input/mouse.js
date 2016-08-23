@@ -1,12 +1,10 @@
-var Event = require('event');
-var debounce = require('debounce');
-var Point = require('point');
+var Event = require('../../lib/event');
+var debounce = require('../../lib/debounce');
+var Point = require('../../lib/point');
 
 module.exports = Mouse;
 
 function Mouse() {
-  Event.call(this);
-
   this.node = null;
   this.clicks = 0;
   this.point = new Point;
@@ -26,10 +24,12 @@ Mouse.prototype.bindEvent = function() {
 
 Mouse.prototype.use = function(node) {
   if (this.node) {
-    node.removeEventListener('mousedown', this.ondown);
+    this.node.removeEventListener('mousedown', this.ondown);
+    // this.node.removeEventListener('mouseup', this.onup);
   }
   this.node = node;
   this.node.addEventListener('mousedown', this.ondown);
+  // this.node.addEventListener('mouseup', this.onup);
 };
 
 Mouse.prototype.ondown = function(e) {
@@ -40,8 +40,8 @@ Mouse.prototype.ondown = function(e) {
 };
 
 Mouse.prototype.onup = function(e) {
-  if (!this.down) return;
   this.emit('up', e);
+  if (!this.down) return;
   this.down = null;
   this.dragEnd();
   this.maybeDragEnd();

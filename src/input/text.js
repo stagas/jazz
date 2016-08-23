@@ -1,12 +1,14 @@
-var dom = require('dom');
-var debounce = require('debounce');
-var Event = require('event');
+var dom = require('../../lib/dom');
+var debounce = require('../../lib/debounce');
+var throttle = require('../../lib/throttle');
+var Event = require('../../lib/event');
 
-var THROTTLE = 1000/60;
+var THROTTLE = 1000/75;
 
 var map = {
   8: 'backspace',
   9: 'tab',
+  13: 'enter',
   33: 'pageup',
   34: 'pagedown',
   35: 'end',
@@ -16,6 +18,16 @@ var map = {
   39: 'right',
   40: 'down',
   46: 'delete',
+  48: '0',
+  49: '1',
+  50: '2',
+  51: '3',
+  52: '4',
+  53: '5',
+  54: '6',
+  55: '7',
+  56: '8',
+  57: '9',
   65: 'a',
   68: 'd',
   70: 'f',
@@ -24,7 +36,11 @@ var map = {
   83: 's',
   89: 'y',
   90: 'z',
+  112: 'f1',
   114: 'f3',
+  122: 'f11',
+  188: ',',
+  190: '.',
   191: '/',
 
   // numpad
@@ -45,7 +61,7 @@ Text.map = map;
 function Text() {
   Event.call(this);
 
-  this.node = document.createElement('textarea');
+  this.el = document.createElement('input');
 
   dom.style(this, {
     position: 'absolute',
@@ -74,38 +90,50 @@ Text.prototype.bindEvent = function() {
   this.oninput = this.oninput.bind(this);
   this.onkeydown = this.onkeydown.bind(this);
   this.onkeyup = this.onkeyup.bind(this);
-  this.node.oninput = this.oninput;
-  this.node.onkeydown = this.onkeydown;
-  this.node.onkeyup = this.onkeyup;
-  this.node.oncut = this.oncut;
-  this.node.oncopy = this.oncopy;
-  this.node.onpaste = this.onpaste;
+  this.el.onblur = this.emit.bind(this, 'blur');
+  this.el.onfocus = this.emit.bind(this, 'focus');
+  this.el.oninput = this.oninput;
+  this.el.onkeydown = this.onkeydown;
+  this.el.onkeyup = this.onkeyup;
+  this.el.oncut = this.oncut;
+  this.el.oncopy = this.oncopy;
+  this.el.onpaste = this.onpaste;
 };
 
+Text.prototype.reset = function() {
+  this.set('');
+  this.modifiers = {};
+}
+
 Text.prototype.get = function() {
-  return this.node.value.substr(-1);
+  return this.el.value.substr(-1);
 };
 
 Text.prototype.set = function(value) {
-  this.node.value = value;
+  this.el.value = value;
 };
 
 //TODO: on mobile we need to clear without debounce
 // or the textarea content is displayed in hacker's keyboard
 // or you need to disable word suggestions in hacker's keyboard settings
-Text.prototype.clear = debounce(function() {
+Text.prototype.clear = throttle(function() {
   this.set('');
-}, 10 * 1000);
+}, 2000);
+
+Text.prototype.blur = function() {
+  // console.log('focus')
+  this.el.blur();
+};
 
 Text.prototype.focus = function() {
   // console.log('focus')
-  this.node.focus();
+  this.el.focus();
 };
 
 Text.prototype.oninput = function(e) {
   e.preventDefault();
   // forces caret to end of textarea so we can get .slice(-1) char
-  setImmediate(() => this.node.selectionStart = this.node.value.length);
+  setImmediate(() => this.el.selectionStart = this.el.value.length);
   this.emit('text', this.get());
   this.clear();
   return false;

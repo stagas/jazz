@@ -31,10 +31,7 @@ module.exports = Segments;
 function Segments(buffer) {
   this.buffer = buffer;
   this.segments = [];
-  this.cache = {
-    offset: {},
-    range: {},
-  };
+  this.clearCache();
 }
 
 var Length = {
@@ -58,6 +55,8 @@ var Tag = {
 };
 
 Segments.prototype.get = function(y) {
+  if (y in this.cache.state) return this.cache.state[y];
+
   var open = false;
   var state = null;
   var waitFor = '';
@@ -71,16 +70,18 @@ Segments.prototype.get = function(y) {
 
   var i = 0;
 
+  //TODO: optimization:
+  // cache segment y with open/close/state so we skip
+  // iterating from the begin every time
+
   for (; i < this.segments.length; i++) {
     segment = this.segments[i];
-
-    // cache state etc dynamically
 
     if (open) {
       if (waitFor === segment.type) {
         point = this.getPointOffset(segment.offset);
-        if (!point) return;
-        if (point.y >= y) return Tag[state.type];
+        if (!point) return (this.cache.state[y] = null);
+        if (point.y >= y) return (this.cache.state[y] = Tag[state.type]);
 
         // console.log('close', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
         last = segment;
@@ -90,7 +91,7 @@ Segments.prototype.get = function(y) {
       }
     } else {
       point = this.getPointOffset(segment.offset);
-      if (!point) return;
+      if (!point) return (this.cache.state[y] = null);
 
       range = point.line.range;
 
@@ -113,8 +114,8 @@ Segments.prototype.get = function(y) {
     }
     if (point.y >= y) break;
   }
-  if (state && state.point.y < y) return Tag[state.type];
-  return;
+  if (state && state.point.y < y) return (this.cache.state[y] = Tag[state.type]);
+  return (this.cache.state[y] = null);
 };
 
 Segments.prototype.getPointOffset = function(offset) {
@@ -222,6 +223,7 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 Segments.prototype.getSegment = function(offset) {
   var begin = 0;
   var end = this.segments.length;
+  if (!end) return;
 
   var p = -1;
   var i = -1;
@@ -231,7 +233,7 @@ Segments.prototype.getSegment = function(offset) {
     p = i;
     i = begin + (end - begin) / 2 | 0;
     b = this.segments[i];
-    if (b.offset <= offset) begin = i;
+    if (b.offset < offset) begin = i;
     else end = i;
   } while (p !== i);
 
@@ -241,15 +243,33 @@ Segments.prototype.getSegment = function(offset) {
   };
 };
 
+Segments.prototype.shift = function(offset, shift) {
+  var s = this.getSegment(offset);
+  if (!s) return;
+
+  for (var i = s.index + 1; i < this.segments.length; i++) {
+    this.segments[i].offset += shift;
+  }
+
+  // if (shift < 0) {
+    // this.clearCache();
+  // }
+};
+
+Segments.prototype.clearCache = function() {
+  this.cache = {
+    offset: {},
+    range: {},
+    state: {}
+  };
+};
+
 Segments.prototype.index = function(text) {
   var match;
 
   var segments = this.segments = [];
 
-  this.cache = {
-    offset: {},
-    range: {},
-  };
+  this.clearCache();
 
   while (match = TOKEN.exec(text)) {
     if (match['3']) segments.push(new Segment('template string', match.index));

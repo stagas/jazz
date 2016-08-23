@@ -1,5 +1,5 @@
-var Event = require('event');
-var debounce = require('debounce');
+var Event = require('../lib/event');
+var debounce = require('../lib/debounce');
 
 /*
    . .
@@ -66,7 +66,6 @@ History.prototype.redo = function() {
 History.prototype.checkout = function(n) {
   var commit = this.log[n];
   if (!commit) return;
-
   this.editor.mark.active = commit.markActive;
   this.editor.mark.set(commit.mark.copy());
   this.editor.setCaret(commit.caret.copy());

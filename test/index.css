@@ -2,13 +2,9 @@
 html, body {
   margin: 0;
   padding: 0 5px 10px;
-  font-family: Roboto Mono, monospace;
+  font-family: monospace;
   color: #656565;
   font-size: 8.5pt;
-}
-
-pre {
-  font-family: Roboto Mono;
 }
 
 table {

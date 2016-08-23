@@ -1,10 +1,8 @@
 
-var ColorPicker = require('./color-picker');
-
 var picker = [];
 
 for (var i = 0; i < 9; i++) {
-  picker[i] = new ColorPicker({
+  picker[i] = new simpleColorPicker({
     color: '#566',
     background: '#000',
     el: pickers,

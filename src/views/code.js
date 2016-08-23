@@ -1,12 +1,12 @@
-var dom = require('dom');
-var Range = require('range');
+var dom = require('../../lib/dom');
+var Range = require('../../lib/range');
 var Layer = require('./layer');
 var template = require('./template');
 
 module.exports = Code;
 
 function Code(name, editor, template) {
-  Layer.call(this, name, editor, template, 50);
+  Layer.call(this, name, editor, template, 10);
 }
 
 Code.prototype.__proto__ = Layer.prototype;
