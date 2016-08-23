@@ -1,4 +1,4 @@
-dev: install
+dev:
 	@make dev-build & \
 		./node_modules/.bin/live-server \
 		--no-browser \
@@ -25,4 +25,4 @@ todo:
 test:
 	@xdg-open http://localhost:8080/test/
 
-.PHONY: theme todo test
+.PHONY: dev dev-build todo test

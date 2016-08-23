@@ -1,6 +1,11 @@
 var options = {
-  // debug_layers: ['code'],
   theme: 'western',
+  // debug_layers: ['code'],
+  // scroll_speed: 0.30,
+  // hide_rows: false,
+  // center: false,
+  // margin_left: 15,
+  // gutter_margin: 20,
 };
 
 var jazz = new Jazz(options);
