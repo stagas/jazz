@@ -19,6 +19,7 @@ features :
 - block highlight
 - keyboard bindings
 - undo/redo history
+- selection & cut/copy/paste
 
 -------------------------
 
