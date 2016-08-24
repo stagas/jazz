@@ -10,28 +10,28 @@ function PrefixTreeNode() {
   this.children = {};
 }
 
-PrefixTreeNode.prototype.getSortedChildren = function() {
+PrefixTreeNode.prototype.getChildren = function() {
   var children = Object
     .keys(this.children)
     .map((key) => this.children[key]);
 
-  //TODO: only filter and sort in the end
-  return children
-    .reduce((p, n) => p.concat(n.getSortedChildren()), children)
-    .filter((node) => node.value)
-    .sort((a, b) => {
-      var res = b.rank - a.rank;
-      if (res === 0) res = b.value.length - a.value.length;
-      if (res === 0) res = a.value > b.value;
-      return res;
-    });
+  return children.reduce((p, n) => p.concat(n.getChildren()), children);
 };
 
 PrefixTreeNode.prototype.collect = function(key) {
   var collection = [];
   var node = this.find(key);
   if (node) {
-    collection = node.getSortedChildren();
+    collection = node
+      .getChildren()
+      .filter((node) => node.value)
+      .sort((a, b) => {
+        var res = b.rank - a.rank;
+        if (res === 0) res = b.value.length - a.value.length;
+        if (res === 0) res = a.value > b.value;
+        return res;
+      });
+
     if (node.value) collection.push(node);
   }
   return collection;
