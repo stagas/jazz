@@ -34,6 +34,9 @@ edge cases, optimizations to be done, etc
 
 development : $ make install && make dev
 
+where to start?
+check out `./Issues` or `make todo`
+
 -------------------------
 
 mit licensed 2016 by stagas
