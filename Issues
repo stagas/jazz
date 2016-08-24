@@ -78,6 +78,10 @@ x- add history before delete
 x- have default bindings and allow merge on top
 x- syntax highlight theme editor
 x- ctrl+/, shift+ctrl+/ -> comments
+x- bug: sometimes when there's one line, it blinks below like a double line
+  x- also sometimes is blank entirely
+x- indent align on enter
+x- autofill matching bracket/curly/parens on edit with caret inbetween
 
 
 -- doing ---------------------
@@ -88,14 +92,10 @@ x- ctrl+/, shift+ctrl+/ -> comments
 
 -- todo ----------------------
 
+- support tabs, tab width, indent change
 - keyboard combos (i.e ctrl+k-ctrl+b)
-- bug: sometimes when there's one line, it blinks below like a double line
-  - also sometimes is blank entirely
 - review/cleanup main
 - refactor template
-- support tabs, tab width, indent change
-  - indent align on enter
-- autofill matching bracket/curly/parens on edit with caret inbetween
 
 -- later ---------------------
 
