@@ -1,9 +1,9 @@
 var options = {
-  theme: 'western',
+  theme: 'ergonom',
   // debug_layers: ['code'],
-  // scroll_speed: 0.30,
-  // hide_rows: false,
-  // center: false,
+  // scroll_speed: 75,
+  // hide_rows: true,
+  // center: true,
   // margin_left: 15,
   // gutter_margin: 20,
 };
