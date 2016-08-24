@@ -1,6 +1,6 @@
 var throttle = require('../../lib/throttle');
 
-var PAGING_THROTTLE = 75;
+var PAGING_THROTTLE = 70;
 
 var keys = module.exports = {
   'ctrl+z': function() {

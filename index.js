@@ -5,7 +5,7 @@
 var DefaultOptions = {
   theme: 'western',
   debug_layers: false,
-  scroll_speed: 0.30,
+  scroll_speed: 75,
   hide_rows: false,
   center: false,
   margin_left: 15,
@@ -172,6 +172,7 @@ Jazz.prototype.blur = function() {
 
 Jazz.prototype.bindMethods = function() {
   this.animationScrollFrame = this.animationScrollFrame.bind(this);
+  this.animationScrollBegin = this.animationScrollBegin.bind(this);
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
   this.repaint = this.repaint.bind(this);
@@ -217,11 +218,9 @@ Jazz.prototype.bindEvent = function() {
 };
 
 Jazz.prototype.onScroll = function(scroll) {
-  if (scroll.y !== this.scroll.y) {
-    this.editing = false;
-    this.scroll.set(scroll);
-    this.render();
-  }
+  this.editing = false;
+  this.scroll.set(scroll);
+  this.render();
 };
 
 Jazz.prototype.onMove = function(point, byEdit) {
@@ -454,7 +453,7 @@ Jazz.prototype.getRange = function(range) {
 };
 
 Jazz.prototype.getPageRange = function(range) {
-  var p = (this.animationScrollTarget || this.scroll)['_/'](this.char);
+  var p = this.scroll['_/'](this.char);
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -504,42 +503,62 @@ Jazz.prototype.scrollBy = function(x, y) {
 Jazz.prototype.animateScrollBy = function(x, y) {
   if (!this.animationRunning) {
     this.animationRunning = true;
-    this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
+    this.animationFrame = window.requestAnimationFrame(this.animationScrollBegin);
   }
 
   var s = this.animationScrollTarget || this.scroll;
 
   this.animationScrollTarget = new Point({
     x: Math.max(0, s.x + x),
-    // x: 0,
     y: Math.min((this.rows + 1) * this.char.height - this.size.height, Math.max(0, s.y + y))
   });
 };
 
-Jazz.prototype.animationScrollFrame = function() {
-  var speed = this.options.scroll_speed; // adjust precision to keep caret ~static when paging up/down
+Jazz.prototype.animationScrollBegin = function() {
+  this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
+
   var s = this.scroll;
   var t = this.animationScrollTarget;
 
   var dx = t.x - s.x;
   var dy = t.y - s.y;
 
-  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+  dx = Math.sign(dx) * 5;
+  dy = Math.sign(dy) * 5;
+
+  this.scrollBy(dx, dy);
+};
+
+Jazz.prototype.animationScrollFrame = function() {
+  var speed = this.options.scroll_speed;
+  var s = this.scroll;
+  var t = this.animationScrollTarget;
+
+  var dx = t.x - s.x;
+  var dy = t.y - s.y;
+
+  var adx = Math.abs(dx);
+  var ady = Math.abs(dy);
+
+  if (ady >= this.size.height * 1.2) {
+    speed *= 2.45;
+  }
+
+  if (adx < 1 && ady < 1) {
     this.scrollTo(this.animationScrollTarget);
     this.animationRunning = false;
     this.animationScrollTarget = null;
     this.emit('animation end');
-    // console.log('anim end')
     return;
   }
 
   this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
-  dx *= speed;
-  dy *= speed;
+  if (adx < speed) dx *= 0.9;
+  else dx = Math.sign(dx) * speed;
 
-  dx = dx > 0 ? Math.ceil(dx) : Math.floor(dx);
-  dy = dy > 0 ? Math.ceil(dy) : Math.floor(dy);
+  if (ady < speed) dy *= 0.9;
+  else dy = Math.sign(dy) * speed;
 
   this.scrollBy(dx, dy);
 };
