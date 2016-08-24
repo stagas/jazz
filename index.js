@@ -21,6 +21,7 @@ var debounce = require('./lib/debounce');
 var throttle = require('./lib/throttle');
 var atomic = require('./lib/atomic');
 var Event = require('./lib/event');
+var Regexp = require('./lib/regexp');
 var Dialog = require('./lib/dialog');
 var Point = require('./lib/point');
 var Range = require('./lib/range');
@@ -36,6 +37,8 @@ var Text = require('./src/input/text');
 var Views = require('./src/views');
 var theme = require('./src/theme');
 var css = require('./src/style.css');
+
+var NEWLINE = Regexp.create(['newline'], 'g');
 
 module.exports = Jazz;
 
@@ -573,7 +576,7 @@ Jazz.prototype.insert = function(text) {
   var hasRightSymbol = ~['}',']',')'].indexOf(right);
 
   // apply indent on enter
-  if ('\n' === text) { //TODO: text.test(Regexp.newline)
+  if (NEWLINE.test(text)) {
     var isEndOfLine = this.caret.x === line.length - 1;
     var left = line[this.caret.x - 1];
     var indent = line.match(/\S/);
