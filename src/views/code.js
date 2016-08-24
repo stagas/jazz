@@ -12,21 +12,19 @@ function Code(name, editor, template) {
 Code.prototype.__proto__ = Layer.prototype;
 
 Code.prototype.render = function() {
-  var layer = this;
-  var views = this.views;
-  var e = this.editor;
-
   // this.clear();
   // return this.renderPage(0, true);
-  if (!e.editing) return this.renderAhead();
+  if (!this.editor.editing) this.renderAhead();
+};
 
-  var y = e.editLine;
-  var g = e.editRange.slice();
-  var shift = e.editShift;
+Code.prototype.renderEdit = function(edit) {
+  var y = edit.line;
+  var g = edit.range.slice();
+  var shift = edit.shift;
   var isEnter = shift > 0;
   var isBackspace = shift < 0;
   var isBegin = g[0] + isBackspace === 0;
-  var isEnd = g[1] + isEnter === e.rows;
+  var isEnd = g[1] + isEnter === this.editor.rows;
 
   if (shift) {
     if (isEnter && !isEnd) this.shiftViewsBelow(g[0], shift);

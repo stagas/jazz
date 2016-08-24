@@ -334,22 +334,23 @@ Jazz.prototype.onBeforeFileChange = function() {
 
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
   // console.log('change')
-  this.rows = this.buffer.loc;
-  this.code = this.buffer.text.length;
-
   this.editing = true;
-  this.editLine = editRange[0];
-  this.editRange = editRange;
-  this.editShift = editShift;
-
-  this.pageBounds = [0, this.rows];
+  this.pageBounds = [0, this.buffer.loc];
 
   if (this.find.isOpen) {
     this.onFindValue(this.findValue, true);
   }
 
   this.history.save();
+
+  this.views.code.renderEdit({
+    line: editRange[0],
+    range: editRange,
+    shift: editShift
+  });
+
   this.render();
+
   this.emit('change');
 };
 
@@ -567,27 +568,43 @@ Jazz.prototype.animationScrollFrame = function() {
 Jazz.prototype.insert = function(text) {
   if (this.mark.active) this.delete();
 
+  var line = this.buffer.getLine(this.caret.y);
+  var right = line[this.caret.x];
+  var hasRightSymbol = ~['}',']',')'].indexOf(right);
+
   // apply indent on enter
   if ('\n' === text) { //TODO: text.test(Regexp.newline)
-    var line = this.buffer.getLine(this.caret.y);
-
     var isEndOfLine = this.caret.x === line.length - 1;
+    var left = line[this.caret.x - 1];
+    var indent = line.match(/\S/);
+    indent = indent ? indent.index : line.length - 1;
+    var hasLeftSymbol = ~['{','[','('].indexOf(left);
 
-    if (isEndOfLine) {
-      var char = line.split('\n')[0].slice(-1);
-      var indent = line.match(/\S/);
-      indent = indent ? indent.index : line.length - 1;
-      if (~['{','[','('].indexOf(char)) indent += 2;
+    if (hasLeftSymbol) indent += 2;
+
+    if (isEndOfLine || hasLeftSymbol) {
       text += new Array(indent + 1).join(' ');
     }
   }
 
-  var length = this.buffer.insert(this.caret, text);
+  var length;
+
+  if (!hasRightSymbol || (hasRightSymbol && !~['}',']',')'].indexOf(text))) {
+    length = this.buffer.insert(this.caret, text);
+  } else {
+    length = 1;
+  }
+
   this.move.byChars(length, true);
 
   if ('{' === text) this.buffer.insert(this.caret, '}');
   else if ('(' === text) this.buffer.insert(this.caret, ')');
   else if ('[' === text) this.buffer.insert(this.caret, ']');
+
+  if (hasLeftSymbol && hasRightSymbol) {
+    indent -= 2;
+    this.buffer.insert(this.caret, '\n' + new Array(indent + 1).join(' '));
+  }
 };
 
 Jazz.prototype.backspace = function() {
@@ -802,6 +819,7 @@ Jazz.prototype.resize = function() {
 
 Jazz.prototype.clear = atomic(function() {
   // console.log('clear')
+  this.editing = false;
   this.views.clear();
 });
 

@@ -126,13 +126,12 @@ Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
 
   text = normalizeEOL(text);
 
-  isEOL = '\n' === text[0];
+  isEOL = '\n' === text;
+  shift = !isCtrlShift && (shift || isEOL);
 
   point = this.lines.getPoint(point);
   lines = this.lines.insert(point, text);
   range = [point.y, point.y + lines];
-
-  shift = !isCtrlShift && (shift || isEOL);
 
   before = this.get(range);
 
