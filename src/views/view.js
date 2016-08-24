@@ -68,14 +68,7 @@ View.prototype.render = function(range) {
 
 View.prototype.style = function() {
   this.lastUsed = Date.now();
-
-  dom.style(
-    this,
-    merge(
-      { opacity: 1 },
-      this.template.style(this, this.editor)
-    )
-  );
+  dom.style(this, this.template.style(this, this.editor));
 };
 
 View.prototype.toString = function() {

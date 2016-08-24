@@ -718,10 +718,6 @@ Jazz.prototype.resize = function() {
   //   height: this.rows * this.char.height
   // });
 
-  dom.style(this.views.caret, {
-    height: this.char.height
-  });
-
   //TODO: make method/util
   // draw indent image
   var canvas = document.createElement('canvas');

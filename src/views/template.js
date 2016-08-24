@@ -161,6 +161,8 @@ template.mark.style =
 template.rows.style =
 template.code.style = function(range, e) {
   return {
+    opacity: 1,
+    left: 0,
     top: range[0] * e.char.height,
     height: (range[1] - range[0] + 1) * e.char.height
   };
@@ -175,6 +177,7 @@ template.caret.style = function(point, e) {
     opacity: +e.hasFocus,
     left: e.char.width * e.caret.x + e.gutter + e.options.margin_left,
     top: e.char.height * e.caret.y,
+    height: e.char.height,
   };
 };
 
@@ -184,7 +187,9 @@ template.gutter = function() {
 
 template.gutter.style = function(point, e) {
   return {
-    width: 1,
+    opacity: 1,
+    left: 0,
+    top: 0,
     height: e.rows * e.char.height,
   };
 };
@@ -196,6 +201,9 @@ template.ruler = function() {
 template.ruler.style = function(point, e) {
   return {
     // width: e.longestLine * e.char.width,
+    opacity: 0,
+    left: 0,
+    top: 0,
     height: ((e.rows + e.page.height) * e.char.height) + e.pageRemainder.height,
   };
 };
