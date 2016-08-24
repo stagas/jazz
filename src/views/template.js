@@ -84,6 +84,8 @@ template.find.style = function() {
 };
 
 template.block = function(range, e) {
+  if (e.editing) return '';
+
   var offset = e.buffer.lines.get(range[0]);
   var target = e.buffer.lines.getPoint(e.caret).offset;
   var code = e.buffer.get(range);
@@ -115,7 +117,7 @@ template.block = function(range, e) {
     i--;
   }
 
-  if (!open) return ' ';
+  if (!open) return '';
 
   var begin = e.buffer.lines.getOffset(i + offset);
 
@@ -153,10 +155,7 @@ template.block = function(range, e) {
   return html;
 };
 
-template.block.style = function() {
-  //
-};
-
+template.block.style =
 template.mark.style =
 template.rows.style =
 template.code.style = function(range, e) {
