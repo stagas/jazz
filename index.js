@@ -584,6 +584,10 @@ Jazz.prototype.insert = function(text) {
 
   var length = this.buffer.insert(this.caret, text);
   this.move.byChars(length, true);
+
+  if ('{' === text) this.buffer.insert(this.caret, '}');
+  else if ('(' === text) this.buffer.insert(this.caret, ')');
+  else if ('[' === text) this.buffer.insert(this.caret, ']');
 };
 
 Jazz.prototype.backspace = function() {
