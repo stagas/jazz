@@ -502,6 +502,7 @@ Jazz.prototype.scrollBy = function(x, y) {
 
 Jazz.prototype.animateScrollBy = function(x, y) {
   if (!this.animationRunning) {
+    this.followCaret();
     this.animationRunning = true;
     this.animationFrame = window.requestAnimationFrame(this.animationScrollBegin);
   }
