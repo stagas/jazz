@@ -117,12 +117,12 @@ Layer.prototype.renderAhead = function(include) {
   }
 
   // check if we're past the threshold of view
-  var aheadRange = this.getPageRange([-.5,+.5]);
+  var aheadRange = this.getPageRange([-1,+1]);
   var aheadNeedRanges = Range.NOT(aheadRange, views);
   if (aheadNeedRanges.length) {
     // if so, render further ahead to have some
     // margin to scroll without triggering new renders
-    this.renderPage(1, include);
+    this.renderPage(2, include);
   }
 };
 
