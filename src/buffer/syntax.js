@@ -9,13 +9,15 @@ var syntax = map({
   'function': R(['function'], 'g'),
   'keyword':  R(['keyword'],  'g'),
   'builtin':  R(['builtin'],  'g'),
-  'indent':   R(['indent'],   'gm'),
   'symbol':   R(['symbol'],   'g'),
   'string':   R(['template string'], 'g'),
   'number':   R(['special','number'], 'g'),
 }, compile);
 
-var Indent = compile(R(['indent'], 'gm'), 'indent');
+var Indent = {
+  regexp: R(['indent'], 'gm'),
+  replacer: (s) => s.replace(/ {1,2}/g, '<indent>$&</indent>')
+};
 
 var Blocks = R(['comment','string','regexp'], 'gm');
 

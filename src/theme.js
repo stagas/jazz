@@ -119,7 +119,7 @@ symbol {
 
 indent {
   display: inline-block;
-  background-repeat: repeat;
+  background-repeat: no-repeat;
 }
 `
   )
