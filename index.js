@@ -566,6 +566,22 @@ Jazz.prototype.animationScrollFrame = function() {
 
 Jazz.prototype.insert = function(text) {
   if (this.mark.active) this.delete();
+
+  // apply indent on enter
+  if ('\n' === text) { //TODO: text.test(Regexp.newline)
+    var line = this.buffer.getLine(this.caret.y);
+
+    var isEndOfLine = this.caret.x === line.length - 1;
+
+    if (isEndOfLine) {
+      var char = line.split('\n')[0].slice(-1);
+      var indent = line.match(/\S/);
+      indent = indent ? indent.index : line.length - 1;
+      if (~['{','[','('].indexOf(char)) indent += 2;
+      text += new Array(indent + 1).join(' ');
+    }
+  }
+
   var length = this.buffer.insert(this.caret, text);
   this.move.byChars(length, true);
 };

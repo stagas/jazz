@@ -126,7 +126,7 @@ Buffer.prototype.insert = function(point, text, shift, isCtrlShift) {
 
   text = normalizeEOL(text);
 
-  isEOL = '\n' === text;
+  isEOL = '\n' === text[0];
 
   point = this.lines.getPoint(point);
   lines = this.lines.insert(point, text);
