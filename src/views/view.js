@@ -19,7 +19,7 @@ function View(name, editor, template) {
   this[0] = this[1] = -1;
 
   this.el = document.createElement('div');
-  this.el.className = `${css[name]}`;
+  this.el.className = css[name];
 
   var style = {
     top: 0,

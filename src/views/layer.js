@@ -7,7 +7,7 @@ var css = require('../style.css');
 module.exports = Layer;
 
 function Layer(name, editor, template, length) {
-  this.dom = dom(`${css.layer}`);
+  this.dom = dom(css.layer);
   this.name = name;
   this.editor = editor;
   this.template = template;
