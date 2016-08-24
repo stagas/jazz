@@ -504,11 +504,8 @@ Jazz.prototype.scrollBy = function(x, y) {
 Jazz.prototype.animateScrollBy = function(x, y) {
   if (!this.animationRunning) {
     this.animationRunning = true;
-  } else {
-    window.cancelAnimationFrame(this.animationFrame);
+    this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
   }
-
-  this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
   var s = this.animationScrollTarget || this.scroll;
 
@@ -520,8 +517,6 @@ Jazz.prototype.animateScrollBy = function(x, y) {
 };
 
 Jazz.prototype.animationScrollFrame = function() {
-  window.cancelAnimationFrame(this.animationFrame);
-
   var speed = this.options.scroll_speed; // adjust precision to keep caret ~static when paging up/down
   var s = this.scroll;
   var t = this.animationScrollTarget;
@@ -530,7 +525,7 @@ Jazz.prototype.animationScrollFrame = function() {
   var dy = t.y - s.y;
 
   if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
-    // this.scrollTo(this.animationScrollTarget);
+    this.scrollTo(this.animationScrollTarget);
     this.animationRunning = false;
     this.animationScrollTarget = null;
     this.emit('animation end');
