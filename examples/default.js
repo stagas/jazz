@@ -1,5 +1,5 @@
 var options = {
-  theme: 'ergonom',
+  theme: 'western',
   // debug_layers: ['code'],
   // scroll_speed: 75,
   // hide_rows: true,
@@ -11,5 +11,7 @@ var options = {
 var jazz = new Jazz(options);
 
 // jazz.use(document.body).open('ember.js', './').focus();
-jazz.use(document.body).open('babel.js', './').focus();
+// jazz.use(document.body).open('babel.js', './').focus();
+jazz.use(document.body).open('jquery.js', './').focus();
+// jazz.use(document.body).open('codemirror.js', './').focus();
 // jazz.use(document.body).open('broken.js', '../test/').focus();

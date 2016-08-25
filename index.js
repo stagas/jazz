@@ -76,6 +76,8 @@ function Jazz(options) {
     gutter: 0,
     code: 0,
     rows: 0,
+    tabSize: 2,
+    tab: '\t',
 
     caret: new Point({ x: 0, y: 0 }),
     hasFocus: false,
@@ -738,6 +740,17 @@ Jazz.prototype.suggest = function() {
   };
 };
 
+Jazz.prototype.getPointTabs = function(point) {
+  var line = this.buffer.getLine(point.y);
+  var tabs = 0;
+  var tab;
+  while (~(tab = line.indexOf('\t', tab + 1))) {
+    if (tab >= point.x) break;
+    tabs++;
+  }
+  return tabs;
+};
+
 Jazz.prototype.repaint = function() {
   this.resize();
   this.render();
@@ -802,6 +815,7 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.layer} > .${css.mark},
     #${this.id} > .${css.layer} > .${css.code} {
       padding-left: ${this.options.margin_left + this.gutter}px;
+      tab-size: ${this.tabSize};
     }
     #${this.id} > .${css.layer} > .${css.rows} {
       padding-right: ${this.options.gutter_margin}px;

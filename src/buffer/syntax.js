@@ -16,7 +16,7 @@ var syntax = map({
 
 var Indent = {
   regexp: R(['indent'], 'gm'),
-  replacer: (s) => s.replace(/ {1,2}/g, '<indent>$&</indent>')
+  replacer: (s) => s.replace(/ {1,2}|\t/g, '<indent>$&</indent>')
 };
 
 var Blocks = R(['comment','string','regexp'], 'gm');
@@ -34,6 +34,7 @@ module.exports = Syntax;
 
 function Syntax(o) {
   o = o || {};
+  this.tab = o.tab || '\t';
   this.maxLine = o.maxLine || 300;
   this.blocks = [];
 }
@@ -87,13 +88,16 @@ Syntax.prototype.createIndents = function(code) {
     // console.log(line)
   }
   for (var j = 0; j < i; j++) {
-    lines[j] = new Array(match.index + 1).join(' ');
+    lines[j] = new Array(match.index + 1).join(this.tab);
   }
   var prev;
   for (; i < lines.length; i++) {
     line = lines[i];
     prev = lines[i-1];
-    if (!line.length && prev.length && prev[0] === ' ' && prev[prev.length-1] !== '/') lines[i] = ' ';
+    if (!line.length
+      && prev.length
+      && prev[0] === this.tab
+      && !~['/',';'].indexOf(prev[prev.length-1])) lines[i] = this.tab;
   }
 
   code = lines.join('\n');
