@@ -77,7 +77,12 @@ function Jazz(options) {
     code: 0,
     rows: 0,
 
+    tabSize: 2,
+    tab: '  ',
+
     caret: new Point({ x: 0, y: 0 }),
+    caretPx: new Point({ x: 0, y: 0 }),
+
     hasFocus: false,
 
     mark: new Area({
@@ -318,9 +323,18 @@ Jazz.prototype.onFileRaw = function(raw) {
   this.render();
 };
 
+Jazz.prototype.setTabMode = function(char) {
+  if ('\t' === char) {
+    this.tab = char;
+  } else {
+    this.tab = new Array(this.tabSize + 1).join(char);
+  }
+}
+
 Jazz.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
   this.buffer.updateRaw();
+  this.setTabMode(this.buffer.syntax.tab);
   this.followCaret();
   this.repaint();
 };
@@ -386,6 +400,14 @@ Jazz.prototype.onMouseDown = function() {
 
 Jazz.prototype.setCaret = function(p) {
   this.caret.set(p);
+
+  var tabs = this.getPointTabs(this.caret);
+
+  this.caretPx.set({
+    x: this.char.width * (this.caret.x + (tabs * this.tabSize) - tabs),
+    y: this.char.height * this.caret.y
+  });
+
   this.followCaret();
 };
 
@@ -469,7 +491,7 @@ Jazz.prototype.getLineLength = function(y) {
 };
 
 Jazz.prototype.followCaret = function() {
-  var p = this.caret['_*'](this.char);
+  var p = this.caretPx;
   var s = this.animationScrollTarget || this.scroll;
 
   var top = s.y - p.y;
@@ -738,6 +760,17 @@ Jazz.prototype.suggest = function() {
   };
 };
 
+Jazz.prototype.getPointTabs = function(point) {
+  var line = this.buffer.getLine(point.y);
+  var tabs = 0;
+  var tab;
+  while (~(tab = line.indexOf('\t', tab + 1))) {
+    if (tab >= point.x) break;
+    tabs++;
+  }
+  return tabs;
+};
+
 Jazz.prototype.repaint = function() {
   this.resize();
   this.render();
@@ -802,6 +835,7 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.layer} > .${css.mark},
     #${this.id} > .${css.layer} > .${css.code} {
       padding-left: ${this.options.margin_left + this.gutter}px;
+      tab-size: ${this.tabSize};
     }
     #${this.id} > .${css.layer} > .${css.rows} {
       padding-right: ${this.options.gutter_margin}px;

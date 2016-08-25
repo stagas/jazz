@@ -162,7 +162,7 @@ var keys = module.exports = {
   'tab': function() {
     var res = this.suggest();
     if (!res) {
-      this.insert('  ');
+      this.insert(this.tab);
     } else {
       this.markSetArea(res.area);
       this.insert(res.node.value);

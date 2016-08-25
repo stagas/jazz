@@ -66,13 +66,15 @@ template.find = function(range, e) {
   var width = e.findValue.length * e.char.width + 'px';
 
   var html = '';
+  var tabs;
   var r;
   while (results[i] && results[i].y < range[1]) {
     r = results[i++];
+    tabs = e.getPointTabs(r);
     html += '<i style="'
           + 'width:' + width + ';'
           + 'top:' + (r.y * e.char.height) + 'px;'
-          + 'left:' + (r.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+          + 'left:' + ((r.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
           + '"></i>';
   }
 
@@ -134,18 +136,24 @@ template.block = function(range, e) {
 
   var end = e.buffer.lines.getOffset(i + offset);
 
+
   var html = '';
+  var tabs;
+
+  tabs = e.getPointTabs(begin);
 
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (begin.y * e.char.height) + 'px;'
-        + 'left:' + (begin.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((begin.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
+
+  tabs = e.getPointTabs(end);
 
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (end.y * e.char.height) + 'px;'
-        + 'left:' + (end.x * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((end.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   return html;
@@ -171,8 +179,8 @@ template.caret = function() {
 template.caret.style = function(point, e) {
   return {
     opacity: +e.hasFocus,
-    left: e.char.width * e.caret.x + e.gutter + e.options.margin_left,
-    top: e.char.height * e.caret.y,
+    left: e.caretPx.x + e.marginLeft,
+    top: e.caretPx.y,
     height: e.char.height,
   };
 };
