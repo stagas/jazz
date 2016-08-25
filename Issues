@@ -82,11 +82,11 @@ x- bug: sometimes when there's one line, it blinks below like a double line
   x- also sometimes is blank entirely
 x- indent align on enter
 x- autofill matching bracket/curly/parens on edit with caret inbetween
+x- support tabs, tab width, indent change
 
 
 -- doing ---------------------
 
-- support tabs, tab width, indent change
 - fix find
 
 
