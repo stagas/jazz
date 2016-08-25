@@ -177,11 +177,10 @@ template.caret = function() {
 };
 
 template.caret.style = function(point, e) {
-  var tabs = e.getPointTabs(e.caret);
   return {
     opacity: +e.hasFocus,
-    left: e.char.width * (e.caret.x + (tabs * e.tabSize) - tabs) + e.gutter + e.options.margin_left,
-    top: e.char.height * e.caret.y,
+    left: e.caretPx.x + e.marginLeft,
+    top: e.caretPx.y,
     height: e.char.height,
   };
 };

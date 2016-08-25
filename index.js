@@ -76,10 +76,13 @@ function Jazz(options) {
     gutter: 0,
     code: 0,
     rows: 0,
+
     tabSize: 2,
-    tab: '\t',
+    tab: '  ',
 
     caret: new Point({ x: 0, y: 0 }),
+    caretPx: new Point({ x: 0, y: 0 }),
+
     hasFocus: false,
 
     mark: new Area({
@@ -320,9 +323,18 @@ Jazz.prototype.onFileRaw = function(raw) {
   this.render();
 };
 
+Jazz.prototype.setTabMode = function(char) {
+  if ('\t' === char) {
+    this.tab = char;
+  } else {
+    this.tab = new Array(this.tabSize + 1).join(char);
+  }
+}
+
 Jazz.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
   this.buffer.updateRaw();
+  this.setTabMode(this.buffer.syntax.tab);
   this.followCaret();
   this.repaint();
 };
@@ -388,6 +400,14 @@ Jazz.prototype.onMouseDown = function() {
 
 Jazz.prototype.setCaret = function(p) {
   this.caret.set(p);
+
+  var tabs = this.getPointTabs(this.caret);
+
+  this.caretPx.set({
+    x: this.char.width * (this.caret.x + (tabs * this.tabSize) - tabs),
+    y: this.char.height * this.caret.y
+  });
+
   this.followCaret();
 };
 
@@ -471,7 +491,7 @@ Jazz.prototype.getLineLength = function(y) {
 };
 
 Jazz.prototype.followCaret = function() {
-  var p = this.caret['_*'](this.char);
+  var p = this.caretPx;
   var s = this.animationScrollTarget || this.scroll;
 
   var top = s.y - p.y;
