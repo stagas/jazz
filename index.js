@@ -376,7 +376,17 @@ Jazz.prototype.setCaretFromPx = function(px) {
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
   p.y = Math.max(0, Math.min(p.y, this.buffer.loc));
-  p.x = Math.max(0, Math.min(p.x, this.getLineLength(p.y)));
+  p.x = Math.max(0, p.x);
+
+  var tabs = this.getCoordsTabs(p);
+
+  p.x = Math.max(
+    0,
+    Math.min(
+      p.x - tabs.tabs + tabs.remainder,
+      this.getLineLength(p.y)
+    )
+  );
 
   this.setCaret(p);
   this.move.lastDeliberateX = p.x;
@@ -775,6 +785,24 @@ Jazz.prototype.getPointTabs = function(point) {
   return {
     tabs: tabs,
     remainder: remainder + tabs
+  };
+};
+
+Jazz.prototype.getCoordsTabs = function(point) {
+  var line = this.buffer.getLine(point.y);
+  var remainder = 0;
+  var tabs = 0;
+  var tab;
+  var prev = 0;
+  while (~(tab = line.indexOf('\t', tab + 1))) {
+    if (tabs * this.tabSize + remainder >= point.x) break;
+    remainder += (tab - prev) % this.tabSize;
+    tabs++;
+    prev = tab + 1;
+  }
+  return {
+    tabs: tabs,
+    remainder: remainder
   };
 };
 
