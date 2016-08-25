@@ -483,10 +483,10 @@ Jazz.prototype.followCaret = function() {
   if (left < 0) left = 0;
   if (right < 0) right = 0;
 
-  if (!this.animationRunning && !this.find.isOpen)
+  // if (!this.animationRunning)
     this.scrollBy(right - left, bottom - top);
-  else
-    this.animateScrollBy(right - left, bottom - top);
+  // else
+    // this.animateScrollBy(right - left, bottom - top);
 };
 
 Jazz.prototype.scrollTo = function(p) {

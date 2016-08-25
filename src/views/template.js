@@ -79,10 +79,6 @@ template.find = function(range, e) {
   return html;
 };
 
-template.find.style = function() {
-  //
-};
-
 template.block = function(range, e) {
   if (e.editing) return '';
 
@@ -155,6 +151,7 @@ template.block = function(range, e) {
   return html;
 };
 
+template.find.style =
 template.block.style =
 template.mark.style =
 template.rows.style =
