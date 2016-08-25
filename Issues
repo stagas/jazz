@@ -86,13 +86,13 @@ x- autofill matching bracket/curly/parens on edit with caret inbetween
 
 -- doing ---------------------
 
-
+- support tabs, tab width, indent change
+- fix find
 
 
 
 -- todo ----------------------
 
-- support tabs, tab width, indent change
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
 - refactor template
