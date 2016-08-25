@@ -19,6 +19,8 @@ var Indent = {
   replacer: (s) => s.replace(/ {1,2}|\t/g, '<indent>$&</indent>')
 };
 
+var AnyChar = /\S/g;
+
 var Blocks = R(['comment','string','regexp'], 'gm');
 
 var Tag = {
@@ -65,39 +67,21 @@ Syntax.prototype.highlight = function(code, offset) {
 
 Syntax.prototype.createIndents = function(code) {
   var lines = code.split(/\n/g);
-  if (lines.length <= 2) return code;
-
-  var line;
-  var long = [];
+  var indent = 0;
   var match;
-  var firstIndent = 0;
-  var i = 0;
+  var line;
+  var i;
 
-  // for (; i < lines.length; i++) {
-  //   line = lines[i];
-  //   if (line.length > this.maxLine) {
-  //     long.push(lines.splice(i--, 1, '\ueeee'));
-  //   }
-  // }
+  i = lines.length;
 
-  i = 0;
-  line = lines[i];
-  // console.log(line)
-  while (!(match = /\S/g.exec(line))) {
-    line = lines[++i];
-    // console.log(line)
-  }
-  for (var j = 0; j < i; j++) {
-    lines[j] = new Array(match.index + 1).join(this.tab);
-  }
-  var prev;
-  for (; i < lines.length; i++) {
+  while (i--) {
     line = lines[i];
-    prev = lines[i-1];
-    if (!line.length
-      && prev.length
-      && prev[0] === this.tab
-      && !~['/',';'].indexOf(prev[prev.length-1])) lines[i] = this.tab;
+    AnyChar.lastIndex = 0;
+    match = AnyChar.exec(line);
+    if (match) indent = match.index;
+    else if (indent && !line.length) {
+      lines[i] = new Array(indent + 1).join(this.tab);
+    }
   }
 
   code = lines.join('\n');

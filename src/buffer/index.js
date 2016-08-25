@@ -2,6 +2,7 @@ var debounce = require('../../lib/debounce');
 var throttle = require('../../lib/throttle');
 var atomic = require('../../lib/atomic');
 var parse = require('../../lib/parse');
+var Point = require('../../lib/point');
 var Area = require('../../lib/area');
 var Range = require('../../lib/range');
 var Regexp = require('../../lib/regexp');
@@ -59,7 +60,7 @@ Buffer.prototype.getHighlighted = function(range) {
   // return this.syntax.entities(code);
   // return this.syntax.highlight(code);
 
-  var block = this.segments.get(range[0]);
+  var block = this.segments.get(new Point({ x: 0, y: range[0] }));
   // console.timeEnd('get segment')
   if (block) {
     code = BLOCK[block] + '\uffba' + code + '\uffbe' + BLOCK_END[block];
@@ -103,7 +104,6 @@ Buffer.prototype.set = function(text) {
   this.changes = 0;
 
   this.raw = text = normalizeEOL(text);
-  this.emit('raw', this.raw);
 
   this.text = new SkipString({ chunkSize: CHUNK_SIZE });
   this.text.set(text);
@@ -115,6 +115,8 @@ Buffer.prototype.set = function(text) {
   this.lines.insert({ x:0, y:0 }, this.raw);
 
   this.syntax.tab = ~this.raw.indexOf('\t') ? '\t' : ' ';
+
+  // this.emit('raw', this.raw);
 
   this.emit('set');
 };
