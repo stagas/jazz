@@ -404,7 +404,7 @@ Jazz.prototype.setCaret = function(p) {
   var tabs = this.getPointTabs(this.caret);
 
   this.caretPx.set({
-    x: this.char.width * (this.caret.x + (tabs * this.tabSize) - tabs),
+    x: this.char.width * (this.caret.x + tabs.tabs * this.tabSize - tabs.remainder),
     y: this.char.height * this.caret.y
   });
 
@@ -762,13 +762,20 @@ Jazz.prototype.suggest = function() {
 
 Jazz.prototype.getPointTabs = function(point) {
   var line = this.buffer.getLine(point.y);
+  var remainder = 0;
   var tabs = 0;
   var tab;
+  var prev = 0;
   while (~(tab = line.indexOf('\t', tab + 1))) {
     if (tab >= point.x) break;
+    remainder += (tab - prev) % this.tabSize;
     tabs++;
+    prev = tab + 1;
   }
-  return tabs;
+  return {
+    tabs: tabs,
+    remainder: remainder + tabs
+  };
 };
 
 Jazz.prototype.repaint = function() {

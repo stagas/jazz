@@ -74,7 +74,7 @@ template.find = function(range, e) {
     html += '<i style="'
           + 'width:' + width + ';'
           + 'top:' + (r.y * e.char.height) + 'px;'
-          + 'left:' + ((r.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+          + 'left:' + ((r.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
           + '"></i>';
   }
 
@@ -145,7 +145,7 @@ template.block = function(range, e) {
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (begin.y * e.char.height) + 'px;'
-        + 'left:' + ((begin.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((begin.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   tabs = e.getPointTabs(end);
@@ -153,7 +153,7 @@ template.block = function(range, e) {
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (end.y * e.char.height) + 'px;'
-        + 'left:' + ((end.x + tabs * e.tabSize - tabs) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((end.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   return html;

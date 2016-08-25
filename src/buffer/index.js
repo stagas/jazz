@@ -114,7 +114,7 @@ Buffer.prototype.set = function(text) {
   this.lines = new Lines;
   this.lines.insert({ x:0, y:0 }, this.raw);
 
-  this.syntax.tab = this.raw.indexOf('\t') >= 0 ? '\t' : ' ';
+  this.syntax.tab = ~this.raw.indexOf('\t') ? '\t' : ' ';
 
   this.emit('set');
 };
