@@ -87,12 +87,15 @@ x- support tabs, tab width, indent change
 
 -- doing ---------------------
 
-- fix find
+- unify segments/blocks/lines/skipstring indexing
+  in a way that all support dynamic operations
+  and never reindex
 
 
 
 -- todo ----------------------
 
+- fix find
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
 - refactor template

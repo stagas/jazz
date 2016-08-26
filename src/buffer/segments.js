@@ -37,23 +37,6 @@ for (var key in Match) {
   Token[M[0]] = key;
 }
 
-var TOKEN = /\/\*|\*\/|`/g;
-// var TOKEN = /\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
-
-module.exports = Segments;
-
-function Segments(buffer) {
-  this.buffer = buffer;
-  this.segments = [];
-  this.blocks = {
-    curly: [],
-    square: [],
-    parens: [],
-    segment: this.segments
-  };
-  this.clearCache();
-}
-
 var Length = {
   'open comment': 2,
   'close comment': 2,
@@ -74,10 +57,41 @@ var Tag = {
   'template string': 'string',
 };
 
-Segments.prototype.get = function(p) {
-  if (p in this.cache.state) {
-    return this.cache.state[p];
-  }
+var TOKEN = /\/\*|\*\/|`/g;
+// var TOKEN = /\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
+
+module.exports = Segments;
+
+function Segments(buffer) {
+  this.buffer = buffer;
+  this.reset();
+}
+
+Segments.prototype.clearCache = function() {
+  this.cache = {
+    offset: {},
+    range: {},
+    point: {},
+    state: [],
+    stateMap: {},
+  };
+};
+
+Segments.prototype.reset = function() {
+  this.segments = [];
+  this.blocks = {
+    curly: [],
+    square: [],
+    parens: [],
+    segment: this.segments
+  };
+  this.clearCache();
+};
+
+Segments.prototype.get = function(y) {
+  // if (y in this.cache.point) {
+  //   return this.cache.point[y];
+  // }
 
   var open = false;
   var state = null;
@@ -92,52 +106,79 @@ Segments.prototype.get = function(p) {
 
   var i = 0;
 
-  //TODO: optimization:
-  // cache segment y with open/close/state so we skip
-  // iterating from the begin every time
+  var state = this.getCacheState(y);
+  if (state) {
+    open = true;
+    i = state.index + 1;
+    state = state.state;
+    waitFor = Closes[state.type];
+    // console.log('has cache', state, i)
+  }
 
   for (; i < this.segments.length; i++) {
     segment = this.segments[i];
 
+    // searching for close token
     if (open) {
       if (waitFor === segment.type) {
         point = this.getPointOffset(segment.offset);
-        if (!point) return (this.cache.state[p] = null);
-        if (Point.sort(point, p) >= 0) return (this.cache.state[p] = Tag[state.type]);
 
-        // console.log('close', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
+        if (!point) {
+          return (this.cache.point[y] = null);
+        }
+
+        if (point.y >= y) {
+          return (this.cache.point[y] = Tag[state.type]);
+        }
+
         last = segment;
         last.point = point;
         state = null;
         open = false;
+
+        if (point.y >= y) break;
       }
-    } else {
+    }
+
+    // searching for open token
+    else {
       point = this.getPointOffset(segment.offset);
-      if (!point) return (this.cache.state[p] = null);
+
+      if (!point) {
+        return (this.cache.point[y] = null);
+      }
 
       range = point.line.range;
 
       if (last && last.point.y === point.y) {
         close = last.point.x + Length[last.type];
-        // console.log('last one was', last.type, last.point.x, this.buffer.text.getRange([last.offset, last.offset + 10]))
       } else {
         close = 0;
       }
+
       valid = this.isValidRange([range[0], range[1]+1], segment, close);
 
       if (valid) {
         if (NotOpen[segment.type]) continue;
-        // console.log('open', segment.type, segment.offset, this.buffer.text.getRange([segment.offset, segment.offset + 10]))
         open = true;
         state = segment;
         state.point = point;
         waitFor = Closes[state.type];
+        if (!(state.offset in this.cache.stateMap)) {
+          this.cache.state.push(state);
+          this.cache.stateMap[state.offset] = true;
+        }
       }
+
+      if (point.y >= y) break;
     }
-    if (Point.sort(point, p) >= 0) break;
   }
-  if (state && Point.sort(state.point, p) < 0) return (this.cache.state[p] = Tag[state.type]);
-  return (this.cache.state[p] = null);
+
+  if (state && state.point.y < y) {
+    return (this.cache.point[y] = Tag[state.type]);
+  }
+
+  return (this.cache.point[y] = null);
 };
 
 //TODO: cache in Lines
@@ -156,6 +197,7 @@ Segments.prototype.isValidRange = function(range, segment, close) {
 
 Segments.prototype.isValid = function(text, offset, lastIndex) {
   Begin.lastIndex = lastIndex;
+
   var match = Begin.exec(text);
   if (!match) return;
 
@@ -266,6 +308,30 @@ Segments.prototype.getSegment = function(offset) {
   };
 };
 
+Segments.prototype.getCacheState = function(y) {
+  var begin = 0;
+  var end = this.cache.state.length;
+  if (!end) return;
+
+  var p = -1;
+  var i = -1;
+  var s;
+
+  do {
+    p = i;
+    i = begin + (end - begin) / 2 | 0;
+    s = this.cache.state[i];
+    if (s.point.y < y) begin = i;
+    else end = i;
+  } while (p !== i);
+
+  if (y - 1 < s.point.y) return null;
+  else return {
+    state: s,
+    index: i
+  };
+};
+
 Segments.prototype.shift = function(offset, shift) {
   var s = this.getSegment(offset);
   if (!s) return;
@@ -274,31 +340,16 @@ Segments.prototype.shift = function(offset, shift) {
     this.segments[i].offset += shift;
   }
 
-  if (shift < 0) {
-    this.invalidCacheAfter = {
-      offset: offset,
-      point: this.buffer.lines.getOffset(offset)
-    };
-  }
-};
-
-Segments.prototype.clearCache = function() {
-  this.cache = {
-    offset: {},
-    range: {},
-    state: {}
-  };
+  // if (shift < 0) {
+  //   this.invalidCacheAfter = {
+  //     offset: offset,
+  //     point: this.buffer.lines.getOffset(offset)
+  //   };
+  // }
 };
 
 Segments.prototype.index = function(text) {
-  this.segments = [];
-  this.blocks = {
-    curly: [],
-    square: [],
-    parens: [],
-    segment: this.segments
-  };
-  this.clearCache();
+  this.reset();
 
   var blocks = this.blocks;
   var match;
@@ -307,7 +358,14 @@ Segments.prototype.index = function(text) {
   // console.time('segments');
   while (match = TOKEN.exec(text)) {
     type = Type[text[match.index]];
-    blocks[type[0]].push({ type: type[1], offset: match.index });
+    blocks[type[0]].push({
+      type: type[1],
+      offset: match.index,
+      point: null
+    });
   }
+
+  // console.log('index!')
   // console.timeEnd('segments');
+  this.get(this.buffer.loc);
 };

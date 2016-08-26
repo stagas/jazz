@@ -1,6 +1,5 @@
 var debounce = require('../../lib/debounce');
 var throttle = require('../../lib/throttle');
-var atomic = require('../../lib/atomic');
 var parse = require('../../lib/parse');
 var Point = require('../../lib/point');
 var Area = require('../../lib/area');
@@ -60,7 +59,7 @@ Buffer.prototype.getHighlighted = function(range) {
   // return this.syntax.entities(code);
   // return this.syntax.highlight(code);
 
-  var block = this.segments.get(new Point({ x: 0, y: range[0] }));
+  var block = this.segments.get(range[0]);
   // console.timeEnd('get segment')
   if (block) {
     code = BLOCK[block] + '\uffba' + code + '\uffbe' + BLOCK_END[block];
