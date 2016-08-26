@@ -62,7 +62,7 @@ function Lines() {
 
 Lines.prototype.get = function(y) {
   if (y > this.length) {
-    return this.index[this.length - 1] + this.tail.length + 1;
+    return (this.index[this.length - 1] || 0) + this.tail.length + (this.length > 0);
   }
   var line = this.index[y - 1] || 0;
 
@@ -70,33 +70,39 @@ Lines.prototype.get = function(y) {
 };
 
 Lines.prototype.getRange = function(range) {
-  var a = this.get(range[0]);
-  var b;
+  // var a = this.get(range[0]);
+  // var b;
 
-  if (range[1] + 1 >= this.length + 1) {
-    b = this.get(range[1]) + this.tail.length;
-  } else {
-    b = this.get(range[1] + 1);
-  }
+  // if (range[1] + 1 >= this.length + 1) {
+  //   b = this.get(this.length) + this.tail.length;
+  // } else {
+  //   b = this.get(range[1] + 1);
+  // }
 
-  return [a, b];
+  return [
+    this.get(range[0]),
+    this.get(range[1] + 1)
+  ];
 };
 
 Lines.prototype.getDistance = function(range) {
-  var a = this.get(range[0]);
-  var b;
+  var r = this.getRange(range);
+  return r[1] - r[0] - (range[1] < this.length);
 
-  if (range[1] === this.length + 1) {
-    b = this.get(range[1] - 1) + this.tail.length;
-  } else {
-    b = this.get(range[1]) - 1;
-  }
+  // var a = this.get(range[0]);
+  // var b;
 
-  return b - a;
+  // if (range[1] >= this.length + 1) {
+  //   b = this.get(range[1]); // + this.tail.length;
+  // } else {
+  //   b = this.get(range[1]) - 1;
+  // }
+
+  // return b - a;
 };
 
 Lines.prototype.getLineLength = function(y) {
-  return this.getDistance([y, y+1]);
+  return this.getDistance([y,y]);
 };
 
 Lines.prototype.getLongestLineLength = function() {

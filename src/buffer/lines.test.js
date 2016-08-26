@@ -1,4 +1,5 @@
 
+var Point = require('../../lib/point');
 var assert = require('assert');
 
 //
@@ -19,7 +20,8 @@ module.exports = function(t, Lines) {
       assert.equal(0, lines.get(0));
       assert.equal(6, lines.get(1));
       assert.equal(12, lines.get(2));
-      assert.throws(() => lines.get(3));
+      assert.equal(14, lines.get(3));
+      assert.equal(14, lines.get(4));
     })
 
     t('getLine', function() {
@@ -29,19 +31,20 @@ module.exports = function(t, Lines) {
       assert.equal([0,5], lines.getLine(0).range);
       assert.equal([6,11], lines.getLine(1).range);
       assert.equal([12,14], lines.getLine(2).range);
-      assert.throws(() => lines.getLine(3));
+      // assert.equal([12,14], lines.getLine(3).range);
     })
 
     t('getRange', function() {
       assert.equal([0,6], lines.getRange([0,0]));
       assert.equal([0,12], lines.getRange([0,1]));
       assert.equal([0,14], lines.getRange([0,2]));
-      assert.throws(() => lines.getRange([0,3]));
+      assert.equal([0,14], lines.getRange([0,3]));
       assert.equal([0,12], lines.getRange([0,1]));
       assert.equal([6,12], lines.getRange([1,1]));
       assert.equal([6,14], lines.getRange([1,2]));
       assert.equal([12,14], lines.getRange([2,2]));
-      assert.throws(() => lines.getRange([2,3]));
+      assert.equal([12,14], lines.getRange([2,3]));
+      // assert.throws(() => lines.getRange([2,3]));
     })
 
     t('getPoint', function() {
@@ -63,15 +66,16 @@ module.exports = function(t, Lines) {
       assert.equal(5, lines.getLineLength(0));
       assert.equal(5, lines.getLineLength(1));
       assert.equal(2, lines.getLineLength(2));
-      assert.throws(() => lines.getLineLength(3));
+      assert.equal(0, lines.getLineLength(3));
+      // assert.throws(() => lines.getLineLength(3));
     })
 
     t('getOffset', function() {
-      assert.equal({x:0,y:0}, lines.getOffset(0));
-      assert.equal({x:3,y:0}, lines.getOffset(3));
-      assert.equal({x:1,y:1}, lines.getOffset(7));
-      assert.equal({x:1,y:2}, lines.getOffset(13));
-      assert.equal({x:2,y:2}, lines.getOffset(14));
+      assert.equal({x:0,y:0}, new Point(lines.getOffset(0)));
+      assert.equal({x:3,y:0}, new Point(lines.getOffset(3)));
+      assert.equal({x:1,y:1}, new Point(lines.getOffset(7)));
+      assert.equal({x:1,y:2}, new Point(lines.getOffset(13)));
+      assert.equal({x:2,y:2}, new Point(lines.getOffset(14)));
       assert.equal(false, lines.getOffset(15));
     })
   }()
