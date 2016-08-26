@@ -3,7 +3,7 @@ dev:
 		./node_modules/.bin/live-server \
 		--no-browser \
 		--wait=200 \
-		--watch=dist/jazz.js,examples,test
+		--watch=dist/jazz.js,examples
 
 dev-build:
 	@./node_modules/.bin/watchify \
@@ -23,6 +23,9 @@ todo:
 	@grep -A 1 --color=always -nd recurse TODO lib src index.js
 
 test:
-	@xdg-open http://localhost:8080/test/
+	@./node_modules/.bin/live-server \
+		--open=test \
+		--wait=100 \
+		--watch=lib,src,test
 
 .PHONY: dev dev-build todo test
