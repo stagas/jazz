@@ -17,9 +17,9 @@ var dom = require('./lib/dom');
 var diff = require('./lib/diff');
 var merge = require('./lib/merge');
 var clone = require('./lib/clone');
+var bindRaf = require('./lib/bind-raf');
 var debounce = require('./lib/debounce');
 var throttle = require('./lib/throttle');
-var atomic = require('./lib/atomic');
 var Event = require('./lib/event');
 var Regexp = require('./lib/regexp');
 var Dialog = require('./lib/dialog');
@@ -889,14 +889,13 @@ Jazz.prototype.resize = function() {
   this.emit('resize');
 };
 
-Jazz.prototype.clear = atomic(function() {
+Jazz.prototype.clear = bindRaf(function() {
   // console.log('clear')
   this.editing = false;
   this.views.clear();
 });
 
-Jazz.prototype.render = atomic(function() {
+Jazz.prototype.render = bindRaf(function() {
   // console.log('render')
   this.views.render();
-  this.emit('render');
 });
