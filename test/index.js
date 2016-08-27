@@ -14,6 +14,7 @@ var el = setup({
   // 'lib/trim.test': ['lib/trim'],
   // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
   'src/buffer/tokens.test': ['src/buffer/tokens'],
+  // 'src/buffer/chunk-array.test': ['src/buffer/chunk-array'],
   // 'src/buffer/lines.test': ['src/buffer/lines'],
   // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
   // 'src/buffer/test': ['src/buffer'],

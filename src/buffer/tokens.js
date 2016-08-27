@@ -20,15 +20,13 @@ module.exports = Tokens;
 
 Tokens.Type = Type;
 
-function Tokens(chunkSize) {
-  this.chunkSize = chunkSize;
-
+function Tokens(factory) {
   var t = this.tokens = {
-    lines: new ChunkArray(chunkSize),
-    curly: new ChunkArray(chunkSize),
-    square: new ChunkArray(chunkSize),
-    parens: new ChunkArray(chunkSize),
-    segments: new ChunkArray(chunkSize),
+    lines: factory(),
+    curly: factory(),
+    square: factory(),
+    parens: factory(),
+    segments: factory(),
   };
 
   this.collection = {
@@ -60,10 +58,27 @@ Tokens.prototype.index = function(text, offset) {
 };
 
 Tokens.prototype.insert = function(offset, text) {
-  this.shift(offset, text.length);
-
-  var insert = new Tokens(this.chunkSize);
+  var insert = new Tokens(Array);
   insert.index(text, offset);
+
+  var shift = text.length;
+  var collection;
+
+  for (var type in insert.tokens) {
+    collection = insert.tokens[type];
+    if (collection.length) {
+      this.tokens[type].mergeShift(collection, shift);
+    } else {
+      this.tokens[type].shiftAt(offset, shift);
+    }
+  }
+};
+
+Tokens.prototype.updateRange = function(range, text) {
+  for (var type in this.tokens) {
+    this.tokens[type].removeOffsetRange(range);
+  }
+  this.insert(range[0], text);
 };
 
 Tokens.prototype.shift = function(offset, shift) {
