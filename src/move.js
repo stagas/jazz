@@ -67,7 +67,6 @@ move.byWord = function(buffer, p, dx) {
 };
 
 move.byChars = function(buffer, p, dx) {
-  var lines = buffer.lines;
   var x = p.x;
   var y = p.y;
 
@@ -76,19 +75,19 @@ move.byChars = function(buffer, p, dx) {
     if (x < 0) { // when past left edge
       if (y > 0) { // and lines above
         y -= 1; // move up a line
-        x = lines.getLineLength(y); // and go to the end of line
+        x = buffer.getLine(y).length; // and go to the end of line
       } else {
         x = 0;
       }
     }
   } else if (dx > 0) { // going right
     x += dx; // move right
-    while (x - lines.getLineLength(y) > 0) { // while past line length
-      if (y === lines.length) { // on end of file
-        x = lines.getLineLength(y); // go to end of line on last line
+    while (x - buffer.getLine(y).length > 0) { // while past line length
+      if (y === buffer.loc()) { // on end of file
+        x = buffer.getLine(y).length; // go to end of line on last line
         break; // and exit
       }
-      x -= lines.getLineLength(y) + 1; // wrap this line length
+      x -= buffer.getLine(y).length + 1; // wrap this line length
       y += 1; // and move down a line
     }
   }
@@ -102,7 +101,6 @@ move.byChars = function(buffer, p, dx) {
 };
 
 move.byLines = function(buffer, p, dy) {
-  var lines = buffer.lines;
   var x = p.x;
   var y = p.y;
 
@@ -113,10 +111,10 @@ move.byLines = function(buffer, p, dy) {
       y = 0;
     }
   } else if (dy > 0) { // going down
-    if (y < lines.length - dy) { // when lines below
+    if (y < buffer.loc() - dy) { // when lines below
       y += dy; // move down
     } else {
-      y = lines.length;
+      y = buffer.loc();
     }
   }
 
@@ -124,7 +122,7 @@ move.byLines = function(buffer, p, dy) {
   //   x = lines.getLine(y).length;
   // } else {
   // }
-  x = Math.min(this.lastDeliberateX, lines.getLine(y).length);
+  x = Math.min(this.lastDeliberateX, buffer.getLine(y).length);
 
   return {
     x: x,
@@ -141,7 +139,7 @@ move.beginOfLine = function(_, p) {
 };
 
 move.endOfLine = function(buffer, p) {
-  var x = buffer.lines.getLine(p.y).length;
+  var x = buffer.getLine(p.y).length;
   this.lastDeliberateX = Infinity;
   return {
     x: x,
@@ -158,8 +156,8 @@ move.beginOfFile = function() {
 };
 
 move.endOfFile = function(buffer) {
-  var last = buffer.lines.length;
-  var x = buffer.lines.getLine(last).length
+  var last = buffer.loc();
+  var x = buffer.getLine(last).length
   this.lastDeliberateX = x;
   return {
     x: x,
@@ -173,7 +171,7 @@ move.isBeginOfFile = function(_, p) {
 
 move.isEndOfFile = function(buffer, p) {
   var last = buffer.loc;
-  return p.y === last && p.x === buffer.lines.getLineLength(last);
+  return p.y === last && p.x === buffer.getLine(last).length;
 };
 
 Object.keys(move).forEach(function(method) {

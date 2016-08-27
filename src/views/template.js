@@ -8,7 +8,8 @@ template.code = function(range, e) {
   //   template.code.memoize.result = false;
   // }
 
-  var html = e.buffer.getHighlighted(range);
+  // var html = e.buffer.getHighlighted(range);
+  var html = e.buffer.get(range);
 
   return html;
 };

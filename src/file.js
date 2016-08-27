@@ -1,7 +1,7 @@
 var open = require('../lib/open');
 var save = require('../lib/save');
 var Event = require('../lib/event');
-var Buffer = require('./buffer');
+var Buffer = require('./buffer/new-buffer');
 
 module.exports = File;
 
@@ -32,18 +32,18 @@ File.prototype.open = function(path, root, fn) {
       fn && fn(err);
       return;
     }
-    this.buffer.set(text);
+    this.buffer.setText(text);
     this.emit('open');
     fn && fn(null, this);
   });
 };
 
 File.prototype.save = function(fn) {
-  save(this.root + this.path, this.buffer.get(), fn || noop);
+  save(this.root + this.path, this.buffer.toString(), fn || noop);
 };
 
 File.prototype.set = function(text) {
-  this.buffer.set(text);
+  this.buffer.setText(text);
   this.emit('set');
 };
 

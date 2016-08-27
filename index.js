@@ -5,7 +5,7 @@
 var DefaultOptions = {
   theme: 'western',
   debug_layers: false,
-  scroll_speed: 75,
+  scroll_speed: 120,
   hide_rows: false,
   center: false,
   margin_left: 15,
@@ -333,8 +333,8 @@ Jazz.prototype.setTabMode = function(char) {
 
 Jazz.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
-  this.buffer.updateRaw();
-  this.setTabMode(this.buffer.syntax.tab);
+  // this.buffer.updateRaw();
+  // this.setTabMode(this.buffer.syntax.tab);
   this.followCaret();
   this.repaint();
 };
@@ -352,7 +352,7 @@ Jazz.prototype.onBeforeFileChange = function() {
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
   // console.log('change')
   this.editing = true;
-  this.pageBounds = [0, this.buffer.loc];
+  this.pageBounds = [0, this.buffer.loc()];
 
   if (this.find.isOpen) {
     this.onFindValue(this.findValue, true);
@@ -375,7 +375,7 @@ Jazz.prototype.setCaretFromPx = function(px) {
   var g = new Point({ x: this.marginLeft, y: this.char.height/2 })['+'](this.offset);
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
-  p.y = Math.max(0, Math.min(p.y, this.buffer.loc));
+  p.y = Math.max(0, Math.min(p.y, this.buffer.loc()));
   p.x = Math.max(0, p.x);
 
   var tabs = this.getCoordsTabs(p);
@@ -497,7 +497,7 @@ Jazz.prototype.getPageRange = function(range) {
 };
 
 Jazz.prototype.getLineLength = function(y) {
-  return this.buffer.lines.getLineLength(y);
+  return this.buffer.getLine(y).length;
 };
 
 Jazz.prototype.followCaret = function() {
@@ -603,7 +603,7 @@ Jazz.prototype.animationScrollFrame = function() {
 Jazz.prototype.insert = function(text) {
   if (this.mark.active) this.delete();
 
-  var line = this.buffer.getLine(this.caret.y);
+  var line = this.buffer.getLineText(this.caret.y);
   var right = line[this.caret.x];
   var hasRightSymbol = ~['}',']',')'].indexOf(right);
 
@@ -771,7 +771,7 @@ Jazz.prototype.suggest = function() {
 };
 
 Jazz.prototype.getPointTabs = function(point) {
-  var line = this.buffer.getLine(point.y);
+  var line = this.buffer.getLineText(point.y);
   var remainder = 0;
   var tabs = 0;
   var tab;
@@ -789,7 +789,7 @@ Jazz.prototype.getPointTabs = function(point) {
 };
 
 Jazz.prototype.getCoordsTabs = function(point) {
-  var line = this.buffer.getLine(point.y);
+  var line = this.buffer.getLineText(point.y);
   var remainder = 0;
   var tabs = 0;
   var tab;
@@ -806,10 +806,10 @@ Jazz.prototype.getCoordsTabs = function(point) {
   };
 };
 
-Jazz.prototype.repaint = function() {
+Jazz.prototype.repaint = bindRaf(function() {
   this.resize();
   this.render();
-};
+});
 
 Jazz.prototype.resize = function() {
   var $ = this.el;
@@ -821,12 +821,12 @@ Jazz.prototype.resize = function() {
   // this is a weird fix when doing multiple .use()
   if (this.char.width === 0) this.char.set(dom.getCharSize($, css.code));
 
-  this.rows = this.buffer.loc;
+  this.rows = this.buffer.loc();
   this.code = this.buffer.text.length;
   this.page.set(this.size['^/'](this.char));
   this.pageRemainder.set(this.size['-'](this.page['_*'](this.char)));
   this.pageBounds = [0, this.rows];
-  this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
+  // this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
   this.gutter = Math.max(
     this.options.hide_rows ? 0 : (''+this.rows).length,
     (this.options.center

@@ -2,6 +2,7 @@ dev:
 	@make dev-build & \
 		./node_modules/.bin/live-server \
 		--no-browser \
+		--port=3000 \
 		--wait=200 \
 		--watch=dist/jazz.js,examples
 

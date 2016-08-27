@@ -1,4 +1,6 @@
 var Point = require('../../lib/point');
+var Tokens = require('./tokens');
+var Type = Tokens.Type;
 
 var Begin = /[\/'"`]/g;
 
@@ -9,18 +11,6 @@ var Match = {
   'single quote string': ["'","'"],
   'double quote string': ['"','"'],
   'regexp': ['/','/'],
-};
-
-var Type = {
-  '{': ['curly', 'open curly'],
-  '}': ['curly', 'close curly'],
-  '[': ['square', 'open square'],
-  ']': ['square', 'close square'],
-  '(': ['parens', 'open parens'],
-  ')': ['parens', 'close parens'],
-  '/': ['segment', 'open comment'],
-  '*': ['segment', 'close comment'],
-  '`': ['segment', 'template string'],
 };
 
 var Skip = {
@@ -78,13 +68,6 @@ Segments.prototype.clearCache = function() {
 };
 
 Segments.prototype.reset = function() {
-  this.segments = [];
-  this.blocks = {
-    curly: [],
-    square: [],
-    parens: [],
-    segment: this.segments
-  };
   this.clearCache();
 };
 
@@ -93,11 +76,13 @@ Segments.prototype.get = function(y) {
   //   return this.cache.point[y];
   // }
 
+  var segments = this.buffer.tokens.getCollection('segments');
   var open = false;
   var state = null;
   var waitFor = '';
   var point = { x:-1, y:-1 };
   var close = 0;
+  var offset;
   var segment;
   var range;
   var text;
@@ -110,18 +95,20 @@ Segments.prototype.get = function(y) {
   if (state) {
     open = true;
     i = state.index + 1;
-    state = state.state;
     waitFor = Closes[state.type];
-    // console.log('has cache', state, i)
   }
 
-  for (; i < this.segments.length; i++) {
-    segment = this.segments[i];
+  for (; i < segments.length; i++) {
+    offset = segments.get(i);
+    segment = {
+      offset: offset,
+      type: Type[this.buffer.charAt(offset)]
+    };
 
     // searching for close token
     if (open) {
       if (waitFor === segment.type) {
-        point = this.getPointOffset(segment.offset);
+        point = this.getOffsetPoint(segment.offset);
 
         if (!point) {
           return (this.cache.point[y] = null);
@@ -142,13 +129,13 @@ Segments.prototype.get = function(y) {
 
     // searching for open token
     else {
-      point = this.getPointOffset(segment.offset);
+      point = this.getOffsetPoint(segment.offset);
 
       if (!point) {
         return (this.cache.point[y] = null);
       }
 
-      range = point.line.range;
+      range = this.buffer.getLine(point.y).offsetRange;
 
       if (last && last.point.y === point.y) {
         close = last.point.x + Length[last.type];
@@ -162,6 +149,7 @@ Segments.prototype.get = function(y) {
         if (NotOpen[segment.type]) continue;
         open = true;
         state = segment;
+        state.index = i;
         state.point = point;
         waitFor = Closes[state.type];
         if (!(state.offset in this.cache.stateMap)) {
@@ -181,16 +169,16 @@ Segments.prototype.get = function(y) {
   return (this.cache.point[y] = null);
 };
 
-//TODO: cache in Lines
-Segments.prototype.getPointOffset = function(offset) {
+//TODO: cache in Buffer
+Segments.prototype.getOffsetPoint = function(offset) {
   if (offset in this.cache.offset) return this.cache.offset[offset]
-  return (this.cache.offset[offset] = this.buffer.lines.getOffset(offset));
+  return (this.cache.offset[offset] = this.buffer.getOffsetPoint(offset));
 };
 
 Segments.prototype.isValidRange = function(range, segment, close) {
   var key = range.join();
   if (key in this.cache.range) return this.cache.range[key];
-  var text = this.buffer.text.getRange(range);
+  var text = this.buffer.getOffsetRangeText(range);
   var valid = this.isValid(text, segment.offset - range[0], close);
   return (this.cache.range[key] = valid);
 };
@@ -201,7 +189,7 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
   var match = Begin.exec(text);
   if (!match) return;
 
-  i = match.index;
+  var i = match.index;
 
   last = i;
 
@@ -222,7 +210,6 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 
     var waitFor = Match[o][1];
 
-    // console.log('start', i, o)
     last = i;
 
     switch (waitFor.length) {
@@ -285,29 +272,6 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
   return valid;
 }
 
-Segments.prototype.getSegment = function(offset) {
-  var begin = 0;
-  var end = this.segments.length;
-  if (!end) return;
-
-  var p = -1;
-  var i = -1;
-  var s;
-
-  do {
-    p = i;
-    i = begin + (end - begin) / 2 | 0;
-    s = this.segments[i];
-    if (s.offset < offset) begin = i;
-    else end = i;
-  } while (p !== i);
-
-  return {
-    segment: s,
-    index: i
-  };
-};
-
 Segments.prototype.getCacheState = function(y) {
   var begin = 0;
   var end = this.cache.state.length;
@@ -326,46 +290,5 @@ Segments.prototype.getCacheState = function(y) {
   } while (p !== i);
 
   if (y - 1 < s.point.y) return null;
-  else return {
-    state: s,
-    index: i
-  };
-};
-
-Segments.prototype.shift = function(offset, shift) {
-  var s = this.getSegment(offset);
-  if (!s) return;
-
-  for (var i = s.index + (offset-shift > s.segment.offset); i < this.segments.length; i++) {
-    this.segments[i].offset += shift;
-  }
-
-  // if (shift < 0) {
-  //   this.invalidCacheAfter = {
-  //     offset: offset,
-  //     point: this.buffer.lines.getOffset(offset)
-  //   };
-  // }
-};
-
-Segments.prototype.index = function(text) {
-  this.reset();
-
-  var blocks = this.blocks;
-  var match;
-  var type;
-
-  // console.time('segments');
-  while (match = TOKEN.exec(text)) {
-    type = Type[text[match.index]];
-    blocks[type[0]].push({
-      type: type[1],
-      offset: match.index,
-      point: null
-    });
-  }
-
-  // console.log('index!')
-  // console.timeEnd('segments');
-  this.get(this.buffer.loc);
+  else return s;
 };

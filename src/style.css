@@ -67,7 +67,8 @@ indent {
   left: 0;
   top: 0;
   opacity: 0;
-  min-width: 100%;
+  min-width: 100.1%;
+  min-height: 100.1%;
 }
 
 .gutter.above {

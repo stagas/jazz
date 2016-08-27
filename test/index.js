@@ -13,7 +13,7 @@ var el = setup({
   // 'lib/diff.test': ['lib/diff'],
   // 'lib/trim.test': ['lib/trim'],
   // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
-  // 'src/buffer/tokens.test': ['src/buffer/tokens'],
+  'src/buffer/tokens.test': ['src/buffer/tokens'],
   // 'src/buffer/chunk-array.test': ['src/buffer/chunk-array'],
   'src/buffer/new-buffer.test': ['src/buffer/new-buffer'],
   // 'src/buffer/lines.test': ['src/buffer/lines'],

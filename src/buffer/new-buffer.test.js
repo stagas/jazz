@@ -50,4 +50,19 @@ t('getLineRangeText', function() {
   assert.equal('2}\n3123', b.getLineRangeText([12,13]));
 })
 
+t('getOffsetPoint', function() {
+  before();
+  assert.equal({ x:0, y:0 }, b.getOffsetPoint(0));
+  assert.equal({ x:0, y:1 }, b.getOffsetPoint(1));
+  assert.equal({ x:1, y:1 }, b.getOffsetPoint(2));
+  assert.equal({ x:2, y:1 }, b.getOffsetPoint(3));
+  assert.equal({ x:3, y:1 }, b.getOffsetPoint(4));
+  assert.equal({ x:0, y:2 }, b.getOffsetPoint(5));
+  assert.equal({ x:0, y:3 }, b.getOffsetPoint(10));
+  assert.equal({ x:4, y:3 }, b.getOffsetPoint(14));
+  assert.equal({ x:0, y:4 }, b.getOffsetPoint(15));
+  assert.equal({ x:4, y:13 }, b.getOffsetPoint(fixture.length));
+  assert.equal({ x:3, y:13 }, b.getOffsetPoint(fixture.length-1));
+})
+
 };

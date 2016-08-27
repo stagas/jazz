@@ -91,9 +91,9 @@ Tokens.prototype.shift = function(offset, shift) {
 
   for (var type in this.tokens) {
     collection = this.tokens[type];
-    token = this.get(type, offset);
-    i = token ? token.index + (offset > token.offset) : 0;
-    collection.shiftAt(i, shift);
+    token = this.getByOffset(type, offset);
+    // i = token ? token.index + (offset > token.offset) : 0;
+    collection.shiftAt(token.index, shift);
   }
 };
 
@@ -105,7 +105,7 @@ Tokens.prototype.getCollection = function(type) {
   return this.tokens[type];
 };
 
-Tokens.prototype.get = function(type, offset) {
+Tokens.prototype.getByOffset = function(type, offset) {
   var tokens = this.tokens[type];
   var begin = 0;
   var end = tokens.length;
@@ -123,8 +123,10 @@ Tokens.prototype.get = function(type, offset) {
     else end = i;
   } while (p !== i);
 
+  var isAfter = offset > t;
+
   return {
-    offset: t,
-    index: i
+    offset: t + isAfter,
+    index: i + isAfter
   };
 };
