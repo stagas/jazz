@@ -34,7 +34,7 @@ function SkipString(o) {
   this.levels = o.levels || 11;
   this.bias = o.bias || 1 / Math.E;
   this.head = new Node(null, this.levels);
-  this.chunkSize = o.chunkSize;
+  this.chunkSize = o.chunkSize || 5000;
 }
 
 SkipString.prototype = {
@@ -250,8 +250,6 @@ SkipString.prototype.insertChunked = function(offset, text) {
 };
 
 SkipString.prototype.substring = function(a, b) {
-  a = a || 0;
-  b = b || this.length;
   var length = b - a;
 
   var search = this.search(a, true);
@@ -303,7 +301,7 @@ SkipString.prototype.joinString = function(delimiter) {
 };
 
 SkipString.prototype.toString = function() {
-  return this.substring();
+  return this.substring(0, this.length);
 };
 
 function trim(s, left, right) {

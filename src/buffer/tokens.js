@@ -21,6 +21,8 @@ module.exports = Tokens;
 Tokens.Type = Type;
 
 function Tokens(factory) {
+  factory = factory || function() { return new ChunkArray(5000) };
+
   var t = this.tokens = {
     lines: factory(),
     curly: factory(),
@@ -93,6 +95,14 @@ Tokens.prototype.shift = function(offset, shift) {
     i = token ? token.index + (offset > token.offset) : 0;
     collection.shiftAt(i, shift);
   }
+};
+
+Tokens.prototype.getByIndex = function(type, index) {
+  return this.tokens[type].get(index);
+};
+
+Tokens.prototype.getCollection = function(type) {
+  return this.tokens[type];
 };
 
 Tokens.prototype.get = function(type, offset) {
