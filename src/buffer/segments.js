@@ -47,9 +47,6 @@ var Tag = {
   'template string': 'string',
 };
 
-var TOKEN = /\/\*|\*\/|`/g;
-// var TOKEN = /\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
-
 module.exports = Segments;
 
 function Segments(buffer) {
@@ -72,9 +69,9 @@ Segments.prototype.reset = function() {
 };
 
 Segments.prototype.get = function(y) {
-  // if (y in this.cache.point) {
-  //   return this.cache.point[y];
-  // }
+  if (y in this.cache.point) {
+    return this.cache.point[y];
+  }
 
   var segments = this.buffer.tokens.getCollection('segments');
   var open = false;
@@ -99,7 +96,7 @@ Segments.prototype.get = function(y) {
   }
 
   for (; i < segments.length; i++) {
-    offset = segments.get(i);
+    offset = segments[i];
     segment = {
       offset: offset,
       type: Type[this.buffer.charAt(offset)]

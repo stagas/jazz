@@ -21,9 +21,9 @@ bar
 
 var t;
 
-function before() {
-  t = new Tokens(() => new ChunkArray(2));
-  t.index(fixture);
+function before(text) {
+  t = new Tokens;
+  t.index(text || fixture);
 }
 
 t('index', function() {
@@ -49,7 +49,7 @@ t('shift', function() {
 
   before();
   t.shift(0, 2);
-  assert.equal(0+2, t.tokens.lines.get(0));
+  // assert.equal(0+2, t.tokens.lines.get(0));
   assert.equal(3+2, t.tokens.lines.get(1));
   assert.equal(fixture.length-1+2, t.tokens.lines.get(t.tokens.lines.length-1));
   assert.equal(1+2, t.tokens.segments.get(0));
@@ -70,17 +70,30 @@ t('insert', function() {
 })
 
 t('updateRange', function() {
-  before();
-  assert.equal(0, t.tokens.lines.get(0));
-  assert.equal(3, t.tokens.lines.get(1));
-  assert.equal(7, t.tokens.lines.get(2));
-  assert.equal(11, t.tokens.lines.get(3));
-  assert.equal(9, t.tokens.segments.get(1));
-  t.updateRange([1,11], '{foo}')
-  assert.equal(0, t.tokens.lines.get(0));
+  // before();
+  // assert.equal(0, t.tokens.lines.get(0));
+  // assert.equal(3, t.tokens.lines.get(1));
+  // assert.equal(7, t.tokens.lines.get(2));
+  // assert.equal(11, t.tokens.lines.get(3));
+  // assert.equal(9, t.tokens.segments.get(1));
+  // t.updateRange([1,11], '{foo}')
+  // assert.equal(0, t.tokens.lines.get(0));
+  // assert.equal(7, t.tokens.lines.get(1));
+  // assert.equal(1, t.tokens.curly.get(0));
+  // assert.equal(5, t.tokens.curly.get(1));
+
+  before('012\n456\n89');
+  assert.equal(3, t.tokens.lines.get(0));
   assert.equal(7, t.tokens.lines.get(1));
-  assert.equal(1, t.tokens.curly.get(0));
-  assert.equal(5, t.tokens.curly.get(1));
+  t.updateRange([0,2], 'foo');
+  assert.equal(4, t.tokens.lines.get(0));
+  assert.equal(8, t.tokens.lines.get(1));
+
+  before('012\n456\n89');
+  assert.equal(3, t.tokens.lines.get(0));
+  assert.equal(7, t.tokens.lines.get(1));
+  t.updateRange([0,4], 'foo');
+  assert.equal(6, t.tokens.lines.get(0));
 })
 
 };

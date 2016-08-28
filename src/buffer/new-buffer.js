@@ -7,6 +7,12 @@ var Tokens = require('./tokens');
 var Syntax = require('./syntax');
 
 var EOL = /\r\n|\r|\n/g;
+var NEWLINE = /\n/g;
+
+var SEGMENT = {
+  'comment': '/*',
+  'string': '`',
+};
 
 module.exports = Buffer;
 
@@ -18,43 +24,10 @@ function Buffer() {
 
 Buffer.prototype.__proto__ = Event.prototype;
 
-var SEGMENT = {
-  'comment': '/*',
-  'string': '`',
-};
-
-var SEGMENT_END = {
-  'comment': '*/',
-  'string': '`',
-};
-
-Buffer.prototype.get = function(range) {
-  var code = this.getLineRangeText(range);
-  // console.time('segment get')
-  var segment = this.segments.get(range[0]);
-  // console.timeEnd('segment get')
-  if (segment) {
-    code = SEGMENT[segment] + '\uffba' + code + '\uffbe' + SEGMENT_END[segment];
-    code = this.syntax.highlight(code);
-    code = '<' + segment + '>' +
-      code.substring(
-        code.indexOf('\uffba') + 1,
-        code.lastIndexOf('\uffbe')
-      );
-  } else {
-    code = this.syntax.highlight(code + '\uffbe*/`');
-    code = code.substring(
-      0,
-      code.lastIndexOf('\uffbe')
-    );
-  }
-  return code;
-};
-
 Buffer.prototype.setText = function(text) {
   text = normalizeEOL(text);
 
-  this.raw = text;
+  this.raw = text //this.syntax.highlight(text);
 
   this.syntax.tab = ~this.raw.indexOf('\t') ? '\t' : ' ';
 
@@ -68,15 +41,128 @@ Buffer.prototype.setText = function(text) {
   this.emit('set');
 };
 
+Buffer.prototype.insert =
+Buffer.prototype.insertTextAtPoint = function(p, text) {
+  this.emit('before update');
+
+  text = normalizeEOL(text);
+
+  var isEOL = '\n' === text;
+  var shift = isEOL;
+
+  var point = this.getPoint(p);
+  var lines = (text.match(NEWLINE) || []).length;
+  var range = [point.y, point.y + lines];
+  var offsetRange = this.getLineRangeOffsets(range);
+
+  var before = this.getOffsetRangeText(offsetRange);
+  this.text.insert(point.offset, text);
+  offsetRange[1] += text.length;
+  var after = this.getOffsetRangeText(offsetRange);
+  this.tokens.update(offsetRange, after, text.length);
+  this.segments.clearCache();
+
+  // this.tokens = new Tokens;
+  // this.tokens.index(this.text.toString());
+  // this.segments = new Segments(this);
+
+  this.emit('update', range, shift, before, after);
+
+  return text.length;
+};
+
+Buffer.prototype.remove =
+Buffer.prototype.removeOffsetRange = function(o) {
+  this.emit('before update');
+
+  var a = this.getOffsetPoint(o[0]);
+  var b = this.getOffsetPoint(o[1]);
+  var shift = o[0] - o[1];
+  var range = [a.y, b.y];
+
+  var offsetRange = this.getLineRangeOffsets(range);
+  var before = this.getOffsetRangeText(offsetRange);
+  this.text.remove(o);
+  offsetRange[1] += shift;
+  var after = this.getOffsetRangeText(offsetRange);
+  this.tokens.update(offsetRange, after, shift);
+  this.segments.clearCache();
+
+  this.emit('update', range, shift, before, after);
+};
+
+Buffer.prototype.removeCharAtPoint = function(p) {
+  var point = this.getPoint(p);
+  var offsetRange = [point.offset, point.offset+1];
+  return this.removeOffsetRange(offsetRange);
+};
+
+Buffer.prototype.get = function(range) {
+  var code = this.getLineRangeText(range);
+  var segment = this.segments.get(range[0]);
+  if (segment) {
+    code = SEGMENT[segment] + '\uffba' + code + '\uffbe*/`'
+    code = this.syntax.highlight(code);
+    code = '<' + segment[0] + '>' +
+      code.substring(
+        code.indexOf('\uffba') + 1,
+        code.lastIndexOf('\uffbe')
+      );
+  } else {
+    code = this.syntax.highlight(code + '\uffbe*/`');
+    code = code.substring(0, code.lastIndexOf('\uffbe'));
+  }
+  return code;
+};
+
+Buffer.prototype.getLine = function(y) {
+  var line = new Line;
+  line.offsetRange = this.getLineRangeOffsets([y,y]);
+  line.offset = line.offsetRange[0];
+  line.length = line.offsetRange[1] - line.offsetRange[0] - (y < this.loc());
+  line.point.set({ x:0, y:y });
+  return line;
+};
+
+Buffer.prototype.getPoint = function(p) {
+  var line = this.getLine(p.y);
+  var point = new Point({
+    x: Math.min(line.length, p.x),
+    y: line.point.y
+  });
+  point.offset = line.offset + point.x;
+  point.point = point;
+  point.line = line;
+  return point;
+};
+
 Buffer.prototype.getLineRangeText = function(range) {
   var offsets = this.getLineRangeOffsets(range);
   var text = this.text.getRange(offsets);
   return text;
 };
 
+Buffer.prototype.getLineRangeOffsets = function(range) {
+  var a = this.getLineOffset(range[0]);
+  var b = range[1] >= this.loc()
+    ? this.text.length
+    : this.getLineOffset(range[1] + 1);
+  var offsets = [a, b];
+  return offsets;
+};
+
 Buffer.prototype.getOffsetRangeText = function(offsetRange) {
   var text = this.text.getRange(offsetRange);
   return text;
+};
+
+Buffer.prototype.getOffsetPoint = function(offset) {
+  var token = this.tokens.getByOffset('lines', offset);
+  var point = new Point({
+    x: Math.max(0, offset - token.offset - 1),
+    y: token.index
+  });
+  return point;
 };
 
 Buffer.prototype.charAt = function(offset) {
@@ -91,10 +177,6 @@ Buffer.prototype.getOffsetLineText = function(offset) {
   }
 };
 
-Buffer.prototype.toString = function() {
-  return this.text.toString();
-};
-
 Buffer.prototype.getLineText = function(y) {
   var text = this.getLineRangeText([y,y]);
   return text;
@@ -102,14 +184,6 @@ Buffer.prototype.getLineText = function(y) {
 
 Buffer.prototype.getAreaText = function(area) {
   return text;
-};
-
-Buffer.prototype.insertTextAtPoint = function(point, text) {
-  return text.length;
-};
-
-Buffer.prototype.removeCharAtPoint = function(point) {
-
 };
 
 Buffer.prototype.wordAreaAtPoint = function(point, inclusive) {
@@ -124,53 +198,25 @@ Buffer.prototype.moveAreaByLines = function(y, area) {
 
 };
 
-
-Buffer.prototype.getLineRangeOffsets = function(range) {
-  var a = this.getLineOffset(range[0] - 1) + 1;
-  var b = range[1] >= this.loc()
-    ? this.text.length
-    : this.getLineOffset(range[1]);
-  var offsets = [a, b];
-  return offsets;
-};
-
 Buffer.prototype.getAreaOffsetRange = function(area) {
   return range;
-};
-
-Buffer.prototype.getLineOffset = function(y) {
-  var offset = y < 0 ? -1 : this.tokens.getByIndex('lines', y);
-  return offset;
-};
-
-Buffer.prototype.getPointLine = function(point) {
-  return line;
 };
 
 Buffer.prototype.getOffsetLine = function(offset) {
   return line;
 };
 
-Buffer.prototype.getOffsetPoint = function(offset) {
-  var token = this.tokens.getByOffset('lines', offset);
-  var point = new Point({
-    x: offset - token.offset,
-    y: token.index
-  });
-  return point;
+Buffer.prototype.getLineOffset = function(y) {
+  var offset = y < 0 ? -1 : y === 0 ? 0 : this.tokens.getByIndex('lines', y - 1) + 1;
+  return offset;
 };
 
 Buffer.prototype.loc = function() {
   return this.tokens.getCollection('lines').length;
 };
 
-Buffer.prototype.getLine = function(y) {
-  var line = new Line;
-  line.offsetRange = this.getLineRangeOffsets([y,y]);
-  line.offset = line.offsetRange[0];
-  line.length = line.offsetRange[1] - line.offsetRange[0];
-  line.point.set({ x:0, y:y });
-  return line;
+Buffer.prototype.toString = function() {
+  return this.text.toString();
 };
 
 function Line() {

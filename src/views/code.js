@@ -6,18 +6,22 @@ var template = require('./template');
 module.exports = Code;
 
 function Code(name, editor, template) {
-  Layer.call(this, name, editor, template, 10);
+  Layer.call(this, name, editor, template, 7);
 }
 
 Code.prototype.__proto__ = Layer.prototype;
 
 Code.prototype.render = function() {
-  // this.clear();
-  // return this.renderPage(0, true);
+  this.clear();
+  return this.renderPage(0, true);
+
   if (!this.editor.editing) this.renderAhead();
 };
 
 Code.prototype.renderEdit = function(edit) {
+  this.clear();
+  return this.renderPage(0, true);
+
   var y = edit.line;
   var g = edit.range.slice();
   var shift = edit.shift;

@@ -46,23 +46,51 @@ t('getCursor', function() {
   c.push(2);
   c.push(15);
   assert.equal({
+    offset: 0,
     local: 0,
     index: 0,
     chunk: c.chunks[0],
     chunkIndex: 0
   }, c.getCursor(0));
   assert.equal({
+    offset: 2,
     local: 1,
     index: 1,
     chunk: c.chunks[0],
     chunkIndex: 0
   }, c.getCursor(1));
   assert.equal({
+    offset: 15,
     local: 0,
     index: 2,
     chunk: c.chunks[1],
     chunkIndex: 1
   }, c.getCursor(2));
+
+  c = new ChunkArray(2);
+  c.push(2);
+  c.push(4);
+  assert.equal({
+    offset: 2,
+    local: 0,
+    index: 0,
+    chunk: c.chunks[0],
+    chunkIndex: 0
+  }, c.getCursor(0));
+  assert.equal({
+    offset: 4,
+    local: 1,
+    index: 1,
+    chunk: c.chunks[0],
+    chunkIndex: 0
+  }, c.getCursor(1));
+  assert.equal({
+    offset: 0,
+    local: 0,
+    index: 10,
+    chunk: c.chunks[1],
+    chunkIndex: 1
+  }, c.getCursor(10));
 })
 
 t('shiftAt', function() {
@@ -73,7 +101,7 @@ t('shiftAt', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.shiftAt(0, 2)
+  c.shiftAt(0, 2);
   assert.equal(0+2, c.get(0));
   assert.equal(2+2, c.get(1));
   assert.equal(15+2, c.get(2));
@@ -88,13 +116,60 @@ t('shiftAt', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.shiftAt(2, 2)
+  c.shiftAt(2, 2);
   assert.equal(0, c.get(0));
   assert.equal(2, c.get(1));
   assert.equal(15+2, c.get(2));
   assert.equal(20+2, c.get(3));
   assert.equal(21+2, c.get(4));
   assert.equal(22+2, c.get(5));
+
+  c = new ChunkArray(10);
+  c.push(0);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.shiftAt(2, 2);
+  assert.equal(0, c.get(0));
+  assert.equal(2, c.get(1));
+  assert.equal(15+2, c.get(2));
+  assert.equal(20+2, c.get(3));
+  assert.equal(21+2, c.get(4));
+  assert.equal(22+2, c.get(5));
+
+  c = new ChunkArray(10);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.shiftAt(0, 2);
+  assert.equal(2+2, c.get(0));
+  assert.equal(15+2, c.get(1));
+  assert.equal(20+2, c.get(2));
+  assert.equal(21+2, c.get(3));
+  assert.equal(22+2, c.get(4));
+
+  c = new ChunkArray(10);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.shiftAt(0, -5);
+  assert.equal(2-5, c.get(0));
+  assert.equal(15-5, c.get(1));
+  assert.equal(20-5, c.get(2));
+  assert.equal(21-5, c.get(3));
+  assert.equal(22-5, c.get(4));
+  c.shiftAt(1, 5);
+  assert.equal(2-5, c.get(0));
+  assert.equal(15, c.get(1));
+  assert.equal(20, c.get(2));
+  assert.equal(21, c.get(3));
+  assert.equal(22, c.get(4));
 })
 
 t('insert', function() {
@@ -129,6 +204,13 @@ t('getCursorByOffset', function() {
   assert.equal(c.chunks[1], c.getCursorByOffset(15).chunk);
   assert.equal(c.chunks[1], c.getCursorByOffset(18).chunk);
   assert.equal(1, c.getCursorByOffset(18).chunkIndex);
+
+  c = new ChunkArray(2);
+  c.push(0);
+  c.push(2);
+  var cur = c.getCursorByOffset(1);
+  console.log(cur)
+  assert.equal(c.chunks[0], cur.chunk);
 })
 
 t('mergeShift', function() {
@@ -139,7 +221,7 @@ t('mergeShift', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.mergeShift([5,6], 2);
+  c.mergeShift(5, [5,6], 2);
   assert.equal(0, c.get(0));
   assert.equal(2, c.get(1));
   assert.equal(5, c.get(2));
@@ -150,6 +232,24 @@ t('mergeShift', function() {
   assert.equal(22+2, c.get(7));
   assert.equal(4, c.chunks.length);
 
+  c = new ChunkArray(10);
+  c.push(0);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.mergeShift(5, [5,6], 5);
+  assert.equal(0, c.get(0));
+  assert.equal(2, c.get(1));
+  assert.equal(5, c.get(2));
+  assert.equal(6, c.get(3));
+  assert.equal(15+5, c.get(4));
+  assert.equal(20+5, c.get(5));
+  assert.equal(21+5, c.get(6));
+  assert.equal(22+5, c.get(7));
+  assert.equal(1, c.chunks.length);
+
   c = new ChunkArray(2);
   c.push(1);
   c.push(2);
@@ -157,7 +257,7 @@ t('mergeShift', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.mergeShift([0,1], 2);
+  c.mergeShift(0, [0,1], 2);
   assert.equal(0, c.get(0));
   assert.equal(1, c.get(1));
   assert.equal(1+2, c.get(2));
@@ -168,6 +268,42 @@ t('mergeShift', function() {
   assert.equal(22+2, c.get(7));
   assert.equal(4, c.chunks.length);
 
+  c = new ChunkArray(100);
+  c.push(1);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.mergeShift(0, [0,1], 2);
+  assert.equal(0, c.get(0));
+  assert.equal(1, c.get(1));
+  assert.equal(1+2, c.get(2));
+  assert.equal(2+2, c.get(3));
+  assert.equal(15+2, c.get(4));
+  assert.equal(20+2, c.get(5));
+  assert.equal(21+2, c.get(6));
+  assert.equal(22+2, c.get(7));
+  assert.equal(1, c.chunks.length);
+
+  c = new ChunkArray(4);
+  c.push(1);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.mergeShift(0, [0,1], 2);
+  assert.equal(0, c.get(0));
+  assert.equal(1, c.get(1));
+  assert.equal(1+2, c.get(2));
+  assert.equal(2+2, c.get(3));
+  assert.equal(15+2, c.get(4));
+  assert.equal(20+2, c.get(5));
+  assert.equal(21+2, c.get(6));
+  assert.equal(22+2, c.get(7));
+  assert.equal(2, c.chunks.length);
+
   c = new ChunkArray(2);
   c.push(1);
   c.push(2);
@@ -175,7 +311,7 @@ t('mergeShift', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.mergeShift([30,31], 2);
+  c.mergeShift(30, [30,31], 2);
   assert.equal(1, c.get(0));
   assert.equal(2, c.get(1));
   assert.equal(15, c.get(2));
@@ -193,7 +329,7 @@ t('mergeShift', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.mergeShift([22,23], 2);
+  c.mergeShift(23, [22,23], 2);
   assert.equal(1, c.get(0));
   assert.equal(2, c.get(1));
   assert.equal(15, c.get(2));
@@ -203,6 +339,24 @@ t('mergeShift', function() {
   assert.equal(22, c.get(6));
   assert.equal(23, c.get(7));
   assert.equal(5, c.chunks.length);
+
+  c = new ChunkArray(100);
+  c.push(1);
+  c.push(2);
+  c.push(15);
+  c.push(20);
+  c.push(21);
+  c.push(22);
+  c.mergeShift(23, [22,23], 2);
+  assert.equal(1, c.get(0));
+  assert.equal(2, c.get(1));
+  assert.equal(15, c.get(2));
+  assert.equal(20, c.get(3));
+  assert.equal(21, c.get(4));
+  assert.equal(22, c.get(5));
+  assert.equal(22, c.get(6));
+  assert.equal(23, c.get(7));
+  assert.equal(1, c.chunks.length);
 })
 
 t('removeOffsetRange', function() {
@@ -233,7 +387,7 @@ t('removeOffsetRange', function() {
   assert.equal(20-5, c.get(1));
   assert.equal(21-5, c.get(2));
   assert.equal(22-5, c.get(3));
-  assert.equal(3, c.chunks.length);
+  assert.equal(2, c.chunks.length);
   assert.equal(-3, c.chunks[0].offset);
   assert.equal(4, c.length);
 
@@ -245,23 +399,11 @@ t('removeOffsetRange', function() {
   c.push(21);
   c.push(22);
   c.removeOffsetRange([0,15]);
-  assert.equal(20-15, c.get(0));
-  assert.equal(21-15, c.get(1));
-  assert.equal(22-15, c.get(2));
-  assert.equal(3, c.length);
-
-  c = new ChunkArray(2);
-  c.push(0);
-  c.push(2);
-  c.push(15);
-  c.push(20);
-  c.push(21);
-  c.push(22);
-  c.removeOffsetRange([0,15]);
-  assert.equal(20-15, c.get(0));
-  assert.equal(21-15, c.get(1));
-  assert.equal(22-15, c.get(2));
-  assert.equal(3, c.length);
+  assert.equal(15-15, c.get(0));
+  assert.equal(20-15, c.get(1));
+  assert.equal(21-15, c.get(2));
+  assert.equal(22-15, c.get(3));
+  assert.equal(4, c.length);
 
   c = new ChunkArray(2);
   c.push(0);
@@ -271,9 +413,9 @@ t('removeOffsetRange', function() {
   c.push(21);
   c.push(22);
   c.removeOffsetRange([0,22]);
-  assert.equal(1, c.chunks.length);
-  assert.equal(0, c.chunks[0].offset);
-  assert.equal(0, c.length);
+  assert.equal(2, c.chunks.length);
+  assert.equal(0, c.get(0));
+  assert.equal(1, c.length);
 
   c = new ChunkArray(2);
   c.push(0);
@@ -292,10 +434,10 @@ t('removeOffsetRange', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.removeOffsetRange([1,21]);
+  c.removeOffsetRange([1,22]);
   assert.equal(2, c.length);
   assert.equal(0, c.get(0));
-  assert.equal(2, c.get(1));
+  assert.equal(1, c.get(1));
 
   c = new ChunkArray(2);
   c.push(0);
@@ -304,7 +446,7 @@ t('removeOffsetRange', function() {
   c.push(20);
   c.push(21);
   c.push(22);
-  c.removeOffsetRange([1,22]);
+  c.removeOffsetRange([1,23]);
   assert.equal(1, c.length);
   assert.equal(0, c.get(0));
 
@@ -337,54 +479,63 @@ t('removeOffsetRange', function() {
   assert.equal(22-10, c.get(3));
   assert.equal(4, c.length);
 
-  c = new ChunkArray(10);
-  c.push(0);
-  c.push(2);
-  c.push(15);
-  c.push(20);
-  c.push(21);
-  c.push(22);
-  c.removeOffsetRange([1,21]);
-  assert.equal(2, c.length);
-  assert.equal(0, c.get(0));
-  assert.equal(2, c.get(1));
+  // c = new ChunkArray(10);
+  // c.push(0);
+  // c.push(2);
+  // c.push(15);
+  // c.push(20);
+  // c.push(21);
+  // c.push(22);
+  // c.removeOffsetRange([1,21]);
+  // assert.equal(2, c.length);
+  // assert.equal(0, c.get(0));
+  // assert.equal(2, c.get(1));
 
-  c = new ChunkArray(5);
-  c.push(0);
-  c.push(2);
-  c.push(15);
-  c.push(20);
-  c.push(21);
-  c.push(22);
-  c.removeOffsetRange([1,21]);
-  assert.equal(2, c.length);
-  assert.equal(0, c.get(0));
-  assert.equal(2, c.get(1));
+  // c = new ChunkArray(5);
+  // c.push(0);
+  // c.push(2);
+  // c.push(15);
+  // c.push(20);
+  // c.push(21);
+  // c.push(22);
+  // c.removeOffsetRange([1,21]);
+  // assert.equal(2, c.length);
+  // assert.equal(0, c.get(0));
+  // assert.equal(2, c.get(1));
 
-  c = new ChunkArray(1);
-  c.push(0);
-  c.push(2);
-  c.push(15);
-  c.push(20);
-  c.push(21);
-  c.push(22);
-  c.removeOffsetRange([1,21]);
-  assert.equal(2, c.length);
-  assert.equal(0, c.get(0));
-  assert.equal(2, c.get(1));
+  // c = new ChunkArray(1);
+  // c.push(0);
+  // c.push(2);
+  // c.push(15);
+  // c.push(20);
+  // c.push(21);
+  // c.push(22);
+  // c.removeOffsetRange([1,21]);
+  // assert.equal(2, c.length);
+  // assert.equal(0, c.get(0));
+  // assert.equal(2, c.get(1));
 
-  c = new ChunkArray(2);
-  c.push(0);
-  c.push(2);
-  c.push(15);
-  c.push(20);
-  c.push(21);
-  c.push(22);
-  c.removeOffsetRange([0,15]);
-  assert.equal(3, c.length);
-  assert.equal(20-15, c.get(0));
-  assert.equal(21-15, c.get(1));
-  assert.equal(22-15, c.get(2));
+  // c = new ChunkArray(2);
+  // c.push(0);
+  // c.push(2);
+  // c.push(15);
+  // c.push(20);
+  // c.push(21);
+  // c.push(22);
+  // c.removeOffsetRange([0,15]);
+  // assert.equal(3, c.length);
+  // assert.equal(20-15, c.get(0));
+  // assert.equal(21-15, c.get(1));
+  // assert.equal(22-15, c.get(2));
+
+  // c = new ChunkArray(3);
+  // c.push(3);
+  // c.push(7);
+  // assert.equal(3, c.get(0));
+  // assert.equal(7, c.get(1));
+  // c.removeOffsetRange([0,2]);
+  // assert.equal(1, c.get(0));
+  // assert.equal(5, c.get(1));
 })
 
 };

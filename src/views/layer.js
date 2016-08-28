@@ -4,6 +4,11 @@ var Range = require('../../lib/range');
 var View = require('./view');
 var css = require('../style.css');
 
+var AheadThreshold = {
+  animation: [.15, .4],
+  normal: [1.5, 3]
+};
+
 module.exports = Layer;
 
 function Layer(name, editor, template, length) {
@@ -117,12 +122,21 @@ Layer.prototype.renderAhead = function(include) {
   }
 
   // check if we're past the threshold of view
-  var aheadRange = this.getPageRange([-1,+1]);
+  var threshold = this.editor.animationRunning
+    ? [-AheadThreshold.animation[0], +AheadThreshold.animation[0]]
+    : [-AheadThreshold.normal[0], +AheadThreshold.normal[0]];
+
+  var aheadRange = this.getPageRange(threshold);
   var aheadNeedRanges = Range.NOT(aheadRange, views);
   if (aheadNeedRanges.length) {
     // if so, render further ahead to have some
     // margin to scroll without triggering new renders
-    this.renderPage(2, include);
+    this.renderPage(
+      this.editor.animationRunning
+        ? AheadThreshold.animation[1]
+        : AheadThreshold.normal[1],
+      include
+    );
   }
 };
 

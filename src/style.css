@@ -15,19 +15,20 @@
 .mark,
 mark,
 .code,
-operator,
-keyword,
-declare,
-builtin,
-boolean,
-number,
-params,
-function,
-regexp,
-comment,
-string,
-symbol,
-indent {
+p,
+t,
+k,
+d,
+n,
+o,
+e,
+m,
+f,
+r,
+c,
+s,
+l,
+x {
   white-space: pre;
   font-family: monospace;
   font-size: 9pt;

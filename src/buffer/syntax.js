@@ -3,20 +3,20 @@ var R = Regexp.create;
 
 //NOTE: order matters
 var syntax = map({
-  'operator': R(['operator'], 'g', entities),
-  'params':   R(['params'],   'g'),
-  'declare':  R(['declare'],  'g'),
-  'function': R(['function'], 'g'),
-  'keyword':  R(['keyword'],  'g'),
-  'builtin':  R(['builtin'],  'g'),
-  'symbol':   R(['symbol'],   'g'),
-  'string':   R(['template string'], 'g'),
-  'number':   R(['special','number'], 'g'),
+  't': R(['operator'], 'g', entities),
+  'm': R(['params'],   'g'),
+  'd': R(['declare'],  'g'),
+  'f': R(['function'], 'g'),
+  'k': R(['keyword'],  'g'),
+  'n': R(['builtin'],  'g'),
+  'l': R(['symbol'],   'g'),
+  's': R(['template string'], 'g'),
+  'e': R(['special','number'], 'g'),
 }, compile);
 
 var Indent = {
   regexp: R(['indent'], 'gm'),
-  replacer: (s) => s.replace(/ {1,2}|\t/g, '<indent>$&</indent>')
+  replacer: (s) => s.replace(/ {1,2}|\t/g, '<x>$&</x>')
 };
 
 var AnyChar = /\S/g;
@@ -24,12 +24,12 @@ var AnyChar = /\S/g;
 var Blocks = R(['comment','string','regexp'], 'gm');
 
 var Tag = {
-  '//': 'comment',
-  '/*': 'comment',
-  '`': 'string',
-  '"': 'string',
-  "'": 'string',
-  '/': 'regexp',
+  '//': 'c',
+  '/*': 'c',
+  '`': 's',
+  '"': 's',
+  "'": 's',
+  '/': 'r',
 };
 
 module.exports = Syntax;
@@ -57,6 +57,7 @@ Syntax.prototype.highlight = function(code, offset) {
   code = this.restoreBlocks(code);
 
   code = code.replace(Indent.regexp, Indent.replacer);
+  // code = code.replace(/\n/g, '<br>')
 
   // code = code.replace(/\ueeee/g, function() {
   //   return long.shift().slice(0, this.maxLine) + '...line too long to display';

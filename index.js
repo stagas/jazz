@@ -5,7 +5,7 @@
 var DefaultOptions = {
   theme: 'western',
   debug_layers: false,
-  scroll_speed: 120,
+  scroll_speed: 95,
   hide_rows: false,
   center: false,
   margin_left: 15,
@@ -229,7 +229,13 @@ Jazz.prototype.onScroll = function(scroll) {
   this.editing = false;
   this.scroll.set(scroll);
   this.render();
+  this.rest();
 };
+
+Jazz.prototype.rest = debounce(function() {
+  // console.log('rest');
+  this.render();
+}, 300);
 
 Jazz.prototype.onMove = function(point, byEdit) {
   if (!byEdit) this.editing = false;
@@ -346,7 +352,7 @@ Jazz.prototype.onHistoryChange = function() {
 };
 
 Jazz.prototype.onBeforeFileChange = function() {
-  this.history.save();
+  // this.history.save();
 };
 
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
@@ -358,7 +364,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     this.onFindValue(this.findValue, true);
   }
 
-  this.history.save();
+  // this.history.save();
 
   this.views.code.renderEdit({
     line: editRange[0],
@@ -516,7 +522,9 @@ Jazz.prototype.followCaret = function() {
   if (right < 0) right = 0;
 
   // if (!this.animationRunning)
+  if (left + top + right + bottom) {
     this.scrollBy(right - left, bottom - top);
+  }
   // else
     // this.animateScrollBy(right - left, bottom - top);
 };
@@ -526,14 +534,18 @@ Jazz.prototype.scrollTo = function(p) {
 };
 
 Jazz.prototype.scrollBy = function(x, y) {
-  this.scroll.set(Point.low({
+  var target = Point.low({
     x: 0,
     y: 0
   }, {
     x: this.scroll.x + x,
     y: this.scroll.y + y
-  }));
-  this.scrollTo(this.scroll);
+  });
+
+  if (Point.sort(target, this.scroll) !== 0) {
+    this.scroll.set(target);
+    this.scrollTo(this.scroll);
+  }
 };
 
 Jazz.prototype.animateScrollBy = function(x, y) {
@@ -582,8 +594,8 @@ Jazz.prototype.animationScrollFrame = function() {
   }
 
   if (adx < 1 && ady < 1) {
-    this.scrollTo(this.animationScrollTarget);
     this.animationRunning = false;
+    this.scrollTo(this.animationScrollTarget);
     this.animationScrollTarget = null;
     this.emit('animation end');
     return;
@@ -656,7 +668,7 @@ Jazz.prototype.backspace = function() {
     this.render();
   } else {
     this.move.byChars(-1, true);
-    this.buffer.deleteCharAt(this.caret);
+    this.buffer.removeCharAtPoint(this.caret);
   }
 };
 
@@ -673,7 +685,7 @@ Jazz.prototype.delete = function() {
     this.clear();
     this.render();
   } else {
-    this.buffer.deleteCharAt(this.caret);
+    this.buffer.removeCharAtPoint(this.caret);
   }
 };
 
@@ -850,7 +862,7 @@ Jazz.prototype.resize = function() {
   canvas.setAttribute('width', Math.ceil(this.char.width * 2));
   canvas.setAttribute('height', this.char.height);
 
-  var comment = document.createElement('comment');
+  var comment = document.createElement('c');
   $.appendChild(comment);
   var color = window.getComputedStyle(comment).color;
   $.removeChild(comment);
@@ -881,7 +893,7 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.layer} > .${css.block} > i {
       height: ${this.char.height + 1}px;
     }
-    indent {
+    x {
       background-image: url(${dataURL});
     }`
   );

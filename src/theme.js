@@ -55,6 +55,21 @@ var themes = {
 exports = module.exports = setTheme;
 exports.themes = themes;
 
+/*
+t: operator
+k: keyword
+d: declare
+b: builtin
+o: boolean
+n: number
+m: params
+f: function
+r: regexp
+c: comment
+s: string
+l: symbol
+x: indent
+ */
 function setTheme(name) {
   var t = themes[name];
   dom.css('theme',
@@ -63,43 +78,43 @@ function setTheme(name) {
   background: ${t.background};
 }
 
-operator,
-keyword {
+t,
+k {
   color: ${t.keyword};
 }
 
-declare,
-builtin {
+d,
+n {
   color: ${t.declare};
 }
 
-boolean,
-number {
+o,
+e {
   color: ${t.number};
 }
 
-params {
+m {
   color: ${t.params};
 }
 
-function {
+f {
   color: ${t.function};
   font-style: normal;
 }
 
-regexp {
+r {
   color: ${t.regexp || t.params};
 }
 
-comment {
+c {
   color: ${t.comment};
 }
 
-string {
+s {
   color: ${t.string};
 }
 
-symbol,
+l,
 .${css.code} {
   color: ${t.color};
 }
@@ -108,16 +123,16 @@ symbol,
   background: ${t.color};
 }
 
-params,
-declare {
+m,
+d {
   font-style: italic;
 }
 
-symbol {
+l {
   font-style: normal;
 }
 
-indent {
+x {
   display: inline-block;
   background-repeat: no-repeat;
 }
