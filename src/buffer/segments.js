@@ -58,7 +58,7 @@ function Segments(buffer) {
 
 Segments.prototype.clearCache = function(offset) {
   if (offset) {
-    var s = binarySearch(this.cache.state, s => s.offset - offset, true);
+    var s = binarySearch(this.cache.state, s => s.offset < offset, true);
     this.cache.state.splice(s.index);
   } else {
     this.cache.state = [];
@@ -103,7 +103,7 @@ Segments.prototype.get = function(y) {
   }
 
   for (; i < segments.length; i++) {
-    offset = segments[i];
+    offset = segments.get(i);
     segment = {
       offset: offset,
       type: Type[this.buffer.charAt(offset)]
@@ -277,5 +277,5 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 }
 
 Segments.prototype.getCacheState = function(y) {
-  return binarySearch(this.cache.state, s => s.point.y - y);
+  return binarySearch(this.cache.state, s => s.point.y <= y);
 };

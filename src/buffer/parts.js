@@ -9,6 +9,10 @@ function Parts(minSize) {
   this.length = 0;
 }
 
+Parts.prototype.push = function(item) {
+  this.append([item]);
+};
+
 Parts.prototype.append = function(items) {
   var part = last(this.parts);
 
@@ -40,6 +44,7 @@ Parts.prototype.get = function(index) {
 
 Parts.prototype.find = function(offset) {
   var p = this.findPartByOffset(offset);
+  if (!p.item) console.log(this)
   var part = p.item;
   var partIndex = p.index;
   var o = this.findOffsetInPart(offset, part);
@@ -57,7 +62,7 @@ Parts.prototype.insert = function(offset, array) {
   var length = array.length;
   //TODO: maybe subtract 'offset' instead ?
   array = array.map(el => el -= o.part.startOffset);
-  insert(o.part, o.local + 1, array);
+  insert(o.part, o.local, array);
   this.shiftIndex(o.partIndex + 1, -length);
   this.length += length;
 };
@@ -118,8 +123,15 @@ Parts.prototype.removeRange = function(range) {
   }
 
   //TODO: this is inefficient as we can calculate the indexes ourselves
-  if (!a.part.length) this.parts.splice(this.parts.indexOf(a.part), 1);
-  if (!b.part.length) this.parts.splice(this.parts.indexOf(b.part), 1);
+  // if (!a.part.length) {
+  //     console.log('SPLICING PART A!', a.part)
+
+  //   this.parts.splice(this.parts.indexOf(a.part), 1);
+  // }
+  // if (!b.part.length) {
+  //     console.log('SPLICING PART B!', b.part)
+  //   this.parts.splice(this.parts.indexOf(b.part), 1);
+  // }
 };
 
 Parts.prototype.shiftIndex = function(startIndex, shift) {
@@ -146,6 +158,10 @@ Parts.prototype.findPartByIndex = function(index) {
 
 Parts.prototype.findPartByOffset = function(offset) {
   return binarySearch(this.parts, s => s.startOffset <= offset);
+};
+
+Parts.prototype.toArray = function() {
+  return this.parts.reduce((p,n) => p.concat(n), []);
 };
 
 function last(array) {

@@ -1,5 +1,4 @@
-
-var ChunkArray = require('./chunk-array');
+var Parts = require('./parts');
 
 var Type = {
   '\n': 'lines',
@@ -22,7 +21,7 @@ module.exports = Tokens;
 Tokens.Type = Type;
 
 function Tokens(factory) {
-  factory = factory || function() { return new Array; };
+  factory = factory || function() { return new Parts; };
 
   var t = this.tokens = {
     lines: factory(),
@@ -68,78 +67,17 @@ Tokens.prototype.update = function(range, text, shift) {
   var insert = new Tokens(Array);
   insert.index(text, range[0]);
 
+  console.log(this.tokens.lines.toArray())
   for (var type in this.tokens) {
-    /*
-
-    var item = collection.find(range[0]);
-    for (var i = item.local; i < item.part.length; i++) {
-      item.part[i] += shift;
-      if (item.part[i] < range[0]) {
-        item.part.splice(i--, 1);
-      }
-    }
-    for (i = item.partIndex + 1; i < parts.length; i++) {
-      parts[i].offset += shift;
-      if (parts[i].offset < range[0]) {
-        if (last(parts[i]) + parts[i].offset < range[0]) {
-          parts.splice(i--, 1);
-        } else {
-          removeBelow(range[0], parts[i]);
-        }
-      }
-    }
-
-    */
-    for (var i = 0; i < this.tokens[type].length; i++) {
-      if (this.tokens[type][i] >= range[0]) {
-        this.tokens[type][i] += shift;
-        if (this.tokens[type][i] < range[0]) {
-          this.tokens[type].splice(i--, 1);
-        }
-      }
-    }
-
-    /*
-
-    var a = collection.find(range[0]);
-    var b = collection.find(range[1]);
-
-    if (a.partIndex === b.partIndex) {
-      remove(a, a.local, b.local);
-    } else {
-      remove(a, a.local);
-      remove(b, 0, b.local);
-      if (b.partIndex - a.partIndex > 1) {
-        remove(parts, a.partIndex + 1, b.partIndex - 1);
-      }
-    }
-
-     */
-
-    for (var i = 0; i < this.tokens[type].length; i++) {
-      if ( this.tokens[type][i] >= range[0]
-        && this.tokens[type][i] < range[1]) {
-        this.tokens[type].splice(i--, 1);
-      }
-    }
-
-    /*
-
-    var item = collection.find(range[0]);
-    insert(item.chunk, item.local, newCollection);
-
-    //toInsert.unshift(item.local, 0);
-    //item.chunk.splice.apply(item.chunk, toInsert);
-
-     */
-
-    this.tokens[type].push.apply(this.tokens[type], insert.tokens[type]);
-    this.tokens[type].sort(sortByNumber);
+    this.tokens[type].shiftOffset(range[0], shift);
+    this.tokens[type].removeRange(range);
+    this.tokens[type].insert(range[0], insert.tokens[type]);
   }
+  console.log(this.tokens.lines.toArray())
 };
 
 Tokens.prototype.getByIndex = function(type, index) {
-  return this.tokens[type][index];
+  return this.tokens[type].get(index);
 };
 
 Tokens.prototype.getCollection = function(type) {
@@ -147,15 +85,17 @@ Tokens.prototype.getCollection = function(type) {
 };
 
 Tokens.prototype.getByOffset = function(type, offset) {
-  var i = this.tokens[type].length;
-  while (i--) {
-    if (this.tokens[type][i] < offset) return {
-      offset: this.tokens[type][i],
-      index: i+1
-    };
-  }
-  return {
-    offset: 0,
-    index: 0
-  };
+  return this.tokens[type].find(offset);
+
+  // var i = this.tokens[type].length;
+  // while (i--) {
+  //   if (this.tokens[type][i] < offset) return {
+  //     offset: this.tokens[type][i],
+  //     index: i+1
+  //   };
+  // }
+  // return {
+  //   offset: 0,
+  //   index: 0
+  // };
 };
