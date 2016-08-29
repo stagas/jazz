@@ -60,7 +60,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text) {
   offsetRange[1] += text.length;
   var after = this.getOffsetRangeText(offsetRange);
   this.tokens.update(offsetRange, after, text.length);
-  this.segments.clearCache();
+  this.segments.clearCache(offsetRange[0]);
 
   // this.tokens = new Tokens;
   // this.tokens.index(this.text.toString());
@@ -86,7 +86,7 @@ Buffer.prototype.removeOffsetRange = function(o) {
   offsetRange[1] += shift;
   var after = this.getOffsetRangeText(offsetRange);
   this.tokens.update(offsetRange, after, shift);
-  this.segments.clearCache();
+  this.segments.clearCache(offsetRange[0]);
 
   this.emit('update', range, shift, before, after);
 };

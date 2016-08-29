@@ -1,4 +1,5 @@
 var Point = require('../../lib/point');
+var binarySearch = require('../../lib/binary-search');
 var Tokens = require('./tokens');
 var Type = Tokens.Type;
 
@@ -51,17 +52,20 @@ module.exports = Segments;
 
 function Segments(buffer) {
   this.buffer = buffer;
+  this.cache = {};
   this.reset();
 }
 
-Segments.prototype.clearCache = function() {
-  this.cache = {
-    offset: {},
-    range: {},
-    point: {},
-    state: [],
-    stateMap: {},
-  };
+Segments.prototype.clearCache = function(offset) {
+  if (offset) {
+    var s = binarySearch(this.cache.state, s => s.offset - offset, true);
+    this.cache.state.splice(s.index);
+  } else {
+    this.cache.state = [];
+  }
+  this.cache.offset = {};
+  this.cache.range = {};
+  this.cache.point = {};
 };
 
 Segments.prototype.reset = function() {
@@ -86,13 +90,16 @@ Segments.prototype.get = function(y) {
   var valid;
   var last;
 
+  var lastCacheStateOffset = 0;
+
   var i = 0;
 
-  var state = this.getCacheState(y);
-  if (state) {
+  var cacheState = this.getCacheState(y);
+  if (cacheState.item) {
     open = true;
-    i = state.index + 1;
+    state = cacheState.item;
     waitFor = Closes[state.type];
+    i = state.index + 1;
   }
 
   for (; i < segments.length; i++) {
@@ -148,10 +155,10 @@ Segments.prototype.get = function(y) {
         state = segment;
         state.index = i;
         state.point = point;
+        state.toString = function() { return this.offset };
         waitFor = Closes[state.type];
-        if (!(state.offset in this.cache.stateMap)) {
+        if (!this.cache.state.length || this.cache.state.length && state.offset > this.cache.state[this.cache.state.length - 1].offset) {
           this.cache.state.push(state);
-          this.cache.stateMap[state.offset] = true;
         }
       }
 
@@ -168,7 +175,7 @@ Segments.prototype.get = function(y) {
 
 //TODO: cache in Buffer
 Segments.prototype.getOffsetPoint = function(offset) {
-  if (offset in this.cache.offset) return this.cache.offset[offset]
+  if (offset in this.cache.offset) return this.cache.offset[offset];
   return (this.cache.offset[offset] = this.buffer.getOffsetPoint(offset));
 };
 
@@ -270,22 +277,5 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 }
 
 Segments.prototype.getCacheState = function(y) {
-  var begin = 0;
-  var end = this.cache.state.length;
-  if (!end) return;
-
-  var p = -1;
-  var i = -1;
-  var s;
-
-  do {
-    p = i;
-    i = begin + (end - begin) / 2 | 0;
-    s = this.cache.state[i];
-    if (s.point.y < y) begin = i;
-    else end = i;
-  } while (p !== i);
-
-  if (y - 1 < s.point.y) return null;
-  else return s;
+  return binarySearch(this.cache.state, s => s.point.y - y);
 };
