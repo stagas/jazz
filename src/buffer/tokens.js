@@ -126,9 +126,9 @@ Tokens.prototype.update = function(range, text, shift) {
     /*
 
     var item = collection.find(range[0]);
-    insert(item.chunk, item.index, newCollection);
+    insert(item.chunk, item.local, newCollection);
 
-    //toInsert.unshift(item.index, 0);
+    //toInsert.unshift(item.local, 0);
     //item.chunk.splice.apply(item.chunk, toInsert);
 
      */
