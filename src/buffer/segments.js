@@ -73,9 +73,9 @@ Segments.prototype.reset = function() {
 };
 
 Segments.prototype.get = function(y) {
-  if (y in this.cache.point) {
-    return this.cache.point[y];
-  }
+  // if (y in this.cache.point) {
+  //   return this.cache.point[y];
+  // }
 
   var segments = this.buffer.tokens.getCollection('segments');
   var open = false;
@@ -118,16 +118,18 @@ Segments.prototype.get = function(y) {
           return (this.cache.point[y] = null);
         }
 
-        if (point.y >= y) {
+        if (point.y + 1 >= y) {
           return (this.cache.point[y] = Tag[state.type]);
         }
+
+        console.log(y, 'has state', state.type);
 
         last = segment;
         last.point = point;
         state = null;
         open = false;
 
-        if (point.y >= y) break;
+        if (point.y + 1 >= y) break;
       }
     }
 
@@ -162,7 +164,7 @@ Segments.prototype.get = function(y) {
         }
       }
 
-      if (point.y >= y) break;
+      if (point.y + 1 >= y) break;
     }
   }
 
@@ -277,5 +279,8 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 }
 
 Segments.prototype.getCacheState = function(y) {
-  return binarySearch(this.cache.state, s => s.point.y <= y);
+  var s = binarySearch(this.cache.state, s => s.point.y < y);
+  // if (s.item && y - 1 < s.item.point.y) return null;
+  // else return s;
+  return s;
 };
