@@ -30,8 +30,20 @@ Code.prototype.renderEdit = function(edit) {
   var isBegin = g[0] + isBackspace === 0;
   var isEnd = g[1] + isEnter === this.editor.rows;
 
-  // console.log(shift)
   if (shift) {
+    if (isEnter) {
+      this.outRangeViews(this.getPageRange([0,0])).forEach(view => view.clear());
+      if (!this.hasViewAt(edit.caretNow.y) || edit.caretBefore.x > 0) {
+        this.shiftViewsBelow(edit.caretNow.y + 1, 1);
+        this.split(edit.caretNow.y);
+        if (edit.caretBefore.x > 0) {
+          this.renderLine(edit.caretBefore.y);
+        }
+      } else {
+        this.shiftViewsBelow(edit.caretNow.y, 1);
+      }
+      return;
+    }
     if (isEnter && !isEnd) this.shiftViewsBelow(g[0], shift);
     else if (isBackspace && !isBegin) this.shiftViewsBelow(g[0], shift);
   }

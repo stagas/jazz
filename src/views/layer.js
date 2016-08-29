@@ -103,7 +103,7 @@ Layer.prototype.renderViews = function(views) {
 };
 
 Layer.prototype.renderLine = function(y) {
-  this.renderRange([y,y], true);
+  this.renderRange([y,y]);
 };
 
 Layer.prototype.renderPage = function(n, include) {
@@ -173,10 +173,33 @@ Layer.prototype.spliceRange = function(range) {
   }
 };
 
+Layer.prototype.hasViewAt = function(y) {
+  for (var i = 0; i < this.views.length; i++) {
+    var view = this.views[i];
+    if (view[0] === y) return true;
+  }
+  return false;
+};
+
+Layer.prototype.split = function(y) {
+  var pageRange = this.getPageRange([0,0]);
+  for (var i = 0; i < this.views.length; i++) {
+    var view = this.views[i];
+    if (view[0] <= y && view[1] >= y) {
+      var bottom = view[1];
+      view[1] = y - 1;
+      view.style();
+      this.renderRange([y+1, Math.min(pageRange[1], bottom+1)]);
+      return true;
+    }
+  }
+  return false;
+};
+
 Layer.prototype.shiftViewsBelow = function(y, dy) {
   for (var i = 0; i < this.views.length; i++) {
     var view = this.views[i];
-    if (view[0] <= y) continue;
+    if (view[0] < y) continue;
 
     view[0] += dy;
     view[1] += dy;

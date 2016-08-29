@@ -73,10 +73,9 @@ Segments.prototype.reset = function() {
 };
 
 Segments.prototype.get = function(y) {
-  y -= 1;
-  // if (y in this.cache.point) {
-  //   return this.cache.point[y];
-  // }
+  if (y in this.cache.point) {
+    return this.cache.point[y];
+  }
 
   var segments = this.buffer.tokens.getCollection('segments');
   var open = false;

@@ -226,7 +226,7 @@ Jazz.prototype.bindEvent = function() {
 };
 
 Jazz.prototype.onScroll = function(scroll) {
-  this.editing = false;
+  // this.editing = false;
   this.scroll.set(scroll);
   this.render();
   this.rest();
@@ -353,6 +353,7 @@ Jazz.prototype.onHistoryChange = function() {
 
 Jazz.prototype.onBeforeFileChange = function() {
   // this.history.save();
+  this.editCaretBefore = this.caret.copy();
 };
 
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
@@ -369,7 +370,9 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   this.views.code.renderEdit({
     line: editRange[0],
     range: editRange,
-    shift: editShift
+    shift: editShift,
+    caretNow: this.caret,
+    caretBefore: this.editCaretBefore
   });
 
   this.render();

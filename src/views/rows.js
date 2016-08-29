@@ -10,8 +10,8 @@ function Rows(name, editor, template) {
 Rows.prototype.__proto__ = Layer.prototype;
 
 Rows.prototype.render = function() {
-  this.clear();
-  return this.renderPage(0, true);
+  // this.clear();
+  // return this.renderPage(0, true);
 
 
   if (this.editor.editShift) {
