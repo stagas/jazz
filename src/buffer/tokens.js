@@ -14,7 +14,7 @@ var Type = {
 };
 
 // var TOKEN = /\n/g;
-var TOKEN = /\n|\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
+var TOKEN = /\n|\/\*|\*\/|`/g //|\{|\}|\[|\]|\(|\)/g;
 
 module.exports = Tokens;
 
@@ -25,9 +25,9 @@ function Tokens(factory) {
 
   var t = this.tokens = {
     lines: factory(),
-    curly: factory(),
-    square: factory(),
-    parens: factory(),
+    // curly: factory(),
+    // square: factory(),
+    // parens: factory(),
     segments: factory(),
   };
 
@@ -66,14 +66,12 @@ function sortByNumber(a, b) {
 Tokens.prototype.update = function(range, text, shift) {
   var insert = new Tokens(Array);
   insert.index(text, range[0]);
-
-  console.log(this.tokens.lines.toArray())
   for (var type in this.tokens) {
     this.tokens[type].shiftOffset(range[0], shift);
+    if (shift < 0) range[1] += shift;
     this.tokens[type].removeRange(range);
     this.tokens[type].insert(range[0], insert.tokens[type]);
   }
-  console.log(this.tokens.lines.toArray())
 };
 
 Tokens.prototype.getByIndex = function(type, index) {
@@ -86,16 +84,4 @@ Tokens.prototype.getCollection = function(type) {
 
 Tokens.prototype.getByOffset = function(type, offset) {
   return this.tokens[type].find(offset);
-
-  // var i = this.tokens[type].length;
-  // while (i--) {
-  //   if (this.tokens[type][i] < offset) return {
-  //     offset: this.tokens[type][i],
-  //     index: i+1
-  //   };
-  // }
-  // return {
-  //   offset: 0,
-  //   index: 0
-  // };
 };

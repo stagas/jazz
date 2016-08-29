@@ -44,7 +44,8 @@ Parts.prototype.get = function(index) {
 
 Parts.prototype.find = function(offset) {
   var p = this.findPartByOffset(offset);
-  if (!p.item) console.log(this)
+  if (!p.item) return null;
+
   var part = p.item;
   var partIndex = p.index;
   var o = this.findOffsetInPart(offset, part);
@@ -59,10 +60,14 @@ Parts.prototype.find = function(offset) {
 
 Parts.prototype.insert = function(offset, array) {
   var o = this.find(offset);
+  if (!o) {
+    return this.append(array);
+  }
+  if (o.offset > offset) o.local = -1;
   var length = array.length;
   //TODO: maybe subtract 'offset' instead ?
   array = array.map(el => el -= o.part.startOffset);
-  insert(o.part, o.local, array);
+  insert(o.part, o.local + 1, array);
   this.shiftIndex(o.partIndex + 1, -length);
   this.length += length;
 };
@@ -70,6 +75,7 @@ Parts.prototype.insert = function(offset, array) {
 Parts.prototype.shiftOffset = function(offset, shift) {
   var parts = this.parts;
   var item = this.find(offset);
+  if (offset > item.offset) item.local += 1;
 
   var removed = 0;
   for (var i = item.local; i < item.part.length; i++) {
@@ -103,10 +109,14 @@ Parts.prototype.removeRange = function(range) {
   var b = this.find(range[1]);
 
   if (a.partIndex === b.partIndex) {
+    if (a.offset >= range[1] || a.offset < range[0]) a.local += 1;
+    if (b.offset >= range[1] || b.offset < range[0]) b.local -= 1;
     var shift = remove(a.part, a.local, b.local + 1).length;
     this.shiftIndex(a.partIndex + 1, shift);
     this.length -= shift;
   } else {
+    if (a.offset >= range[1] || a.offset < range[0]) a.local += 1;
+    if (b.offset >= range[1] || b.offset < range[0]) b.local -= 1;
     var shiftA = remove(a.part, a.local).length;
     var shiftB = remove(b.part, 0, b.local + 1).length;
     if (b.partIndex - a.partIndex > 1) {
@@ -123,15 +133,12 @@ Parts.prototype.removeRange = function(range) {
   }
 
   //TODO: this is inefficient as we can calculate the indexes ourselves
-  // if (!a.part.length) {
-  //     console.log('SPLICING PART A!', a.part)
-
-  //   this.parts.splice(this.parts.indexOf(a.part), 1);
-  // }
-  // if (!b.part.length) {
-  //     console.log('SPLICING PART B!', b.part)
-  //   this.parts.splice(this.parts.indexOf(b.part), 1);
-  // }
+  if (!a.part.length) {
+    this.parts.splice(this.parts.indexOf(a.part), 1);
+  }
+  if (!b.part.length) {
+    this.parts.splice(this.parts.indexOf(b.part), 1);
+  }
 };
 
 Parts.prototype.shiftIndex = function(startIndex, shift) {

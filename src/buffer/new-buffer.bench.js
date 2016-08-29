@@ -4,7 +4,7 @@ var bench = require('../../test/bench');
 var print = require('../../lib/print');
 var read = require('fs').readFileSync;
 
-var TIMES = 100;
+var TIMES = 1000;
 
 var code =
   // read(__dirname + '/../../test/syntax.html.js', 'utf8');
@@ -47,7 +47,7 @@ var res = bench(TIMES*10, function() {
 }, 'sequential gets of 50 lines');
 print(res);
 
-var res = bench(TIMES, function() {
+var res = bench(TIMES*10, function() {
   i = Math.random() * buffer.loc() | 0;
   buffer.insert({ x:0, y:i }, '123\n{456}\n');
 }, 'random inserts');

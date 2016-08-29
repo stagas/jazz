@@ -73,6 +73,7 @@ Segments.prototype.reset = function() {
 };
 
 Segments.prototype.get = function(y) {
+  y -= 1;
   // if (y in this.cache.point) {
   //   return this.cache.point[y];
   // }
@@ -95,7 +96,7 @@ Segments.prototype.get = function(y) {
   var i = 0;
 
   var cacheState = this.getCacheState(y);
-  if (cacheState.item) {
+  if (cacheState && cacheState.item) {
     open = true;
     state = cacheState.item;
     waitFor = Closes[state.type];
@@ -118,18 +119,16 @@ Segments.prototype.get = function(y) {
           return (this.cache.point[y] = null);
         }
 
-        if (point.y + 1 >= y) {
+        if (point.y >= y) {
           return (this.cache.point[y] = Tag[state.type]);
         }
-
-        console.log(y, 'has state', state.type);
 
         last = segment;
         last.point = point;
         state = null;
         open = false;
 
-        if (point.y + 1 >= y) break;
+        if (point.y >= y) break;
       }
     }
 
@@ -157,14 +156,14 @@ Segments.prototype.get = function(y) {
         state = segment;
         state.index = i;
         state.point = point;
-        state.toString = function() { return this.offset };
+        // state.toString = function() { return this.offset };
         waitFor = Closes[state.type];
         if (!this.cache.state.length || this.cache.state.length && state.offset > this.cache.state[this.cache.state.length - 1].offset) {
           this.cache.state.push(state);
         }
       }
 
-      if (point.y + 1 >= y) break;
+      if (point.y >= y) break;
     }
   }
 
@@ -280,7 +279,7 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 
 Segments.prototype.getCacheState = function(y) {
   var s = binarySearch(this.cache.state, s => s.point.y < y);
-  // if (s.item && y - 1 < s.item.point.y) return null;
-  // else return s;
-  return s;
+  if (s.item && y - 1 < s.item.point.y) return null;
+  else return s;
+  // return s;
 };

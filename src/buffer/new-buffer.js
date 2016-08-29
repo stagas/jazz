@@ -83,7 +83,7 @@ Buffer.prototype.removeOffsetRange = function(o) {
   var offsetRange = this.getLineRangeOffsets(range);
   var before = this.getOffsetRangeText(offsetRange);
   this.text.remove(o);
-  offsetRange[1] += shift;
+  // offsetRange[1] -= shift;
   var after = this.getOffsetRangeText(offsetRange);
   this.tokens.update(offsetRange, after, shift);
   this.segments.clearCache(offsetRange[0]);

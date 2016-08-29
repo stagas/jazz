@@ -257,7 +257,7 @@ t('removeRange', function() {
   assert.equal(7, p.length);
   assert.equal(3, p.parts[1].startIndex);
   assert.equal(5, p.parts[2].startIndex);
-  p.removeRange([2,2]);
+  p.removeRange([2,3]);
   assert.equal(6, p.length);
   assert.equal([1,3], p.parts[0].slice());
   assert.equal(2, p.parts[1].startIndex);
@@ -267,7 +267,7 @@ t('removeRange', function() {
   p.append([1,2,3]);
   p.append([5,6]);
   p.append([10,11]);
-  p.removeRange([2,3]);
+  p.removeRange([2,4]);
   assert.equal(5, p.length);
   assert.equal([1], p.parts[0].slice());
   assert.equal(1, p.parts[1].startIndex);
@@ -289,7 +289,7 @@ t('removeRange', function() {
   p.append([1,2,3]);
   p.append([5,6]);
   p.append([10,11]);
-  p.removeRange([3,5]);
+  p.removeRange([3,6]);
   assert.equal(5, p.length);
   assert.equal([1,2], p.parts[0].slice());
   assert.equal([1], p.parts[1].slice());
@@ -313,7 +313,7 @@ t('removeRange', function() {
   p.append([10,11]);
   p.append([15,16]);
   assert.equal(7, p.parts[3].startIndex);
-  p.removeRange([3,10]);
+  p.removeRange([3,11]);
   assert.equal(5, p.length);
   assert.equal([1,2], p.parts[0].slice());
   assert.equal([1], p.parts[1].slice());
@@ -326,7 +326,7 @@ t('removeRange', function() {
   p.append([5,6]);
   p.append([10,11]);
   p.append([15,16]);
-  p.removeRange([0,16]);
+  p.removeRange([0,17]);
   assert.equal(0, p.length);
   assert.equal(0, p.parts.length);
 
@@ -423,6 +423,18 @@ t('insert', function() {
   assert.equal(10, p.length);
   assert.equal([0,1,2,3,4], p.parts[1].slice());
   assert.equal(8, p.parts[2].startIndex);
+
+  p = new Parts(2);
+  p.append([3,4]);
+  p.append([5,6]);
+  p.append([10,11]);
+  assert.equal(6, p.length);
+  assert.equal(2, p.parts[1].startIndex);
+  assert.equal(4, p.parts[2].startIndex);
+  p.insert(0, [1,2]);
+  assert.equal(8, p.length);
+  assert.equal([1,2,3,4], p.parts[0].slice());
+  assert.equal(4, p.parts[1].startIndex);
 })
 
 };
