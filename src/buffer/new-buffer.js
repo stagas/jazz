@@ -49,6 +49,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text) {
 
   var isEOL = '\n' === text;
   var shift = isEOL;
+  var length = text.length;
 
   var point = this.getPoint(p);
   var lines = (text.match(NEWLINE) || []).length;
@@ -59,7 +60,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text) {
   this.text.insert(point.offset, text);
   offsetRange[1] += text.length;
   var after = this.getOffsetRangeText(offsetRange);
-  this.tokens.update(offsetRange, after, text.length);
+  this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
   // this.tokens = new Tokens;
@@ -75,17 +76,20 @@ Buffer.prototype.remove =
 Buffer.prototype.removeOffsetRange = function(o) {
   this.emit('before update');
 
+  // console.log('offsets', o)
   var a = this.getOffsetPoint(o[0]);
   var b = this.getOffsetPoint(o[1]);
-  var shift = o[0] - o[1];
+  var length = o[0] - o[1];
   var range = [a.y, b.y];
+  var shift = a.y - b.y;
+  // console.log(a,b)
 
   var offsetRange = this.getLineRangeOffsets(range);
   var before = this.getOffsetRangeText(offsetRange);
   this.text.remove(o);
   // offsetRange[1] -= shift;
   var after = this.getOffsetRangeText(offsetRange);
-  this.tokens.update(offsetRange, after, shift);
+  this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
   this.emit('update', range, shift, before, after);
@@ -157,12 +161,11 @@ Buffer.prototype.getOffsetRangeText = function(offsetRange) {
 };
 
 Buffer.prototype.getOffsetPoint = function(offset) {
-  var token = this.tokens.getByOffset('lines', offset);
-  var point = new Point({
-    x: Math.max(0, offset - token.offset - 1),
-    y: token.index
+  var token = this.tokens.getByOffset('lines', offset - .5);
+  return new Point({
+    x: offset - (offset > token.offset ? token.offset + 1 : 0),
+    y: token.index - (token.offset + 1 > offset) + 1
   });
-  return point;
 };
 
 Buffer.prototype.charAt = function(offset) {

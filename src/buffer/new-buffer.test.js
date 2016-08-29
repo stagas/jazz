@@ -94,20 +94,24 @@ t('getLineRangeText', function() {
 })
 
 t('getOffsetPoint', function() {
-  before();
-  assert.equal({ x:0, y:0 }, b.getOffsetPoint(0));
-  assert.equal({ x:0, y:1 }, b.getOffsetPoint(1));
-  assert.equal({ x:1, y:1 }, b.getOffsetPoint(2));
-  assert.equal({ x:2, y:1 }, b.getOffsetPoint(3));
-  assert.equal({ x:3, y:1 }, b.getOffsetPoint(4));
-  assert.equal({ x:0, y:2 }, b.getOffsetPoint(5));
-  assert.equal({ x:0, y:3 }, b.getOffsetPoint(10));
-  assert.equal({ x:4, y:3 }, b.getOffsetPoint(14));
-  assert.equal({ x:0, y:4 }, b.getOffsetPoint(15));
-  assert.equal({ x:4, y:13 }, b.getOffsetPoint(fixture.length));
-  assert.equal({ x:3, y:13 }, b.getOffsetPoint(fixture.length-1));
-})
+  // before('\n234\n67\n9012');
+  // assert.equal({ x:0, y:0 }, b.getOffsetPoint(0));
+  // assert.equal({ x:0, y:1 }, b.getOffsetPoint(1));
+  // assert.equal({ x:1, y:1 }, b.getOffsetPoint(2));
+  // assert.equal({ x:2, y:1 }, b.getOffsetPoint(3));
+  // assert.equal({ x:0, y:2 }, b.getOffsetPoint(4));
 
+  before('01\n345\n78\n012');
+  assert.equal({ x:0, y:0 }, b.getOffsetPoint(0));
+  assert.equal({ x:1, y:0 }, b.getOffsetPoint(1));
+  assert.equal({ x:2, y:0 }, b.getOffsetPoint(2));
+  assert.equal({ x:0, y:1 }, b.getOffsetPoint(3));
+  assert.equal({ x:1, y:1 }, b.getOffsetPoint(4));
+  assert.equal({ x:2, y:1 }, b.getOffsetPoint(5));
+  assert.equal({ x:3, y:1 }, b.getOffsetPoint(6));
+  assert.equal({ x:0, y:2 }, b.getOffsetPoint(7));
+})
+/*
 t('insert', function() {
   before('012\n45\n78\n1');
   assert.equal(4, b.getLineOffset(1));
@@ -200,5 +204,5 @@ t('removeCharAtPoint', function() {
   b.removeCharAtPoint({x:0,y:0});
   assert.equal('', b.toString());
 })
-
+/**/
 };
