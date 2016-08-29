@@ -170,7 +170,7 @@ move.isBeginOfFile = function(_, p) {
 };
 
 move.isEndOfFile = function(buffer, p) {
-  var last = buffer.loc;
+  var last = buffer.loc();
   return p.y === last && p.x === buffer.getLine(last).length;
 };
 

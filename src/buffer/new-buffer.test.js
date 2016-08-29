@@ -177,7 +177,6 @@ t('removeCharAtPoint', function() {
   assert.equal('5\n8\n', b.toString());
 
   before('\n123\n\n123\n\n');
-  console.log(b.tokens.tokens.lines);
   b.removeCharAtPoint({x:0,y:2});
   assert.equal('\n123\n123\n\n', b.toString());
   b.removeCharAtPoint({x:0,y:2});
