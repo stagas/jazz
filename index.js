@@ -309,7 +309,7 @@ Jazz.prototype.onCut = function(e) {
 Jazz.prototype.onCopy = function(e) {
   if (!this.mark.active) return;
   var area = this.mark.get();
-  var text = this.buffer.getArea(area);
+  var text = this.buffer.getAreaText(area);
   e.clipboardData.setData('text/plain', text);
 };
 
@@ -768,7 +768,7 @@ Jazz.prototype.suggest = function() {
   var area = this.buffer.wordAreaAtPoint(this.caret, true);
   if (!area) return;
 
-  var key = this.buffer.getArea(area);
+  var key = this.buffer.getAreaText(area);
   if (!key) return;
 
   if (!this.suggestRoot

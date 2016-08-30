@@ -4,7 +4,9 @@ var Event = require('../../lib/event');
 var Regexp = require('../../lib/regexp');
 
 var SkipString = require('./skipstring');
+var PrefixTree = require('./prefixtree');
 var Segments = require('./segments');
+var Indexer = require('./indexer');
 var Tokens = require('./tokens');
 var Syntax = require('./syntax');
 
@@ -21,6 +23,7 @@ module.exports = Buffer;
 
 function Buffer() {
   this.syntax = new Syntax;
+  this.indexer = new Indexer(this);
   this.segments = new Segments(this);
   this.setText('');
 }
@@ -39,6 +42,9 @@ Buffer.prototype.setText = function(text) {
 
   this.tokens = new Tokens;
   this.tokens.index(this.raw);
+
+  this.prefix = new PrefixTree;
+  this.prefix.index(this.raw);
 
   // this.emit('raw', this.raw);
   this.emit('set');
@@ -62,6 +68,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift) {
   this.text.insert(point.offset, text);
   offsetRange[1] += text.length;
   var after = this.getOffsetRangeText(offsetRange);
+  this.prefix.index(after);
   this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
@@ -92,6 +99,7 @@ Buffer.prototype.removeOffsetRange = function(o, noUpdate) {
   this.text.remove(o);
   // offsetRange[1] -= shift;
   var after = this.getOffsetRangeText(offsetRange);
+  this.prefix.index(after);
   this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
