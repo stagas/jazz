@@ -1,7 +1,7 @@
 var open = require('../lib/open');
 var save = require('../lib/save');
 var Event = require('../lib/event');
-var Buffer = require('./buffer/new-buffer');
+var Buffer = require('./buffer');
 
 module.exports = File;
 
