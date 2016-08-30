@@ -83,18 +83,24 @@ x- bug: sometimes when there's one line, it blinks below like a double line
 x- indent align on enter
 x- autofill matching bracket/curly/parens on edit with caret inbetween
 x- support tabs, tab width, indent change
+x- unify segments/blocks/lines/skipstring indexing
+  in a way that all support dynamic operations
+  and never reindex
+x- fix render on single line editing
+x- bring back blocks
+x- adjust row view
 
 
 -- doing ---------------------
 
-- unify segments/blocks/lines/skipstring indexing
-  in a way that all support dynamic operations
-  and never reindex
 
 
 
 -- todo ----------------------
 
+- optimize mark
+- optimize ctrl-shift move area
+- optimize blocks using tokens
 - fix find
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
@@ -108,7 +114,6 @@ x- support tabs, tab width, indent change
     iterating, without using .raw
 - bindings
   - cmd+d (mac for f3)
-- optimize mark
 - double click + continue selection select by words
 - on scroll, clear raw debounce,
     maybe also have a debounced jobs list to add tasks and clear in bulk
