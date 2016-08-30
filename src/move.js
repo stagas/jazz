@@ -35,7 +35,7 @@ Move.prototype.pageUp = function(div) {
 var move = {};
 
 move.byWord = function(buffer, p, dx) {
-  var line = buffer.getLine(p.y);
+  var line = buffer.getLineText(p.y);
 
   if (dx > 0 && p.x >= line.length - 1) { // at end of line
     return move.byChars(buffer, p, +1); // move one char right
