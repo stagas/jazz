@@ -72,6 +72,7 @@ x {
   left: 0;
   top: 0;
   opacity: 0;
+  min-width: 100%;
 }
 
 ._src_style__gutter._src_style__above {
