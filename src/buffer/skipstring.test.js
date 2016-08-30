@@ -148,7 +148,7 @@ t('substring', function() {
     node.insert(0, 'ab');
     node.insert(2, 'cd');
     node.insert(9, 'ef');
-    assert.equal('abcd12345ef67890', node.substring());
+    assert.equal('abcd12345ef67890', node.substring(0, node.length));
 
     assert.equal('ab', node.substring(0,2));
     assert.equal('cd', node.substring(2,4));
@@ -156,7 +156,7 @@ t('substring', function() {
     assert.equal('cd12', node.substring(2,6));
     assert.equal('f678', node.substring(10,14));
     assert.equal('67890', node.substring(11,16));
-    assert.equal('7890', node.substring(12));
+    assert.equal('7890', node.substring(12, node.length));
   })
 })
 

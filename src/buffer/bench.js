@@ -1,4 +1,4 @@
-var Buffer = require('./new-buffer');
+var Buffer = require('./');
 var Point = require('../../lib/point');
 var bench = require('../../test/bench');
 var print = require('../../lib/print');

@@ -12,13 +12,11 @@ var _bench = require('bench');
 var el = setup({
   // 'lib/diff.test': ['lib/diff'],
   // 'lib/trim.test': ['lib/trim'],
-  // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
+  'src/buffer/skipstring.test': ['src/buffer/skipstring'],
   // 'src/buffer/tokens.test': ['src/buffer/tokens'],
-  // 'src/buffer/parts.test': ['src/buffer/parts'],
-  // 'src/buffer/chunk-array.test': ['src/buffer/chunk-array'],
-  'src/buffer/new-buffer.test': ['src/buffer/new-buffer'],
-  // 'src/buffer/lines.test': ['src/buffer/lines'],
-  // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
+  'src/buffer/parts.test': ['src/buffer/parts'],
+  'src/buffer/test': ['src/buffer'],
+  'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
   // 'src/buffer/test': ['src/buffer'],
 });
 

@@ -32,29 +32,29 @@ module.exports = function(t, PTNode) {
     assert.equal('bar', node.find('bar').value);
   })
 
-  t('getSortedChildren', function() {
-    var node = new PTNode;
-    words.forEach((word) => node.insert(word));
-    assert.equal(
-      ['ba', 'fo', 'bar', 'foo'],
-      node.getSortedChildren().map((node) => node.value)
-    );
-    node.children.f.children.o.incrementRank();
-    assert.equal(
-      ['fo', 'ba', 'bar', 'foo'],
-      node.getSortedChildren().map((node) => node.value)
-    );
-  })
+  // t('getChildren', function() {
+  //   var node = new PTNode;
+  //   words.forEach((word) => node.insert(word));
+  //   assert.equal(
+  //     ['ba', 'fo', 'bar', 'foo'],
+  //     node.getChildren().map((node) => node.value)
+  //   );
+  //   node.children.f.children.o.incrementRank();
+  //   assert.equal(
+  //     ['fo', 'ba', 'bar', 'foo'],
+  //     node.getChildren().map((node) => node.value)
+  //   );
+  // })
 
   t('collect', function() {
     var node = new PTNode;
     words.forEach((word) => node.insert(word));
     assert.equal(
-      ['ba', 'bar'],
+      ['bar', 'ba'],
       node.collect('b').map((node) => node.value)
     );
     assert.equal(
-      ['fo', 'foo'],
+      ['foo', 'fo'],
       node.collect('f').map((node) => node.value)
     );
     assert.equal(
@@ -72,8 +72,8 @@ module.exports = function(t, PTNode) {
     var s = 'foo bar fo ba';
     node.index(s);
     assert.equal(
-      ['ba', 'fo', 'bar', 'foo'],
-      node.getSortedChildren().map((node) => node.value)
+      ['', '', 'fo', 'foo', 'ba', 'bar'],
+      node.getChildren().map((node) => node.value)
     );
   })
 };

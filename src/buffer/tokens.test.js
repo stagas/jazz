@@ -1,5 +1,4 @@
 
-var ChunkArray = require('./chunk-array');
 var assert = require('assert');
 
 module.exports = function(t, Tokens) {
