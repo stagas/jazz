@@ -45,13 +45,13 @@ Buffer.prototype.setText = function(text) {
 };
 
 Buffer.prototype.insert =
-Buffer.prototype.insertTextAtPoint = function(p, text) {
-  this.emit('before update');
+Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift) {
+  if (!ctrlShift) this.emit('before update');
 
   text = normalizeEOL(text);
 
   var isEOL = '\n' === text[0];
-  var shift = isEOL;
+  var shift = ctrlShift || isEOL;
   var length = text.length;
   var point = this.getPoint(p);
   var lines = (text.match(NEWLINE) || []).length;
@@ -69,13 +69,14 @@ Buffer.prototype.insertTextAtPoint = function(p, text) {
   // this.tokens.index(this.text.toString());
   // this.segments = new Segments(this);
 
-  this.emit('update', range, shift, before, after);
+  if (!ctrlShift) this.emit('update', range, shift, before, after);
+  else this.emit('raw');
 
   return text.length;
 };
 
 Buffer.prototype.remove =
-Buffer.prototype.removeOffsetRange = function(o) {
+Buffer.prototype.removeOffsetRange = function(o, noUpdate) {
   this.emit('before update');
 
   // console.log('offsets', o)
@@ -94,12 +95,12 @@ Buffer.prototype.removeOffsetRange = function(o) {
   this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
-  this.emit('update', range, shift, before, after);
+  if (!noUpdate) this.emit('update', range, shift, before, after);
 };
 
-Buffer.prototype.removeArea = function(area) {
+Buffer.prototype.removeArea = function(area, noUpdate) {
   var offsets = this.getAreaOffsetRange(area);
-  return this.removeOffsetRange(offsets);
+  return this.removeOffsetRange(offsets, noUpdate);
 };
 
 Buffer.prototype.removeCharAtPoint = function(p) {
@@ -232,7 +233,18 @@ Buffer.prototype.wordAreaAtPoint = function(p, inclusive) {
 };
 
 Buffer.prototype.moveAreaByLines = function(y, area) {
+  if (area.end.x > 0 || area.begin.y === area.end.y) area.end.y += 1;
+  if (area.begin.y + y < 0 || area.end.y + y > this.loc) return false;
 
+  area.begin.x = 0;
+  area.end.x = 0;
+
+  var text = this.getLineRangeText([area.begin.y, area.end.y-1]);
+  this.removeArea(area, true);
+
+  this.insert({ x:0, y:area.begin.y + y }, text, y);
+
+  return true;
 };
 
 Buffer.prototype.getAreaOffsetRange = function(area) {
