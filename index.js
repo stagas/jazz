@@ -443,7 +443,7 @@ Jazz.prototype.onMouseClick = function() {
     var area;
 
     if (clicks === 2) {
-      area = this.buffer.wordAt(this.caret);
+      area = this.buffer.wordAreaAtPoint(this.caret);
     } else if (clicks === 3) {
       var y = this.caret.y;
       area = new Area({
@@ -672,7 +672,7 @@ Jazz.prototype.backspace = function() {
   if (this.mark.active) {
     var area = this.mark.get();
     this.setCaret(area.begin);
-    this.buffer.deleteArea(area);
+    this.buffer.removeArea(area);
     this.markClear(true);
     this.clear();
     this.render();
@@ -690,7 +690,7 @@ Jazz.prototype.delete = function() {
   if (this.mark.active) {
     var area = this.mark.get();
     this.setCaret(area.begin);
-    this.buffer.deleteArea(area);
+    this.buffer.removeArea(area);
     this.markClear(true);
     this.clear();
     this.render();
@@ -768,7 +768,7 @@ Jazz.prototype.onFindClose = function() {
 };
 
 Jazz.prototype.suggest = function() {
-  var area = this.buffer.wordAt(this.caret, true);
+  var area = this.buffer.wordAreaAtPoint(this.caret, true);
   if (!area) return;
 
   var key = this.buffer.getArea(area);

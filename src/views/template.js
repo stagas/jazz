@@ -33,12 +33,12 @@ template.mark = function(range, e) {
   if (range[0] > mark.end.y) return false;
   if (range[1] < mark.begin.y) return false;
 
-  var offset = e.buffer.lines.getRange(range);
-  var area = e.buffer.lines.getAreaOffsetRange(mark);
-  var code = e.buffer.text.getRange(offset);
+  var offsets = e.buffer.getLineRangeOffsets(range);
+  var area = e.buffer.getAreaOffsetRange(mark);
+  var code = e.buffer.text.getRange(offsets);
 
-  area[0] -= offset[0];
-  area[1] -= offset[0];
+  area[0] -= offsets[0];
+  area[1] -= offsets[0];
 
   var above = code.substring(0, area[0]);
   var middle = code.substring(area[0], area[1]);

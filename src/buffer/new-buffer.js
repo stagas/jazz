@@ -1,5 +1,7 @@
+var Area = require('../../lib/area');
 var Point = require('../../lib/point');
 var Event = require('../../lib/event');
+var Regexp = require('../../lib/regexp');
 
 var SkipString = require('./skipstring');
 var Segments = require('./segments');
@@ -8,6 +10,7 @@ var Syntax = require('./syntax');
 
 var EOL = /\r\n|\r|\n/g;
 var NEWLINE = /\n/g;
+var WORDS = Regexp.create(['tokens'], 'g');
 
 var SEGMENT = {
   'comment': '/*',
@@ -92,6 +95,11 @@ Buffer.prototype.removeOffsetRange = function(o) {
   this.segments.clearCache(offsetRange[0]);
 
   this.emit('update', range, shift, before, after);
+};
+
+Buffer.prototype.removeArea = function(area) {
+  var offsets = this.getAreaOffsetRange(area);
+  return this.removeOffsetRange(offsets);
 };
 
 Buffer.prototype.removeCharAtPoint = function(p) {
@@ -188,12 +196,39 @@ Buffer.prototype.getAreaText = function(area) {
   return text;
 };
 
-Buffer.prototype.wordAreaAtPoint = function(point, inclusive) {
+Buffer.prototype.wordAreaAtPoint = function(p, inclusive) {
+  var point = this.getPoint(p);
+  var text = this.text.getRange(point.line.offsetRange);
+  var words = Regexp.parse(text, WORDS);
+
+  if (words.length === 1) {
+    var area = new Area({
+      begin: { x: 0, y: point.y },
+      end: { x: point.line.length, y: point.y },
+    });
+
+    return area;
+  }
+
+  var lastIndex = 0;
+  var word = [];
+  var end = text.length;
+
+  for (var i = 0; i < words.length; i++) {
+    word = words[i];
+    if (word.index > point.x - !!inclusive) {
+      end = word.index;
+      break;
+    }
+    lastIndex = word.index;
+  }
+
+  var area = new Area({
+    begin: { x: lastIndex, y: point.y },
+    end: { x: end, y: point.y }
+  });
+
   return area;
-};
-
-Buffer.prototype.removeArea = function(area) {
-
 };
 
 Buffer.prototype.moveAreaByLines = function(y, area) {
@@ -201,6 +236,10 @@ Buffer.prototype.moveAreaByLines = function(y, area) {
 };
 
 Buffer.prototype.getAreaOffsetRange = function(area) {
+  var range = [
+    this.getPoint(area.begin).offset,
+    this.getPoint(area.end).offset
+  ];
   return range;
 };
 
