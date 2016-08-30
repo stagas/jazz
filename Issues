@@ -89,9 +89,11 @@ x- unify segments/blocks/lines/skipstring indexing
 x- fix render on single line editing
 x- bring back blocks
 x- adjust row view
+x- bring back autocomplete
 
 
 -- doing ---------------------
+
 
 
 
@@ -102,6 +104,7 @@ x- adjust row view
 - optimize ctrl-shift move area
 - optimize blocks using tokens
 - fix find
+  - indexer should invoke buffer.updateRaw when changes
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
 - refactor template
