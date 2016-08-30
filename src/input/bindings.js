@@ -135,7 +135,7 @@ var keys = module.exports = {
     if (lines && area.end.x > 0) add += 1;
     if (!lines) add += 1;
     lines += add;
-    var text = this.buffer.getArea(area.setLeft(0).addBottom(add));
+    var text = this.buffer.getAreaText(area.setLeft(0).addBottom(add));
     this.buffer.insert({ x: 0, y: area.end.y }, text);
     this.mark.shiftByLines(lines);
     this.move.byLines(lines, true);

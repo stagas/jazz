@@ -194,6 +194,8 @@ Buffer.prototype.getLineText = function(y) {
 };
 
 Buffer.prototype.getAreaText = function(area) {
+  var offsets = this.getAreaOffsetRange(area);
+  var text = this.text.getRange(offsets);
   return text;
 };
 
