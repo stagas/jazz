@@ -25,20 +25,18 @@ function Tokens(factory) {
 
   var t = this.tokens = {
     lines: factory(),
-    curly: factory(),
-    square: factory(),
-    parens: factory(),
+    blocks: factory(),
     segments: factory(),
   };
 
   this.collection = {
     '\n': t.lines,
-    '{': t.curly,
-    '}': t.curly,
-    '[': t.square,
-    ']': t.square,
-    '(': t.parens,
-    ')': t.parens,
+    '{': t.blocks,
+    '}': t.blocks,
+    '[': t.blocks,
+    ']': t.blocks,
+    '(': t.blocks,
+    ')': t.blocks,
     '/': t.segments,
     '*': t.segments,
     '`': t.segments,

@@ -90,6 +90,7 @@ x- fix render on single line editing
 x- bring back blocks
 x- adjust row view
 x- bring back autocomplete
+x- optimize blocks using tokens
 
 
 -- doing ---------------------
@@ -102,7 +103,6 @@ x- bring back autocomplete
 
 - optimize mark
 - optimize ctrl-shift move area
-- optimize blocks using tokens
 - fix find
   - indexer should invoke buffer.updateRaw when changes
 - keyboard combos (i.e ctrl+k-ctrl+b)
