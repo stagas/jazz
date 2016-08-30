@@ -42,7 +42,8 @@ template.mark = function(range, e) {
 
   var above = code.substring(0, area[0]);
   var middle = code.substring(area[0], area[1]);
-  var html = e.syntax.entities(above) + '<mark>' + e.syntax.entities(middle) + '</mark>';
+  var html = e.syntax.entities(above)
+    + '<mark>' + e.syntax.entities(middle) + '</mark>';
 
   html = html.replace(/\n/g, ' \n');
 
@@ -75,7 +76,8 @@ template.find = function(range, e) {
     html += '<i style="'
           + 'width:' + width + ';'
           + 'top:' + (r.y * e.char.height) + 'px;'
-          + 'left:' + ((r.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+          + 'left:' + ((r.x + tabs.tabs * e.tabSize - tabs.remainder)
+                    * e.char.width + e.gutter + e.options.margin_left) + 'px;'
           + '"></i>';
   }
 
@@ -83,13 +85,7 @@ template.find = function(range, e) {
 };
 
 template.block = function(range, e) {
-  if (e.editing) return '';
-
-  var offset = e.buffer.getLineOffset(range[0]);
-  var target = e.buffer.getPoint(e.caret).offset;
-  var code = e.buffer.getLineRangeText(range);
-  var i = target - offset;
-  var char;
+  var html = '';
 
   var Open = {
     '{': 'curly',
@@ -103,42 +99,58 @@ template.block = function(range, e) {
     ')': 'parens'
   };
 
+  var offset = e.buffer.getPoint(e.caret).offset;
+
+  var result = e.buffer.tokens.getByOffset('blocks', offset);
+  if (!result) return html;
+
+  var length = e.buffer.tokens.getCollection('blocks').length;
+  var char = e.buffer.charAt(result);
+
   var open;
   var close;
 
-  var count = 1;
-  i -= 1;
+  var i = result.index;
+  var openOffset = result.offset;
+
+  char = e.buffer.charAt(openOffset);
+
+  var count = result.offset >= offset - 1 && Close[char] ? 0 : 1;
+
+  var limit = 200;
+
   while (i > 0) {
-    char = code[i];
     open = Open[char];
     if (Close[char]) count++;
+    if (!--limit) return html;
+
     if (open && !--count) break;
-    i--;
+
+    openOffset = e.buffer.tokens.getByIndex('blocks', --i);
+    char = e.buffer.charAt(openOffset);
   }
 
-  if (!open) return '';
-
-  var begin = e.buffer.getOffsetPoint(i + offset);
+  if (count) return html;
 
   count = 1;
-  i += 1;
 
-  while (i < code.length) {
-    char = code[i];
+  while (i < length - 1) {
+    closeOffset = e.buffer.tokens.getByIndex('blocks', ++i);
+    char = e.buffer.charAt(closeOffset);
+    if (!--limit) return html;
+
     close = Close[char];
     if (Open[char] === open) count++;
     if (open === close) count--;
 
     if (!count) break;
-    i++;
   }
 
-  if (!close) return ' ';
+  if (count) return html;
 
-  var end = e.buffer.getOffsetPoint(i + offset);
+  var begin = e.buffer.getOffsetPoint(openOffset);
+  var end = e.buffer.getOffsetPoint(closeOffset);
 
-
-  var html = '';
   var tabs;
 
   tabs = e.getPointTabs(begin);
@@ -146,7 +158,8 @@ template.block = function(range, e) {
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (begin.y * e.char.height) + 'px;'
-        + 'left:' + ((begin.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((begin.x + tabs.tabs * e.tabSize - tabs.remainder)
+                  * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   tabs = e.getPointTabs(end);
@@ -154,7 +167,8 @@ template.block = function(range, e) {
   html += '<i style="'
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (end.y * e.char.height) + 'px;'
-        + 'left:' + ((end.x + tabs.tabs * e.tabSize - tabs.remainder) * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+        + 'left:' + ((end.x + tabs.tabs * e.tabSize - tabs.remainder)
+                  * e.char.width + e.gutter + e.options.margin_left) + 'px;'
         + '"></i>';
 
   return html;

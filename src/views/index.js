@@ -25,7 +25,7 @@ function Views(editor) {
   this.views.forEach(view => this[view.name] = view);
   this.forEach = this.views.forEach.bind(this.views);
 
-  this.block.render = debounce(this.block.render, 60);
+  this.block.render = debounce(this.block.render, 20);
 
   //TODO: needs to be set dynamically
   if (this.editor.options.hide_rows) this.rows.render = noop;
