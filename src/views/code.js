@@ -59,6 +59,7 @@ Code.prototype.renderEdit = function(edit) {
       this.renderPageBelow(edit.caretNow.y);
     }
   } else {
+    console.log(g)
     this.updateRange(g);
     this.renderPage(0);
   }

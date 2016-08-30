@@ -172,7 +172,7 @@ Buffer.prototype.getOffsetPoint = function(offset) {
   var token = this.tokens.getByOffset('lines', offset - .5);
   return new Point({
     x: offset - (offset > token.offset ? token.offset + 1 : 0),
-    y: token.index - (token.offset + 1 > offset) + 1
+    y: Math.min(this.loc(), token.index - (token.offset + 1 > offset) + 1)
   });
 };
 

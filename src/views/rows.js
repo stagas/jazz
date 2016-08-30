@@ -13,17 +13,15 @@ Rows.prototype.render = function() {
   // this.clear();
   // return this.renderPage(0, true);
 
+  var views = this.views;
+  var rows = this.editor.rows;
+  for (var i = 0; i < views.length; i++) {
+    var view = views[i];
+    var r = view;
+    if (!view.visible) continue;
 
-  if (this.editor.editShift) {
-    var views = this.views;
-    var rows = this.editor.rows;
-    for (var i = 0; i < views.length; i++) {
-      var view = views[i];
-      var r = view;
-      if (!view.visible) continue;
-
-      if (r[1] > rows) view.clear();
-    }
+    if (r[1] > rows) view.clear();
   }
+
   this.renderAhead();
 };

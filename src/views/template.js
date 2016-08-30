@@ -85,9 +85,9 @@ template.find = function(range, e) {
 template.block = function(range, e) {
   if (e.editing) return '';
 
-  var offset = e.buffer.lines.get(range[0]);
-  var target = e.buffer.lines.getPoint(e.caret).offset;
-  var code = e.buffer.get(range);
+  var offset = e.buffer.getLineOffset(range[0]);
+  var target = e.buffer.getPoint(e.caret).offset;
+  var code = e.buffer.getLineRangeText(range);
   var i = target - offset;
   var char;
 
@@ -118,7 +118,7 @@ template.block = function(range, e) {
 
   if (!open) return '';
 
-  var begin = e.buffer.lines.getOffset(i + offset);
+  var begin = e.buffer.getOffsetPoint(i + offset);
 
   count = 1;
   i += 1;
@@ -135,7 +135,7 @@ template.block = function(range, e) {
 
   if (!close) return ' ';
 
-  var end = e.buffer.lines.getOffset(i + offset);
+  var end = e.buffer.getOffsetPoint(i + offset);
 
 
   var html = '';
