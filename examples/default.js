@@ -15,3 +15,4 @@ jazz.use(document.body).open('babel.js', './').focus();
 // jazz.use(document.body).open('jquery.js', './').focus();
 // jazz.use(document.body).open('codemirror.js', './').focus();
 // jazz.use(document.body).open('broken.js', '../test/').focus();
+// jazz.use(document.body).open('index.js', '../').focus();
