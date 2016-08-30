@@ -1,3 +1,7 @@
+._src_style__editor {
+  overflow: scroll;
+}
+
 ._src_style__editor,
 ._src_style__layer {
   position: absolute;
@@ -68,8 +72,6 @@ x {
   left: 0;
   top: 0;
   opacity: 0;
-  min-width: 100.1%;
-  min-height: 100.1%;
 }
 
 ._src_style__gutter._src_style__above {
