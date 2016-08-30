@@ -3,7 +3,7 @@ var debounce = require('../../lib/debounce');
 var throttle = require('../../lib/throttle');
 var Event = require('../../lib/event');
 
-var THROTTLE = 1000/70;
+var THROTTLE = 1000/62;
 
 var map = {
   8: 'backspace',
@@ -61,7 +61,7 @@ Text.map = map;
 function Text() {
   Event.call(this);
 
-  this.el = document.createElement('input');
+  this.el = document.createElement('textarea');
 
   dom.style(this, {
     position: 'absolute',
@@ -73,7 +73,9 @@ function Text() {
   });
 
   dom.attrs(this, {
-    autocapitalize: 'none'
+    autocapitalize: 'none',
+    autocomplete: 'off',
+    spellchecking: 'off',
   });
 
   this.throttleTime = 0;

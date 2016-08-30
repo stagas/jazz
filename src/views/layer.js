@@ -83,10 +83,6 @@ Layer.prototype.renderRange = function(range, include) {
 
   var needRanges = Range.NOT(range, inViews);
   var needViews = needRanges.length - outViews.length;
-  // if ('code' === this.name) console.log('need:', needViews, needRanges.join(' '));
-  // if ('code' === this.name) console.log('have:', this.views.join(' '));
-  // if ('code' === this.name) console.log('out:', outViews.join(' '));
-  // if ('code' === this.name) console.log('range', range, inViews.join(' '));
   if (needViews > 0) {
     this.clear();
     this.renderRanges([visibleRange], this.views);
@@ -140,17 +136,6 @@ Layer.prototype.renderAhead = function(include) {
   }
 };
 
-/*
-
-1  x
-2 -x
-3 -x
-4 -
-5
-6
-
- */
-
 Layer.prototype.spliceRange = function(range) {
   for (var i = 0; i < this.views.length; i++) {
     var view = this.views[i];
@@ -173,7 +158,7 @@ Layer.prototype.spliceRange = function(range) {
   }
 };
 
-Layer.prototype.hasViewAt = function(y) {
+Layer.prototype.hasViewTopAt = function(y) {
   for (var i = 0; i < this.views.length; i++) {
     var view = this.views[i];
     if (view[0] === y) return true;
@@ -181,7 +166,19 @@ Layer.prototype.hasViewAt = function(y) {
   return false;
 };
 
-Layer.prototype.split = function(y) {
+Layer.prototype.shortenBottomAt = function(y) {
+  for (var i = 0; i < this.views.length; i++) {
+    var view = this.views[i];
+    if (view[1] === y) {
+      view[1] -= 1;
+      view.style();
+      return true;
+    }
+  }
+  return false;
+};
+
+Layer.prototype.splitEnter = function(y) {
   var pageRange = this.getPageRange([0,0]);
   for (var i = 0; i < this.views.length; i++) {
     var view = this.views[i];
@@ -190,6 +187,21 @@ Layer.prototype.split = function(y) {
       view[1] = y - 1;
       view.style();
       this.renderRange([y+1, Math.min(pageRange[1], bottom+1)]);
+      return true;
+    }
+  }
+  return false;
+};
+
+Layer.prototype.splitBackspace = function(y) {
+  var pageRange = this.getPageRange([0,1]);
+  for (var i = 0; i < this.views.length; i++) {
+    var view = this.views[i];
+    if (view[0] <= y && view[1] >= y) {
+      var bottom = view[1];
+      view[1] = y - 1;
+      view.style();
+      this.renderRange([y, Math.min(pageRange[1], bottom+1)]);
       return true;
     }
   }
@@ -205,6 +217,14 @@ Layer.prototype.shiftViewsBelow = function(y, dy) {
     view[1] += dy;
     view.style();
   }
+};
+
+Layer.prototype.clearOutPageRange = function(range) {
+  this.outRangeViews(this.getPageRange(range)).forEach(view => view.clear());
+};
+
+Layer.prototype.renderPageBelow = function(y) {
+  this.renderRange([y, this.getPageRange([0,0])[1]]);
 };
 
 Layer.prototype.updateRange = function(range) {

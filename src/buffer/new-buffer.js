@@ -47,10 +47,9 @@ Buffer.prototype.insertTextAtPoint = function(p, text) {
 
   text = normalizeEOL(text);
 
-  var isEOL = '\n' === text;
+  var isEOL = '\n' === text[0];
   var shift = isEOL;
   var length = text.length;
-
   var point = this.getPoint(p);
   var lines = (text.match(NEWLINE) || []).length;
   var range = [point.y, point.y + lines];

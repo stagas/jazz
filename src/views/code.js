@@ -15,7 +15,9 @@ Code.prototype.render = function() {
   // this.clear();
   // return this.renderPage(0, true);
 
-  if (!this.editor.editing) this.renderAhead();
+  if (!this.editor.editing) {
+    this.renderAhead();
+  }
 };
 
 Code.prototype.renderEdit = function(edit) {
@@ -32,23 +34,32 @@ Code.prototype.renderEdit = function(edit) {
 
   if (shift) {
     if (isEnter) {
-      this.outRangeViews(this.getPageRange([0,0])).forEach(view => view.clear());
-      if (!this.hasViewAt(edit.caretNow.y) || edit.caretBefore.x > 0) {
+      this.clearOutPageRange([0,0]);
+      if (!this.hasViewTopAt(edit.caretNow.y) || edit.caretBefore.x > 0) {
         this.shiftViewsBelow(edit.caretNow.y + 1, 1);
-        this.split(edit.caretNow.y);
+        this.splitEnter(edit.caretNow.y);
         if (edit.caretBefore.x > 0) {
-          this.renderLine(edit.caretBefore.y);
+          this.updateRange([edit.caretBefore.y, edit.caretBefore.y]);
         }
       } else {
         this.shiftViewsBelow(edit.caretNow.y, 1);
       }
-      return;
+      this.renderPageBelow(edit.caretNow.y+1);
     }
-    if (isEnter && !isEnd) this.shiftViewsBelow(g[0], shift);
-    else if (isBackspace && !isBegin) this.shiftViewsBelow(g[0], shift);
+    else if (isBackspace) {
+      this.clearOutPageRange([0,1]);
+      this.shortenBottomAt(edit.caretNow.y);
+      this.shiftViewsBelow(edit.caretNow.y+1, -1);
+      if (!this.hasViewTopAt(edit.caretNow.y)) {
+        this.splitBackspace(edit.caretNow.y);
+      }
+      if (edit.caretNow.x > 0) {
+        this.updateRange([edit.caretNow.y, edit.caretNow.y]);
+      }
+      this.renderPageBelow(edit.caretNow.y);
+    }
+  } else {
+    this.updateRange(g);
+    this.renderPage(0);
   }
-
-  // console.log(g)
-  this.updateRange(g);
-  this.renderPage(0);
 };

@@ -14,7 +14,7 @@ var Type = {
 };
 
 // var TOKEN = /\n/g;
-var TOKEN = /\n|\/\*|\*\/|`/g //|\{|\}|\[|\]|\(|\)/g;
+var TOKEN = /\n|\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
 
 module.exports = Tokens;
 
@@ -25,9 +25,9 @@ function Tokens(factory) {
 
   var t = this.tokens = {
     lines: factory(),
-    // curly: factory(),
-    // square: factory(),
-    // parens: factory(),
+    curly: factory(),
+    square: factory(),
+    parens: factory(),
     segments: factory(),
   };
 
@@ -68,10 +68,12 @@ Tokens.prototype.update = function(range, text, shift) {
   insert.index(text, range[0]);
   for (var type in this.tokens) {
     this.tokens[type].shiftOffset(range[0], shift);
-    if (shift < 0) range[1] += shift;
+    // if (shift < 0) range[1] += shift;
     this.tokens[type].removeRange(range);
     this.tokens[type].insert(range[0], insert.tokens[type]);
   }
+  // console.log(range)
+  // console.log(this.tokens.lines.toArray())
 };
 
 Tokens.prototype.getByIndex = function(type, index) {

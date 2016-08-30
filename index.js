@@ -226,14 +226,13 @@ Jazz.prototype.bindEvent = function() {
 };
 
 Jazz.prototype.onScroll = function(scroll) {
-  // this.editing = false;
   this.scroll.set(scroll);
-  this.render();
+  if (!this.editing) this.render();
   this.rest();
 };
 
 Jazz.prototype.rest = debounce(function() {
-  // console.log('rest');
+  this.editing = false;
   this.render();
 }, 300);
 
@@ -247,7 +246,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
   }
 
   this.emit('move');
-  this.render();
+  if (!this.editing) this.render();
 };
 
 Jazz.prototype.onResize = function() {
@@ -358,8 +357,16 @@ Jazz.prototype.onBeforeFileChange = function() {
 
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
   // console.log('change')
+  // if (!this.editing) {
+  //   // this.scroll.set(dom.getScroll(this.el));
+  //   // this.views.code.clear();
+  //   this.views.code.renderPage(0);
+  //   console.log('should render page', this.getPageRange([0,0]))
+  // }
+
   this.editing = true;
-  this.pageBounds = [0, this.buffer.loc()];
+  this.rows = this.buffer.loc();
+  this.pageBounds = [0, this.rows];
 
   if (this.find.isOpen) {
     this.onFindValue(this.findValue, true);
