@@ -356,14 +356,7 @@ Jazz.prototype.onBeforeFileChange = function() {
 };
 
 Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAfter) {
-  // console.log('change')
-  // if (!this.editing) {
-  //   // this.scroll.set(dom.getScroll(this.el));
-  //   // this.views.code.clear();
-  //   this.views.code.renderPage(0);
-  //   console.log('should render page', this.getPageRange([0,0]))
-  // }
-
+  this.animationRunning = false;
   this.editing = true;
   this.rows = this.buffer.loc();
   this.pageBounds = [0, this.rows];
@@ -482,7 +475,10 @@ Jazz.prototype.markBegin = function(area) {
 };
 
 Jazz.prototype.markSet = function() {
-  if (this.mark.active) this.mark.end.set(this.caret);
+  if (this.mark.active) {
+    this.mark.end.set(this.caret);
+    this.render();
+  }
 };
 
 Jazz.prototype.markSetArea = function(area) {
@@ -498,6 +494,7 @@ Jazz.prototype.markClear = function(force) {
     begin: new Point({ x: -1, y: -1 }),
     end: new Point({ x: -1, y: -1 })
   });
+  this.render();
 };
 
 Jazz.prototype.getRange = function(range) {
@@ -603,7 +600,7 @@ Jazz.prototype.animationScrollFrame = function() {
     speed *= 2.45;
   }
 
-  if (adx < 1 && ady < 1) {
+  if ((adx < 1 && ady < 1) || !this.animationRunning) {
     this.animationRunning = false;
     this.scrollTo(this.animationScrollTarget);
     this.animationScrollTarget = null;
