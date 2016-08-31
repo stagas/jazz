@@ -91,6 +91,7 @@ x- bring back blocks
 x- adjust row view
 x- bring back autocomplete
 x- optimize blocks using tokens
+x- blinking caret
 
 
 -- doing ---------------------
@@ -111,7 +112,6 @@ x- optimize blocks using tokens
 
 -- later ---------------------
 
-- blinking caret
 - highlight html/css/text
 - tweak skipstring to split on newlines, so segments can index by
     iterating, without using .raw
