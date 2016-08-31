@@ -195,8 +195,8 @@ template.caret.style = function(point, e) {
   return {
     opacity: +e.hasFocus,
     left: e.caretPx.x + e.marginLeft,
-    top: e.caretPx.y,
-    height: e.char.height,
+    top: e.caretPx.y - 1,
+    height: e.char.height + 2,
   };
 };
 

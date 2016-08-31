@@ -246,6 +246,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
   }
 
   this.emit('move');
+  this.caretSolid();
   if (!this.editing) this.render();
 };
 
@@ -257,12 +258,23 @@ Jazz.prototype.onFocus = function(text) {
   this.hasFocus = true;
   this.emit('focus');
   this.views.caret.render();
+  this.caretSolid();
 };
+
+Jazz.prototype.caretSolid = function() {
+  dom.classes(this.views.caret, [css.caret]);
+  this.caretBlink();
+};
+
+Jazz.prototype.caretBlink = debounce(function() {
+  dom.classes(this.views.caret, [css.caret, css['blink-smooth']]);
+}, 400);
 
 Jazz.prototype.onBlur = function(text) {
   this.hasFocus = false;
   setTimeout(() => {
     if (!this.hasFocus) {
+      dom.classes(this.views.caret, [css.caret]);
       this.emit('blur');
       this.views.caret.render();
     }
