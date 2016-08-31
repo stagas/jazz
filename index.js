@@ -99,6 +99,7 @@ function Jazz(options) {
     suggestRoot: '',
     suggestNodes: [],
 
+    animationType: 'linear',
     animationFrame: -1,
     animationRunning: false,
     animationScrollTarget: null,
@@ -115,7 +116,7 @@ function Jazz(options) {
   theme(this.options.theme);
 
   this.bindMethods();
-  this.bindEvent();
+  this.bindEvents();
 }
 
 Jazz.prototype.__proto__ = Event.prototype;
@@ -183,8 +184,9 @@ Jazz.prototype.bindMethods = function() {
   this.animationScrollBegin = this.animationScrollBegin.bind(this);
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
-  this.repaint = this.repaint.bind(this);
   this.focus = this.focus.bind(this);
+  this.repaint = this.repaint.bind(this);
+  this.repaintBelowCaret = this.repaintBelowCaret.bind(this);
 };
 
 Jazz.prototype.bindHandlers = function() {
@@ -195,7 +197,7 @@ Jazz.prototype.bindHandlers = function() {
   }
 };
 
-Jazz.prototype.bindEvent = function() {
+Jazz.prototype.bindEvents = function() {
   this.bindHandlers()
   this.move.on('move', this.onMove);
   this.file.on('raw', this.onFileRaw); //TODO: should not need this event
@@ -203,6 +205,7 @@ Jazz.prototype.bindEvent = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.file.on('before change', this.onBeforeFileChange);
+  this.file.buffer.on('change segments', this.repaintBelowCaret);
   this.history.on('change', this.onHistoryChange);
   this.input.on('blur', this.onBlur);
   this.input.on('focus', this.onFocus);
@@ -336,6 +339,7 @@ Jazz.prototype.onFileOpen = function() {
 };
 
 Jazz.prototype.onFileRaw = function(raw) {
+  console.log('file raw!')
   this.clear();
   this.render();
 };
@@ -429,7 +433,7 @@ Jazz.prototype.onMouseDown = function() {
   this.setCaretFromPx(this.input.mouse.point);
 };
 
-Jazz.prototype.setCaret = function(p) {
+Jazz.prototype.setCaret = function(p, center, animate) {
   this.caret.set(p);
 
   var tabs = this.getPointTabs(this.caret);
@@ -439,7 +443,7 @@ Jazz.prototype.setCaret = function(p) {
     y: this.char.height * this.caret.y
   });
 
-  this.followCaret();
+  this.followCaret(center, animate);
 };
 
 Jazz.prototype.onMouseClick = function() {
@@ -525,12 +529,12 @@ Jazz.prototype.getLineLength = function(y) {
   return this.buffer.getLine(y).length;
 };
 
-Jazz.prototype.followCaret = function() {
+Jazz.prototype.followCaret = function(center, animate) {
   var p = this.caretPx;
   var s = this.animationScrollTarget || this.scroll;
 
-  var top = s.y - p.y;
-  var bottom = (p.y) - (s.y + this.size.height) + this.char.height;
+  var top = (s.y + (center ? (this.size.height / 2 | 0) - 100 : 0)) - p.y;
+  var bottom = p.y - (s.y + this.size.height - (center ? (this.size.height / 2 | 0) - 100 : 0)) + this.char.height;
 
   var left = (s.x + this.char.width) - p.x;
   var right = (p.x) - (s.x + this.size.width - this.marginLeft) + this.char.width * 2;
@@ -542,7 +546,7 @@ Jazz.prototype.followCaret = function() {
 
   // if (!this.animationRunning)
   if (left + top + right + bottom) {
-    this.scrollBy(right - left, bottom - top);
+    this[animate ? 'animateScrollBy' : 'scrollBy'](right - left, bottom - top, 'ease');
   }
   // else
     // this.animateScrollBy(right - left, bottom - top);
@@ -567,9 +571,13 @@ Jazz.prototype.scrollBy = function(x, y) {
   }
 };
 
-Jazz.prototype.animateScrollBy = function(x, y) {
+Jazz.prototype.animateScrollBy = function(x, y, animationType) {
+  this.animationType = animationType || 'linear';
+
   if (!this.animationRunning) {
-    this.followCaret();
+    if ('linear' === this.animationType) {
+      this.followCaret();
+    }
     this.animationRunning = true;
     this.animationFrame = window.requestAnimationFrame(this.animationScrollBegin);
   }
@@ -622,11 +630,20 @@ Jazz.prototype.animationScrollFrame = function() {
 
   this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
-  if (adx < speed) dx *= 0.9;
-  else dx = Math.sign(dx) * speed;
+  switch (this.animationType) {
+    case 'linear':
+      if (adx < speed) dx *= 0.9;
+      else dx = Math.sign(dx) * speed;
 
-  if (ady < speed) dy *= 0.9;
-  else dy = Math.sign(dy) * speed;
+      if (ady < speed) dy *= 0.9;
+      else dy = Math.sign(dy) * speed;
+
+      break;
+    case 'ease':
+      dx *= 0.5;
+      dy *= 0.5;
+      break;
+  }
 
   this.scrollBy(dx, dy);
 };
@@ -718,13 +735,15 @@ Jazz.prototype.findJump = function(jump) {
     this.findNeedle = this.findResults.length - 1;
   }
 
+  this.find.info(1 + this.findNeedle + '/' + this.findResults.length);
+
   var result = this.findResults[this.findNeedle];
-  this.setCaret(result);
+  this.setCaret(result, true, true);
   this.markClear(true);
   this.markBegin();
   this.move.byChars(this.findValue.length, true);
   this.markSet();
-  this.followCaret();
+  this.followCaret(true, true);
   this.render();
 };
 
@@ -732,18 +751,15 @@ Jazz.prototype.onFindValue = function(value, noJump) {
   var g = new Point({ x: this.gutter, y: 0 });
 
   this.buffer.updateRaw();
-
   this.views.find.clear();
-
   this.findValue = value;
-  // console.time('find ' + value);
   this.findResults = this.buffer.indexer.find(value).map((offset) => {
-    return this.buffer.lines.getOffset(offset);
-      //px: new Point(point)['*'](e.char)['+'](g)
+    return this.buffer.getOffsetPoint(offset);
   });
-  // console.timeEnd('find ' + value);
 
-  this.find.info('0/' + this.findResults.length);
+  if (this.findResults.length) {
+    this.find.info(1 + this.findNeedle + '/' + this.findResults.length);
+  }
 
   if (!noJump) this.findJump(0);
 
@@ -836,6 +852,10 @@ Jazz.prototype.getCoordsTabs = function(point) {
     remainder: remainder
   };
 };
+
+Jazz.prototype.repaintBelowCaret = debounce(function() {
+  this.views.code.repaintBelowCaret();
+}, 40);
 
 Jazz.prototype.repaint = bindRaf(function() {
   this.resize();

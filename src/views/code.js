@@ -63,3 +63,9 @@ Code.prototype.renderEdit = function(edit) {
     this.renderPage(0);
   }
 };
+
+Code.prototype.repaintBelowCaret = function() {
+  this.splitEnter(this.editor.caret.y);
+  this.renderPageBelow(this.editor.caret.y, true);
+  this.clearOutPageRange([0,0]);
+};

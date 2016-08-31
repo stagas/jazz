@@ -92,6 +92,7 @@ x- adjust row view
 x- bring back autocomplete
 x- optimize blocks using tokens
 x- blinking caret
+x- fix find
 
 
 -- doing ---------------------
@@ -104,8 +105,6 @@ x- blinking caret
 
 - optimize mark
 - optimize ctrl-shift move area
-- fix find
-  - indexer should invoke buffer.updateRaw when changes
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
 - refactor template

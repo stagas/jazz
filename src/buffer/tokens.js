@@ -1,3 +1,4 @@
+var Event = require('../../lib/event');
 var Parts = require('./parts');
 
 var Type = {
@@ -43,6 +44,8 @@ function Tokens(factory) {
   };
 }
 
+Tokens.prototype.__proto__ = Event.prototype;
+
 Tokens.prototype.index = function(text, offset) {
   offset = offset || 0;
 
@@ -57,21 +60,26 @@ Tokens.prototype.index = function(text, offset) {
   }
 };
 
-function sortByNumber(a, b) {
-  return a - b;
-}
-
 Tokens.prototype.update = function(range, text, shift) {
   var insert = new Tokens(Array);
   insert.index(text, range[0]);
+
+  var lengths = {};
+  for (var type in this.tokens) {
+    lengths[type] = this.tokens[type].length;
+  }
+
   for (var type in this.tokens) {
     this.tokens[type].shiftOffset(range[0], shift);
-    // if (shift < 0) range[1] += shift;
     this.tokens[type].removeRange(range);
     this.tokens[type].insert(range[0], insert.tokens[type]);
   }
-  // console.log(range)
-  // console.log(this.tokens.lines.toArray())
+
+  for (var type in this.tokens) {
+    if (this.tokens[type].length !== lengths[type]) {
+      this.emit(`change ${type}`);
+    }
+  }
 };
 
 Tokens.prototype.getByIndex = function(type, index) {

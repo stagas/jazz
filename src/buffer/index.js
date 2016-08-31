@@ -30,6 +30,10 @@ function Buffer() {
 
 Buffer.prototype.__proto__ = Event.prototype;
 
+Buffer.prototype.updateRaw = function() {
+  this.raw = this.text.toString();
+};
+
 Buffer.prototype.setText = function(text) {
   text = normalizeEOL(text);
 
@@ -42,6 +46,7 @@ Buffer.prototype.setText = function(text) {
 
   this.tokens = new Tokens;
   this.tokens.index(this.raw);
+  this.tokens.on('change segments', this.emit.bind(this, 'change segments'));
 
   this.prefix = new PrefixTree;
   this.prefix.index(this.raw);

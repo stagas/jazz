@@ -13,13 +13,13 @@ function Views(editor) {
   this.editor = editor;
 
   this.views = [
-    new View('ruler', editor, template.ruler),
-    new View('caret', editor, template.caret),
     new CodeView('code', editor, template.code),
+    new View('caret', editor, template.caret),
+    new BlockView('block', editor, template.block),
+    new FindView('find', editor, template.find),
     new MarkView('mark', editor, template.mark),
     new RowsView('rows', editor, template.rows),
-    // new FindView('find', editor, template.find),
-    new BlockView('block', editor, template.block),
+    new View('ruler', editor, template.ruler),
   ];
 
   this.views.forEach(view => this[view.name] = view);
