@@ -115,7 +115,7 @@ function Jazz(options) {
   theme(this.options.theme);
 
   this.bindMethods();
-  this.bindEvent();
+  this.bindEvents();
 }
 
 Jazz.prototype.__proto__ = Event.prototype;
@@ -183,8 +183,9 @@ Jazz.prototype.bindMethods = function() {
   this.animationScrollBegin = this.animationScrollBegin.bind(this);
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
-  this.repaint = this.repaint.bind(this);
   this.focus = this.focus.bind(this);
+  this.repaint = this.repaint.bind(this);
+  this.repaintBelowCaret = this.repaintBelowCaret.bind(this);
 };
 
 Jazz.prototype.bindHandlers = function() {
@@ -195,7 +196,7 @@ Jazz.prototype.bindHandlers = function() {
   }
 };
 
-Jazz.prototype.bindEvent = function() {
+Jazz.prototype.bindEvents = function() {
   this.bindHandlers()
   this.move.on('move', this.onMove);
   this.file.on('raw', this.onFileRaw); //TODO: should not need this event
@@ -203,6 +204,7 @@ Jazz.prototype.bindEvent = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.file.on('before change', this.onBeforeFileChange);
+  this.file.buffer.on('change segments', this.repaintBelowCaret);
   this.history.on('change', this.onHistoryChange);
   this.input.on('blur', this.onBlur);
   this.input.on('focus', this.onFocus);
@@ -336,6 +338,7 @@ Jazz.prototype.onFileOpen = function() {
 };
 
 Jazz.prototype.onFileRaw = function(raw) {
+  console.log('file raw!')
   this.clear();
   this.render();
 };
@@ -836,6 +839,10 @@ Jazz.prototype.getCoordsTabs = function(point) {
     remainder: remainder
   };
 };
+
+Jazz.prototype.repaintBelowCaret = debounce(function() {
+  this.views.code.repaintBelowCaret();
+}, 40);
 
 Jazz.prototype.repaint = bindRaf(function() {
   this.resize();

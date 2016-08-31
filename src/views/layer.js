@@ -223,8 +223,8 @@ Layer.prototype.clearOutPageRange = function(range) {
   this.outRangeViews(this.getPageRange(range)).forEach(view => view.clear());
 };
 
-Layer.prototype.renderPageBelow = function(y) {
-  this.renderRange([y, this.getPageRange([0,0])[1]]);
+Layer.prototype.renderPageBelow = function(y, inclusive) {
+  this.renderRange([y, this.getPageRange([0,0])[1]], inclusive);
 };
 
 Layer.prototype.updateRange = function(range) {
