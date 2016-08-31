@@ -99,6 +99,7 @@ function Jazz(options) {
     suggestRoot: '',
     suggestNodes: [],
 
+    animationType: 'linear',
     animationFrame: -1,
     animationRunning: false,
     animationScrollTarget: null,
@@ -432,7 +433,7 @@ Jazz.prototype.onMouseDown = function() {
   this.setCaretFromPx(this.input.mouse.point);
 };
 
-Jazz.prototype.setCaret = function(p) {
+Jazz.prototype.setCaret = function(p, center, animate) {
   this.caret.set(p);
 
   var tabs = this.getPointTabs(this.caret);
@@ -442,7 +443,7 @@ Jazz.prototype.setCaret = function(p) {
     y: this.char.height * this.caret.y
   });
 
-  this.followCaret();
+  this.followCaret(center, animate);
 };
 
 Jazz.prototype.onMouseClick = function() {
@@ -528,12 +529,12 @@ Jazz.prototype.getLineLength = function(y) {
   return this.buffer.getLine(y).length;
 };
 
-Jazz.prototype.followCaret = function() {
+Jazz.prototype.followCaret = function(center, animate) {
   var p = this.caretPx;
   var s = this.animationScrollTarget || this.scroll;
 
-  var top = s.y - p.y;
-  var bottom = (p.y) - (s.y + this.size.height) + this.char.height;
+  var top = (s.y + (center ? (this.size.height / 2 | 0) - 100 : 0)) - p.y;
+  var bottom = p.y - (s.y + this.size.height - (center ? (this.size.height / 2 | 0) - 100 : 0)) + this.char.height;
 
   var left = (s.x + this.char.width) - p.x;
   var right = (p.x) - (s.x + this.size.width - this.marginLeft) + this.char.width * 2;
@@ -545,7 +546,7 @@ Jazz.prototype.followCaret = function() {
 
   // if (!this.animationRunning)
   if (left + top + right + bottom) {
-    this.scrollBy(right - left, bottom - top);
+    this[animate ? 'animateScrollBy' : 'scrollBy'](right - left, bottom - top, 'ease');
   }
   // else
     // this.animateScrollBy(right - left, bottom - top);
@@ -570,9 +571,13 @@ Jazz.prototype.scrollBy = function(x, y) {
   }
 };
 
-Jazz.prototype.animateScrollBy = function(x, y) {
+Jazz.prototype.animateScrollBy = function(x, y, animationType) {
+  this.animationType = animationType || 'linear';
+
   if (!this.animationRunning) {
-    this.followCaret();
+    if ('linear' === this.animationType) {
+      this.followCaret();
+    }
     this.animationRunning = true;
     this.animationFrame = window.requestAnimationFrame(this.animationScrollBegin);
   }
@@ -625,11 +630,20 @@ Jazz.prototype.animationScrollFrame = function() {
 
   this.animationFrame = window.requestAnimationFrame(this.animationScrollFrame);
 
-  if (adx < speed) dx *= 0.9;
-  else dx = Math.sign(dx) * speed;
+  switch (this.animationType) {
+    case 'linear':
+      if (adx < speed) dx *= 0.9;
+      else dx = Math.sign(dx) * speed;
 
-  if (ady < speed) dy *= 0.9;
-  else dy = Math.sign(dy) * speed;
+      if (ady < speed) dy *= 0.9;
+      else dy = Math.sign(dy) * speed;
+
+      break;
+    case 'ease':
+      dx *= 0.5;
+      dy *= 0.5;
+      break;
+  }
 
   this.scrollBy(dx, dy);
 };
@@ -721,13 +735,15 @@ Jazz.prototype.findJump = function(jump) {
     this.findNeedle = this.findResults.length - 1;
   }
 
+  this.find.info(1 + this.findNeedle + '/' + this.findResults.length);
+
   var result = this.findResults[this.findNeedle];
-  this.setCaret(result);
+  this.setCaret(result, true, true);
   this.markClear(true);
   this.markBegin();
   this.move.byChars(this.findValue.length, true);
   this.markSet();
-  this.followCaret();
+  this.followCaret(true, true);
   this.render();
 };
 
@@ -735,18 +751,15 @@ Jazz.prototype.onFindValue = function(value, noJump) {
   var g = new Point({ x: this.gutter, y: 0 });
 
   this.buffer.updateRaw();
-
   this.views.find.clear();
-
   this.findValue = value;
-  // console.time('find ' + value);
   this.findResults = this.buffer.indexer.find(value).map((offset) => {
-    return this.buffer.lines.getOffset(offset);
-      //px: new Point(point)['*'](e.char)['+'](g)
+    return this.buffer.getOffsetPoint(offset);
   });
-  // console.timeEnd('find ' + value);
 
-  this.find.info('0/' + this.findResults.length);
+  if (this.findResults.length) {
+    this.find.info(1 + this.findNeedle + '/' + this.findResults.length);
+  }
 
   if (!noJump) this.findJump(0);
 

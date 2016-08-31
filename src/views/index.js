@@ -16,7 +16,7 @@ function Views(editor) {
     new CodeView('code', editor, template.code),
     new View('caret', editor, template.caret),
     new BlockView('block', editor, template.block),
-    // new FindView('find', editor, template.find),
+    new FindView('find', editor, template.find),
     new MarkView('mark', editor, template.mark),
     new RowsView('rows', editor, template.rows),
     new View('ruler', editor, template.ruler),

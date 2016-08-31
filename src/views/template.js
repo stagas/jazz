@@ -61,7 +61,7 @@ template.find = function(range, e) {
   do {
     prev = i;
     i = begin + (end - begin) / 2 | 0;
-    if (results[i].y < range[0]) begin = i;
+    if (results[i].y < range[0] - 1) begin = i;
     else end = i;
   } while (prev !== i);
 

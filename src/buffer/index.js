@@ -30,6 +30,10 @@ function Buffer() {
 
 Buffer.prototype.__proto__ = Event.prototype;
 
+Buffer.prototype.updateRaw = function() {
+  this.raw = this.text.toString();
+};
+
 Buffer.prototype.setText = function(text) {
   text = normalizeEOL(text);
 
