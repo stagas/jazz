@@ -51,9 +51,24 @@ x {
   cursor: text;
   top: 0;
   left: 0;
-  width: 2px;
+  width: 1px;
   background: #fff;
   z-index: 90;
+}
+
+@keyframes _src_style__caret-blink-smooth {
+  0% { opacity: 1 }
+  15% { opacity: 0 }
+  30% { opacity: 0 }
+  70% { opacity: 1 }
+  100% { opacity: 1 }
+}
+
+._src_style__caret._src_style__blink-smooth {
+  animation-name: _src_style__caret-blink-smooth;
+  animation-duration: 776.666ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 ._src_style__gutter {
