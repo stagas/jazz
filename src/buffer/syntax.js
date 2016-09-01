@@ -21,7 +21,9 @@ var Indent = {
 
 var AnyChar = /\S/g;
 
-var Blocks = R(['comment','string','regexp', /^.{1000,}/], 'gm');
+var Blocks = R(['comment','string','regexp'], 'gm');
+
+var LongLines = /(^.{1000,})/gm;
 
 var Tag = {
   '//': 'c',
@@ -85,20 +87,31 @@ Syntax.prototype.restoreBlocks = function(code) {
   var block;
   var blocks = this.blocks;
   var n = 0;
-  return code.replace(/\uffeb/g, function() {
-    block = blocks[n++]
-    var tag = identify(block);
-    if (tag) return '<'+tag+'>'+entities(block)+'</'+tag+'>';
-    else return entities(block.slice(0, 1000) + '...line too long to display');
-  });
+  return code
+    .replace(/\uffec/g, function() {
+      block = blocks[n++];
+      return entities(block.slice(0, 1000) + '...line too long to display');
+    })
+    .replace(/\uffeb/g, function() {
+      block = blocks[n++];
+      var tag = identify(block);
+      return '<'+tag+'>'+entities(block)+'</'+tag+'>';
+    });
 };
 
 Syntax.prototype.createBlocks = function(code) {
   this.blocks = [];
-  code = code.replace(Blocks, (block) => {
-    this.blocks.push(block);
-    return '\uffeb';
-  });
+
+  code = code
+    .replace(LongLines, (block) => {
+      this.blocks.push(block);
+      return '\uffec';
+    })
+    .replace(Blocks, (block) => {
+      this.blocks.push(block);
+      return '\uffeb';
+    });
+
   return code;
 };
 

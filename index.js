@@ -4,6 +4,8 @@
 
 var DefaultOptions = {
   theme: 'western',
+  font_size: '9pt',
+  line_height: '1.25em',
   debug_layers: false,
   scroll_speed: 95,
   hide_rows: false,
@@ -251,7 +253,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
 
   this.emit('move');
   this.caretSolid();
-  if (!this.editing) this.render();
+  this.render();
 };
 
 Jazz.prototype.onResize = function() {
@@ -399,6 +401,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 
 Jazz.prototype.setCaretFromPx = function(px) {
   var g = new Point({ x: this.marginLeft, y: this.char.height/2 })['+'](this.offset);
+  if (this.options.center_vertical) g.y += this.size.height / 3 | 0;
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
   p.y = Math.max(0, Math.min(p.y, this.buffer.loc()));
@@ -882,6 +885,32 @@ Jazz.prototype.repaint = bindRaf(function() {
 Jazz.prototype.resize = function() {
   var $ = this.el;
 
+  dom.css(this.id, `
+    .${css.rows},
+    .${css.mark},
+    .${css.code},
+    mark,
+    p,
+    t,
+    k,
+    d,
+    n,
+    o,
+    e,
+    m,
+    f,
+    r,
+    c,
+    s,
+    l,
+    x {
+      font-family: monospace;
+      font-size: ${this.options.font_size};
+      line-height: ${this.options.line_height};
+    }
+    `
+  );
+
   this.offset.set(dom.getOffset($));
   this.scroll.set(dom.getScroll($));
   this.size.set(dom.getSize($));
@@ -895,13 +924,23 @@ Jazz.prototype.resize = function() {
   this.pageRemainder.set(this.size['-'](this.page['_*'](this.char)));
   this.pageBounds = [0, this.rows];
   // this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
+
   this.gutter = Math.max(
     this.options.hide_rows ? 0 : (''+this.rows).length,
     (this.options.center_horizontal
-      ? (this.page.width - 81 - (this.options.hide_rows ? 0 : (''+this.rows).length)) / 2 | 0 : 0)
-    + (this.options.hide_rows
-      ? 0 : Math.max(3, (''+this.rows).length))
-  ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin * (this.options.center_horizontal ? -1 : 1));
+      ? Math.max(
+          (''+this.rows).length,
+          ( this.page.width - 81
+          - (this.options.hide_rows ? 0 : (''+this.rows).length)
+          ) / 2 | 0
+        ) : 0)
+    + (this.options.hide_rows ? 0 : Math.max(3, (''+this.rows).length))
+  ) * this.char.width
+  + (this.options.hide_rows
+      ? 0
+      : this.options.gutter_margin * (this.options.center_horizontal ? -1 : 1)
+    );
+
   this.marginLeft = this.gutter + this.options.margin_left;
 
   // dom.style(this.el, {
@@ -936,6 +975,30 @@ Jazz.prototype.resize = function() {
     #${this.id} {
       top: ${this.options.center_vertical ? this.size.height / 3 : 0}px;
     }
+
+    .${css.rows},
+    .${css.mark},
+    .${css.code},
+    mark,
+    p,
+    t,
+    k,
+    d,
+    n,
+    o,
+    e,
+    m,
+    f,
+    r,
+    c,
+    s,
+    l,
+    x {
+      font-family: monospace;
+      font-size: ${this.options.font_size};
+      line-height: ${this.options.line_height};
+    }
+
     #${this.id} > .${css.ruler},
     #${this.id} > .${css.layer} > .${css.find},
     #${this.id} > .${css.layer} > .${css.mark},

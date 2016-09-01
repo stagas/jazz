@@ -17,8 +17,8 @@
 
 .rows,
 .mark,
-mark,
 .code,
+mark,
 p,
 t,
 k,
@@ -34,8 +34,6 @@ s,
 l,
 x {
   white-space: pre;
-  font-family: monospace;
-  font-size: 9pt;
 }
 
 .mark,
