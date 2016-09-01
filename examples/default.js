@@ -4,7 +4,7 @@ var options = {
   // scroll_speed: 95,
   // hide_rows: true,
   center_horizontal: true,
-  center_vertical: true,
+  center_vertical: false,
   // margin_left: 15,
   // gutter_margin: 20,
 };

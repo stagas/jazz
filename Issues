@@ -95,7 +95,6 @@ x- blinking caret
 x- fix find
 x- syntax:
   x- skip long lines entirely
-x- vertical centering
 
 
 -- doing ---------------------
@@ -103,13 +102,18 @@ x- vertical centering
 
 
 
+
 -- todo ----------------------
 
-- optimize mark
-- optimize ctrl-shift move area
+- bring back history
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
-- refactor template
+- rewrite views
+  - optimize mark
+  - optimize ctrl-shift move area
+  - refactor template
+  x- vertical centering
+    !- issues when rendering edits
 
 -- later ---------------------
 

@@ -240,7 +240,7 @@ Jazz.prototype.onScroll = function(scroll) {
 Jazz.prototype.rest = debounce(function() {
   this.editing = false;
   this.render();
-}, 300);
+}, 600);
 
 Jazz.prototype.onMove = function(point, byEdit) {
   if (!byEdit) this.editing = false;
@@ -253,7 +253,8 @@ Jazz.prototype.onMove = function(point, byEdit) {
 
   this.emit('move');
   this.caretSolid();
-  this.render();
+  this.rest();
+  if (!this.editing) this.render();
 };
 
 Jazz.prototype.onResize = function() {
@@ -342,7 +343,6 @@ Jazz.prototype.onFileOpen = function() {
 };
 
 Jazz.prototype.onFileRaw = function(raw) {
-  console.log('file raw!')
   this.clear();
   this.render();
 };
@@ -364,7 +364,6 @@ Jazz.prototype.onFileSet = function() {
 };
 
 Jazz.prototype.onHistoryChange = function() {
-  this.clear();
   this.repaint();
   this.followCaret();
 };
@@ -522,10 +521,11 @@ Jazz.prototype.getRange = function(range) {
 };
 
 Jazz.prototype.getPageRange = function(range) {
-  var p = this.scroll['_/'](this.char);
+  var s = this.scroll.copy();
   if (this.options.center_vertical) {
-    p.y -= this.page.height / 3 | 0;
+    s.y -= this.size.height / 3 | 0;
   }
+  var p = s['_/'](this.char);
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -878,6 +878,7 @@ Jazz.prototype.repaintBelowCaret = debounce(function() {
 }, 40);
 
 Jazz.prototype.repaint = bindRaf(function() {
+  this.clear();
   this.resize();
   this.render();
 });
