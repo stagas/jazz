@@ -26,7 +26,7 @@ var themes = {
     string: '#C43C3C',
   },
 
-  ergonom: {
+  redbliss: {
     background: '#271E16',
     color: '#E9E3D1',
     keyword: '#A13630',
