@@ -920,13 +920,13 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.layer} > .${css.find},
     #${this.id} > .${css.layer} > .${css.mark},
     #${this.id} > .${css.layer} > .${css.code} {
-      padding-left: ${this.options.margin_left + this.gutter}px;
+      margin-left: ${this.marginLeft}px;
       tab-size: ${this.tabSize};
     }
     #${this.id} > .${css.layer} > .${css.rows} {
       padding-right: ${this.options.gutter_margin}px;
-      margin-left: ${this.options.margin_left}px;
-      width: ${this.gutter}px;
+      padding-left: ${this.options.margin_left}px;
+      width: ${this.marginLeft}px;
     }
     #${this.id} > .${css.layer} > .${css.find} > i,
     #${this.id} > .${css.layer} > .${css.block} > i {
