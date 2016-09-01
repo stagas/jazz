@@ -7,7 +7,8 @@ var DefaultOptions = {
   debug_layers: false,
   scroll_speed: 95,
   hide_rows: false,
-  center: false,
+  center_horizontal: false,
+  center_vertical: false,
   margin_left: 15,
   gutter_margin: 20,
 };
@@ -519,6 +520,9 @@ Jazz.prototype.getRange = function(range) {
 
 Jazz.prototype.getPageRange = function(range) {
   var p = this.scroll['_/'](this.char);
+  if (this.options.center_vertical) {
+    p.y -= this.page.height / 3 | 0;
+  }
   return this.getRange([
     Math.floor(p.y + this.page.height * range[0]),
     Math.ceil(p.y + this.page.height + this.page.height * range[1])
@@ -533,8 +537,17 @@ Jazz.prototype.followCaret = function(center, animate) {
   var p = this.caretPx;
   var s = this.animationScrollTarget || this.scroll;
 
-  var top = (s.y + (center ? (this.size.height / 2 | 0) - 100 : 0)) - p.y;
-  var bottom = p.y - (s.y + this.size.height - (center ? (this.size.height / 2 | 0) - 100 : 0)) + this.char.height;
+  var top = (
+      s.y
+    + (center && !this.options.center_vertical ? (this.size.height / 2 | 0) - 100 : 0)
+  ) - p.y;
+
+  var bottom = p.y - (
+      s.y
+    + this.size.height
+    - (center && !this.options.center_vertical ? (this.size.height / 2 | 0) - 100 : 0)
+    - (this.options.center_vertical ? (this.size.height / 3 * 2 | 0) : 0)
+  ) + this.char.height;
 
   var left = (s.x + this.char.width) - p.x;
   var right = (p.x) - (s.x + this.size.width - this.marginLeft) + this.char.width * 2;
@@ -586,7 +599,11 @@ Jazz.prototype.animateScrollBy = function(x, y, animationType) {
 
   this.animationScrollTarget = new Point({
     x: Math.max(0, s.x + x),
-    y: Math.min((this.rows + 1) * this.char.height - this.size.height, Math.max(0, s.y + y))
+    y: Math.min(
+        (this.rows + 1) * this.char.height - this.size.height
+      + (this.options.center_vertical ? this.size.height / 3 * 2 | 0 : 0),
+      Math.max(0, s.y + y)
+    )
   });
 };
 
@@ -880,11 +897,11 @@ Jazz.prototype.resize = function() {
   // this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
   this.gutter = Math.max(
     this.options.hide_rows ? 0 : (''+this.rows).length,
-    (this.options.center
-      ? (this.page.width - 81) / 2 | 0 : 0)
+    (this.options.center_horizontal
+      ? (this.page.width - 81 - (this.options.hide_rows ? 0 : (''+this.rows).length)) / 2 | 0 : 0)
     + (this.options.hide_rows
       ? 0 : Math.max(3, (''+this.rows).length))
-  ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin);
+  ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin * (this.options.center_horizontal ? -1 : 1));
   this.marginLeft = this.gutter + this.options.margin_left;
 
   // dom.style(this.el, {
@@ -916,6 +933,9 @@ Jazz.prototype.resize = function() {
   var dataURL = canvas.toDataURL();
 
   dom.css(this.id, `
+    #${this.id} {
+      top: ${this.options.center_vertical ? this.size.height / 3 : 0}px;
+    }
     #${this.id} > .${css.ruler},
     #${this.id} > .${css.layer} > .${css.find},
     #${this.id} > .${css.layer} > .${css.mark},
