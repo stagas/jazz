@@ -4,6 +4,8 @@
 
 var DefaultOptions = {
   theme: 'western',
+  font_size: '9pt',
+  line_height: '1.25em',
   debug_layers: false,
   scroll_speed: 95,
   hide_rows: false,
@@ -251,7 +253,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
 
   this.emit('move');
   this.caretSolid();
-  if (!this.editing) this.render();
+  this.render();
 };
 
 Jazz.prototype.onResize = function() {
@@ -882,6 +884,32 @@ Jazz.prototype.repaint = bindRaf(function() {
 Jazz.prototype.resize = function() {
   var $ = this.el;
 
+  dom.css(this.id, `
+    .${css.rows},
+    .${css.mark},
+    .${css.code},
+    mark,
+    p,
+    t,
+    k,
+    d,
+    n,
+    o,
+    e,
+    m,
+    f,
+    r,
+    c,
+    s,
+    l,
+    x {
+      font-family: monospace;
+      font-size: ${this.options.font_size};
+      line-height: ${this.options.line_height};
+    }
+    `
+  );
+
   this.offset.set(dom.getOffset($));
   this.scroll.set(dom.getScroll($));
   this.size.set(dom.getSize($));
@@ -936,6 +964,30 @@ Jazz.prototype.resize = function() {
     #${this.id} {
       top: ${this.options.center_vertical ? this.size.height / 3 : 0}px;
     }
+
+    .${css.rows},
+    .${css.mark},
+    .${css.code},
+    mark,
+    p,
+    t,
+    k,
+    d,
+    n,
+    o,
+    e,
+    m,
+    f,
+    r,
+    c,
+    s,
+    l,
+    x {
+      font-family: monospace;
+      font-size: ${this.options.font_size};
+      line-height: ${this.options.line_height};
+    }
+
     #${this.id} > .${css.ruler},
     #${this.id} > .${css.layer} > .${css.find},
     #${this.id} > .${css.layer} > .${css.mark},
