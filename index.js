@@ -401,6 +401,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 
 Jazz.prototype.setCaretFromPx = function(px) {
   var g = new Point({ x: this.marginLeft, y: this.char.height/2 })['+'](this.offset);
+  if (this.options.center_vertical) g.y += this.size.height / 3 | 0;
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
   p.y = Math.max(0, Math.min(p.y, this.buffer.loc()));
