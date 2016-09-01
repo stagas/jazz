@@ -924,13 +924,23 @@ Jazz.prototype.resize = function() {
   this.pageRemainder.set(this.size['-'](this.page['_*'](this.char)));
   this.pageBounds = [0, this.rows];
   // this.longestLine = Math.min(500, this.buffer.lines.getLongestLineLength());
+
   this.gutter = Math.max(
     this.options.hide_rows ? 0 : (''+this.rows).length,
     (this.options.center_horizontal
-      ? (this.page.width - 81 - (this.options.hide_rows ? 0 : (''+this.rows).length)) / 2 | 0 : 0)
-    + (this.options.hide_rows
-      ? 0 : Math.max(3, (''+this.rows).length))
-  ) * this.char.width + (this.options.hide_rows ? 0 : this.options.gutter_margin * (this.options.center_horizontal ? -1 : 1));
+      ? Math.max(
+          (''+this.rows).length,
+          ( this.page.width - 81
+          - (this.options.hide_rows ? 0 : (''+this.rows).length)
+          ) / 2 | 0
+        ) : 0)
+    + (this.options.hide_rows ? 0 : Math.max(3, (''+this.rows).length))
+  ) * this.char.width
+  + (this.options.hide_rows
+      ? 0
+      : this.options.gutter_margin * (this.options.center_horizontal ? -1 : 1)
+    );
+
   this.marginLeft = this.gutter + this.options.margin_left;
 
   // dom.style(this.el, {
