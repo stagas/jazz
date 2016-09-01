@@ -17,8 +17,8 @@
 
 ._src_style__rows,
 ._src_style__mark,
-mark,
 ._src_style__code,
+mark,
 p,
 t,
 k,
@@ -34,8 +34,6 @@ s,
 l,
 x {
   white-space: pre;
-  font-family: monospace;
-  font-size: 9pt;
 }
 
 ._src_style__mark,
