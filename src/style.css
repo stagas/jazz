@@ -84,10 +84,11 @@ x {
 
 .ruler {
   position: absolute;
+  cursor: text;
   left: 0;
   top: 0;
+  right: 0;
   opacity: 0;
-  min-width: 100%;
 }
 
 .gutter.above {
@@ -95,9 +96,10 @@ x {
 }
 
 .rows {
-  color: #8e8e86;
   position: absolute;
   text-align: right;
+  cursor: default;
+  color: #8e8e86;
   z-index: 5;
 }
 

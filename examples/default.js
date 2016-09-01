@@ -1,9 +1,10 @@
 var options = {
-  theme: 'ergonom',
+  theme: 'redbliss',
   // debug_layers: ['code'],
-  // scroll_speed: 75,
+  // scroll_speed: 95,
   // hide_rows: true,
-  // center: true,
+  center_horizontal: true,
+  center_vertical: true,
   // margin_left: 15,
   // gutter_margin: 20,
 };
