@@ -1,32 +1,33 @@
+.dialog, .dialog * {
+  transform: translateZ(0);
+}
+
 .dialog {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   align-content: center;
   position: fixed;
-  bottom: 0px;
-  width: 70%;
-  right: 10px;
-  color: #666;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  color: #777;
   padding: 10px 11px 11px 10px;
   font-size: 9.5pt;
-  border: 1px solid #2c2c2c;
-  border-bottom: none;
-  border-radius: 3px;
-  background: #333;
-  box-shadow: 0 0px 3px 2px rgba(0,0,0,.1);
+  border-top: 1px solid #aaa;
+  border-radius: 0px;
+  background: #efefef;
   z-index: 100;
-  transform: translateZ(0);
 }
 
 .dialog > .input {
   display: flex;
   color: inherit;
   flex-grow: 1;
-  background: #f1f1f1;
+  background: #f3f3f3;
   border: none;
-  box-shadow: inset 1px 2px 3px -1px rgba(0,0,0,.4);
-  border-radius: 2px;
+  box-shadow: inset 0px 1px 5px -1px rgba(0,0,0,.4);
+  border-radius: 3px;
   padding: 5px 6px;
   margin: 0px;
 }
