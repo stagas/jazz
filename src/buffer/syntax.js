@@ -21,7 +21,7 @@ var Indent = {
 
 var AnyChar = /\S/g;
 
-var Blocks = R(['comment','string','regexp'], 'gm');
+var Blocks = R(['comment','string','regexp', /^.{1000,}/], 'gm');
 
 var Tag = {
   '//': 'c',
@@ -37,15 +37,12 @@ module.exports = Syntax;
 function Syntax(o) {
   o = o || {};
   this.tab = o.tab || '\t';
-  this.maxLine = o.maxLine || 300;
   this.blocks = [];
 }
 
 Syntax.prototype.entities = entities;
 
 Syntax.prototype.highlight = function(code, offset) {
-  // console.log(0, 'highlight', code)
-
   code = this.createIndents(code);
   code = this.createBlocks(code);
   code = entities(code);
@@ -55,13 +52,7 @@ Syntax.prototype.highlight = function(code, offset) {
   }
 
   code = this.restoreBlocks(code);
-
   code = code.replace(Indent.regexp, Indent.replacer);
-  // code = code.replace(/\n/g, '<br>')
-
-  // code = code.replace(/\ueeee/g, function() {
-  //   return long.shift().slice(0, this.maxLine) + '...line too long to display';
-  // });
 
   return code;
 };
@@ -97,7 +88,8 @@ Syntax.prototype.restoreBlocks = function(code) {
   return code.replace(/\uffeb/g, function() {
     block = blocks[n++]
     var tag = identify(block);
-    return '<'+tag+'>'+entities(block)+'</'+tag+'>';
+    if (tag) return '<'+tag+'>'+entities(block)+'</'+tag+'>';
+    else return entities(block.slice(0, 1000) + '...line too long to display');
   });
 };
 

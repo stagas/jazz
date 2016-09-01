@@ -93,6 +93,8 @@ x- bring back autocomplete
 x- optimize blocks using tokens
 x- blinking caret
 x- fix find
+x- syntax:
+  x- skip long lines entirely
 
 
 -- doing ---------------------
@@ -120,8 +122,6 @@ x- fix find
 - on scroll, clear raw debounce,
     maybe also have a debounced jobs list to add tasks and clear in bulk
     ideally should be implicit but idk
-- syntax:
-  !x- skip long lines entirely
     !attempt was breaking certain syntax highlight
 - syntax:
   - look behind for regexps (must be nothing, or ([=:;)
