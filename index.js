@@ -41,7 +41,7 @@ var Views = require('./src/views');
 var theme = require('./src/theme');
 var css = require('./src/style.css');
 
-var NEWLINE = Regexp.create(['newline'], 'g');
+var NEWLINE = Regexp.create(['newline']);
 
 module.exports = Jazz;
 

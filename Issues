@@ -95,6 +95,7 @@ x- blinking caret
 x- fix find
 x- syntax:
   x- skip long lines entirely
+x- bug: indent on enter breaks half the times
 
 
 -- doing ---------------------
