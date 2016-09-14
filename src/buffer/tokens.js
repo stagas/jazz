@@ -24,6 +24,8 @@ Tokens.Type = Type;
 function Tokens(factory) {
   factory = factory || function() { return new Parts; };
 
+  this.factory = factory;
+
   var t = this.tokens = {
     lines: factory(),
     blocks: factory(),
@@ -92,4 +94,25 @@ Tokens.prototype.getCollection = function(type) {
 
 Tokens.prototype.getByOffset = function(type, offset) {
   return this.tokens[type].find(offset);
+};
+
+Tokens.prototype.copy = function() {
+  var tokens = new Tokens(this.factory);
+  var t = tokens.tokens;
+  for (var key in this.tokens) {
+    t[key] = this.tokens[key].slice();
+  }
+  tokens.collection = {
+    '\n': t.lines,
+    '{': t.blocks,
+    '}': t.blocks,
+    '[': t.blocks,
+    ']': t.blocks,
+    '(': t.blocks,
+    ')': t.blocks,
+    '/': t.segments,
+    '*': t.segments,
+    '`': t.segments,
+  };
+  return tokens;
 };

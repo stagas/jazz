@@ -95,6 +95,8 @@ x- blinking caret
 x- fix find
 x- syntax:
   x- skip long lines entirely
+x- bug: indent on enter breaks half the times
+x- bring back history
 
 
 -- doing ---------------------
@@ -105,7 +107,6 @@ x- syntax:
 
 -- todo ----------------------
 
-- bring back history
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
 - rewrite views

@@ -10,14 +10,11 @@ var test = require('test');
 var _bench = require('bench');
 
 var el = setup({
-  // 'lib/diff.test': ['lib/diff'],
-  // 'lib/trim.test': ['lib/trim'],
-  'src/buffer/skipstring.test': ['src/buffer/skipstring'],
-  // 'src/buffer/tokens.test': ['src/buffer/tokens'],
-  'src/buffer/parts.test': ['src/buffer/parts'],
-  'src/buffer/test': ['src/buffer'],
-  'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
+  // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
+  // 'src/buffer/parts.test': ['src/buffer/parts'],
   // 'src/buffer/test': ['src/buffer'],
+  // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
+  'src/history.test': ['src/history'],
 });
 
 append(document.body, el);
