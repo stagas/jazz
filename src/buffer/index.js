@@ -22,6 +22,7 @@ var SEGMENT = {
 module.exports = Buffer;
 
 function Buffer() {
+  this.log = [];
   this.syntax = new Syntax;
   this.indexer = new Indexer(this);
   this.segments = new Segments(this);
@@ -32,6 +33,20 @@ Buffer.prototype.__proto__ = Event.prototype;
 
 Buffer.prototype.updateRaw = function() {
   this.raw = this.text.toString();
+};
+
+Buffer.prototype.copy = function() {
+  this.updateRaw();
+  var buffer = new Buffer;
+  buffer.replace(this);
+  return buffer;
+};
+
+Buffer.prototype.replace = function(data) {
+  this.raw = data.raw;
+  this.text.set(this.raw);
+  this.tokens = data.tokens.copy();
+  this.segments.clearCache();
 };
 
 Buffer.prototype.setText = function(text) {
@@ -56,8 +71,10 @@ Buffer.prototype.setText = function(text) {
 };
 
 Buffer.prototype.insert =
-Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift) {
-  if (!ctrlShift) this.emit('before update');
+Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift, noLog) {
+  if (!noLog) {
+    if (!ctrlShift) this.emit('before update');
+  }
 
   text = normalizeEOL(text);
 
@@ -77,19 +94,30 @@ Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift) {
   this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
+  if (!noLog) {
+    var lastLog = this.log[this.log.length - 1];
+    if (lastLog && lastLog[0] === 'insert' && lastLog[1][1] === point.offset) {
+      lastLog[1][1] += text.length;
+      lastLog[2] += text;
+    } else {
+      this.log.push(['insert', [point.offset, point.offset + text.length], text]);
+    }
   // this.tokens = new Tokens;
   // this.tokens.index(this.text.toString());
   // this.segments = new Segments(this);
 
-  if (!ctrlShift) this.emit('update', range, shift, before, after);
-  else this.emit('raw');
+    if (!ctrlShift) this.emit('update', range, shift, before, after);
+    else this.emit('raw');
+  }
 
   return text.length;
 };
 
 Buffer.prototype.remove =
-Buffer.prototype.removeOffsetRange = function(o, noUpdate) {
-  this.emit('before update');
+Buffer.prototype.removeOffsetRange = function(o, noUpdate, noLog) {
+  if (!noLog) {
+    this.emit('before update');
+  }
 
   // console.log('offsets', o)
   var a = this.getOffsetPoint(o[0]);
@@ -101,6 +129,7 @@ Buffer.prototype.removeOffsetRange = function(o, noUpdate) {
 
   var offsetRange = this.getLineRangeOffsets(range);
   var before = this.getOffsetRangeText(offsetRange);
+  var text = this.text.getRange(o);
   this.text.remove(o);
   // offsetRange[1] -= shift;
   var after = this.getOffsetRangeText(offsetRange);
@@ -108,7 +137,11 @@ Buffer.prototype.removeOffsetRange = function(o, noUpdate) {
   this.tokens.update(offsetRange, after, length);
   this.segments.clearCache(offsetRange[0]);
 
-  if (!noUpdate) this.emit('update', range, shift, before, after);
+  if (!noLog) {
+    this.log.push(['remove', o, text]);
+
+    if (!noUpdate) this.emit('update', range, shift, before, after);
+  }
 };
 
 Buffer.prototype.removeArea = function(area, noUpdate) {
@@ -184,7 +217,7 @@ Buffer.prototype.getOffsetRangeText = function(offsetRange) {
 Buffer.prototype.getOffsetPoint = function(offset) {
   var token = this.tokens.getByOffset('lines', offset - .5);
   return new Point({
-    x: offset - (offset > token.offset ? token.offset + 1 : 0),
+    x: offset - (offset > token.offset ? token.offset + (!!token.part.length) : 0),
     y: Math.min(this.loc(), token.index - (token.offset + 1 > offset) + 1)
   });
 };

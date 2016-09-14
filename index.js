@@ -369,7 +369,7 @@ Jazz.prototype.onHistoryChange = function() {
 };
 
 Jazz.prototype.onBeforeFileChange = function() {
-  // this.history.save();
+  this.history.save();
   this.editCaretBefore = this.caret.copy();
 };
 
@@ -383,7 +383,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     this.onFindValue(this.findValue, true);
   }
 
-  // this.history.save();
+  this.history.save();
 
   this.views.code.renderEdit({
     line: editRange[0],

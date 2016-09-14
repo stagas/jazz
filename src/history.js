@@ -30,11 +30,15 @@ History.prototype.debouncedSave = debounce(function() {
 }, 700);
 
 History.prototype.actuallySave = function() {
-  // console.log('save', this.needle)
   clearTimeout(this.timeout);
-  this.log = this.log.slice(0, ++this.needle);
-  this.log.push(this.commit());
-  this.needle = this.log.length;
+  if (this.editor.buffer.log.length) {
+    this.log = this.log.slice(0, ++this.needle);
+    this.log.push(this.commit());
+    this.needle = this.log.length;
+    this.saveMeta();
+  } else {
+    this.saveMeta();
+  }
   this.timeStart = Date.now();
   this.timeout = false;
 };
@@ -43,41 +47,75 @@ History.prototype.undo = function() {
   if (this.timeout !== false) this.actuallySave();
 
   if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
+  if (this.needle < 0) return;
 
-  this.needle--;
-
-  if (this.needle < 0) this.needle = 0;
-  // console.log('undo', this.needle, this.log.length - 1)
-
-  this.checkout(this.needle);
+  this.checkout('undo', this.needle--);
 };
 
 History.prototype.redo = function() {
   if (this.timeout !== false) this.actuallySave();
 
-  this.needle++;
-  // console.log('redo', this.needle, this.log.length - 1)
+  if (this.needle === this.log.length - 1) return;
 
-  if (this.needle > this.log.length - 1) this.needle = this.log.length - 1;
-
-  this.checkout(this.needle);
+  this.checkout('redo', ++this.needle);
 };
 
-History.prototype.checkout = function(n) {
+History.prototype.checkout = function(type, n) {
   var commit = this.log[n];
   if (!commit) return;
+
+  var log = commit.log;
+
+  commit = this.log[n][type];
   this.editor.mark.active = commit.markActive;
   this.editor.mark.set(commit.mark.copy());
   this.editor.setCaret(commit.caret.copy());
-  this.editor.buffer.text = commit.text.copy();
-  this.editor.buffer.lines = commit.lines.copy();
+
+  log = 'undo' === type
+    ? log.slice().reverse()
+    : log.slice();
+
+  log.forEach(item => {
+    var action = item[0];
+    var offsetRange = item[1];
+    var text = item[2];
+    switch (action) {
+      case 'insert':
+        if ('undo' === type) {
+          this.editor.buffer.removeOffsetRange(offsetRange, null, true);
+        } else {
+          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, null, true);
+        }
+        break;
+      case 'remove':
+        if ('undo' === type) {
+          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, null, true);
+        } else {
+          this.editor.buffer.removeOffsetRange(offsetRange, null, true);
+        }
+        break;
+    }
+  });
+
   this.emit('change');
 };
 
 History.prototype.commit = function() {
+  var log = this.editor.buffer.log;
+  this.editor.buffer.log = [];
   return {
-    text: this.editor.buffer.text.copy(),
-    lines: this.editor.buffer.lines.copy(),
+    log: log,
+    undo: this.meta,
+    redo: {
+      caret: this.editor.caret.copy(),
+      mark: this.editor.mark.copy(),
+      markActive: this.editor.mark.active
+    }
+  };
+};
+
+History.prototype.saveMeta = function() {
+  this.meta = {
     caret: this.editor.caret.copy(),
     mark: this.editor.mark.copy(),
     markActive: this.editor.mark.active

@@ -75,6 +75,7 @@ Parts.prototype.insert = function(offset, array) {
 Parts.prototype.shiftOffset = function(offset, shift) {
   var parts = this.parts;
   var item = this.find(offset);
+  if (!item) return;
   if (offset > item.offset) item.local += 1;
 
   var removed = 0;
@@ -107,6 +108,7 @@ Parts.prototype.shiftOffset = function(offset, shift) {
 Parts.prototype.removeRange = function(range) {
   var a = this.find(range[0]);
   var b = this.find(range[1]);
+  if (!a && !b) return;
 
   if (a.partIndex === b.partIndex) {
     if (a.offset >= range[1] || a.offset < range[0]) a.local += 1;
@@ -169,6 +171,18 @@ Parts.prototype.findPartByOffset = function(offset) {
 
 Parts.prototype.toArray = function() {
   return this.parts.reduce((p,n) => p.concat(n), []);
+};
+
+Parts.prototype.slice = function() {
+  var parts = new Parts(this.minSize);
+  this.parts.forEach(part => {
+    var p = part.slice();
+    p.startIndex = part.startIndex;
+    p.startOffset = part.startOffset;
+    parts.parts.push(p);
+  });
+  parts.length = this.length;
+  return parts;
 };
 
 function last(array) {
