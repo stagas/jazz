@@ -1,71 +1,37 @@
 var dom = require('../../lib/dom');
-var Range = require('../../lib/range');
-var Layer = require('./layer');
-var template = require('./template');
+var css = require('../style.css');
+var View = require('./view');
 
-module.exports = Code;
+module.exports = CodeView;
 
-function Code(name, editor, template) {
-  Layer.call(this, name, editor, template, 7);
+function CodeView(editor) {
+  View.call(this, editor);
+
+  this.name = 'code';
+  this.dom = dom(css.code);
 }
 
-Code.prototype.__proto__ = Layer.prototype;
+CodeView.prototype.__proto__ = View.prototype;
 
-Code.prototype.render = function() {
-  // this.clear();
-  // return this.renderPage(0, true);
-
-  if (!this.editor.editing) {
-    this.renderAhead();
-  }
+CodeView.prototype.use = function(target) {
+  dom.append(target, this);
 };
 
-Code.prototype.renderEdit = function(edit) {
-  // this.clear();
-  // return this.renderPage(0, true);
-
-  var y = edit.line;
-  var g = edit.range.slice();
-  var shift = edit.shift;
-  var isEnter = shift > 0;
-  var isBackspace = shift < 0;
-  var isBegin = g[0] + isBackspace === 0;
-  var isEnd = g[1] + isEnter === this.editor.rows;
-
-  if (shift) {
-    if (isEnter) {
-      this.clearOutPageRange([0,0]);
-      if (!this.hasViewTopAt(edit.caretNow.y) || edit.caretBefore.x > 0) {
-        this.shiftViewsBelow(edit.caretNow.y + 1, 1);
-        this.splitEnter(edit.caretNow.y);
-        if (edit.caretBefore.x > 0) {
-          this.updateRange([edit.caretBefore.y, edit.caretBefore.y]);
-        }
-      } else {
-        this.shiftViewsBelow(edit.caretNow.y, 1);
-      }
-      this.renderPageBelow(edit.caretNow.y+1);
-    }
-    else if (isBackspace) {
-      this.clearOutPageRange([0,1]);
-      this.shortenBottomAt(edit.caretNow.y);
-      this.shiftViewsBelow(edit.caretNow.y+1, -1);
-      if (!this.hasViewTopAt(edit.caretNow.y)) {
-        this.splitBackspace(edit.caretNow.y);
-      }
-      if (edit.caretNow.x > 0) {
-        this.updateRange([edit.caretNow.y, edit.caretNow.y]);
-      }
-      this.renderPageBelow(edit.caretNow.y);
-    }
-  } else {
-    this.updateRange(g);
-    this.renderPage(0);
-  }
+CodeView.prototype.render = function() {
+  var page = this.editor.getPageRange([-1,1]);
+  var code = this.editor.buffer.get(page);
+  dom.html(this, code);
+  dom.style(this, {
+    opacity: 1,
+    height: (page[1] - page[0]) * this.editor.char.height,
+    top: page[0] * this.editor.char.height
+  });
 };
 
-Code.prototype.repaintBelowCaret = function() {
-  this.splitEnter(this.editor.caret.y);
-  this.renderPageBelow(this.editor.caret.y, true);
-  this.clearOutPageRange([0,0]);
+CodeView.prototype.clear = function() {
+  dom.style(this, {
+    opacity: 0,
+    height: 0,
+    top: 0
+  });
 };

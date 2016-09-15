@@ -1,11 +1,9 @@
-var debounce = require('../../lib/debounce');
-var template = require('./template');
+// var RulerView = require('./ruler');
 var CodeView = require('./code');
-var MarkView = require('./mark');
-var RowsView = require('./rows');
-var FindView = require('./find');
-var BlockView = require('./block');
-var View = require('./view');
+// var CaretView = require('./caret');
+// var BlockView = require('./block');
+// var FindView = require('./find');
+// var RowsView = require('./rows');
 
 module.exports = Views;
 
@@ -13,30 +11,29 @@ function Views(editor) {
   this.editor = editor;
 
   this.views = [
-    new View('ruler', editor, template.ruler),
-    new CodeView('code', editor, template.code),
-    new View('caret', editor, template.caret),
-    new BlockView('block', editor, template.block),
-    new FindView('find', editor, template.find),
-    new MarkView('mark', editor, template.mark),
-    new RowsView('rows', editor, template.rows),
+    // new RulerView,
+    new CodeView(editor),
+    // new CaretView,
+    // new BlockView,
+    // new FindView,
+    // new MarkView,
+    // new RowsView,
   ];
 
   this.views.forEach(view => this[view.name] = view);
   this.forEach = this.views.forEach.bind(this.views);
-
-  this.block.render = debounce(this.block.render, 20);
-
-  //TODO: needs to be set dynamically
-  if (this.editor.options.hide_rows) this.rows.render = noop;
 }
 
-Views.prototype.clear = function() {
-  this.forEach(view => view.clear());
-},
+Views.prototype.use = function(el) {
+  this.forEach(view => view.use(el));
+};
 
 Views.prototype.render = function() {
   this.forEach(view => view.render());
 };
+
+Views.prototype.clear = function() {
+  this.forEach(view => view.clear());
+},
 
 function noop() {/* noop */}

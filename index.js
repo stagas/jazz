@@ -108,8 +108,8 @@ function Jazz(options) {
     animationScrollTarget: null,
   });
 
-  dom.append(this.views.caret, this.input.text);
-  dom.append(this, this.views);
+  // dom.append(this.views.caret, this.input.text);
+  // dom.append(this, this.views);
 
   // useful shortcuts
   this.buffer = this.file.buffer;
@@ -145,6 +145,7 @@ Jazz.prototype.use = function(el, scrollEl) {
   this.el.classList.add(this.options.theme);
   this.offScroll = dom.onscroll(scrollEl || this.el, this.onScroll);
   this.input.use(this.el);
+  this.views.use(this.el);
 
   setTimeout(this.repaint, 0);
 
@@ -264,26 +265,26 @@ Jazz.prototype.onResize = function() {
 Jazz.prototype.onFocus = function(text) {
   this.hasFocus = true;
   this.emit('focus');
-  this.views.caret.render();
+  // this.views.caret.render();
   this.caretSolid();
 };
 
 Jazz.prototype.caretSolid = function() {
-  dom.classes(this.views.caret, [css.caret]);
+  // dom.classes(this.views.caret, [css.caret]);
   this.caretBlink();
 };
 
 Jazz.prototype.caretBlink = debounce(function() {
-  dom.classes(this.views.caret, [css.caret, css['blink-smooth']]);
+  // dom.classes(this.views.caret, [css.caret, css['blink-smooth']]);
 }, 400);
 
 Jazz.prototype.onBlur = function(text) {
   this.hasFocus = false;
   setTimeout(() => {
     if (!this.hasFocus) {
-      dom.classes(this.views.caret, [css.caret]);
+      // dom.classes(this.views.caret, [css.caret]);
       this.emit('blur');
-      this.views.caret.render();
+      // this.views.caret.render();
     }
   }, 5);
 };
@@ -385,13 +386,13 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 
   this.history.save();
 
-  this.views.code.renderEdit({
-    line: editRange[0],
-    range: editRange,
-    shift: editShift,
-    caretNow: this.caret,
-    caretBefore: this.editCaretBefore
-  });
+  // this.views.code.renderEdit({
+  //   line: editRange[0],
+  //   range: editRange,
+  //   shift: editShift,
+  //   caretNow: this.caret,
+  //   caretBefore: this.editCaretBefore
+  // });
 
   this.render();
 
@@ -771,7 +772,7 @@ Jazz.prototype.onFindValue = function(value, noJump) {
   var g = new Point({ x: this.gutter, y: 0 });
 
   this.buffer.updateRaw();
-  this.views.find.clear();
+  // this.views.find.clear();
   this.findValue = value;
   this.findResults = this.buffer.indexer.find(value).map((offset) => {
     return this.buffer.getOffsetPoint(offset);
@@ -783,7 +784,7 @@ Jazz.prototype.onFindValue = function(value, noJump) {
 
   if (!noJump) this.findJump(0);
 
-  this.views.find.render();
+  // this.views.find.render();
 };
 
 Jazz.prototype.onFindKey = function(e) {
@@ -808,7 +809,7 @@ Jazz.prototype.onFindOpen = function() {
 };
 
 Jazz.prototype.onFindClose = function() {
-  this.views.find.clear();
+  // this.views.find.clear();
   this.focus();
 };
 
@@ -874,7 +875,7 @@ Jazz.prototype.getCoordsTabs = function(point) {
 };
 
 Jazz.prototype.repaintBelowCaret = debounce(function() {
-  this.views.code.repaintBelowCaret();
+  // this.views.code.repaintBelowCaret();
 }, 40);
 
 Jazz.prototype.repaint = bindRaf(function() {
