@@ -1,4 +1,4 @@
-// var RulerView = require('./ruler');
+var RulerView = require('./ruler');
 var CodeView = require('./code');
 // var CaretView = require('./caret');
 // var BlockView = require('./block');
@@ -11,7 +11,7 @@ function Views(editor) {
   this.editor = editor;
 
   this.views = [
-    // new RulerView,
+    new RulerView(editor),
     new CodeView(editor),
     // new CaretView,
     // new BlockView,
