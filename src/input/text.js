@@ -3,7 +3,7 @@ var debounce = require('../../lib/debounce');
 var throttle = require('../../lib/throttle');
 var Event = require('../../lib/event');
 
-var THROTTLE = 1000/62;
+var THROTTLE = 0 //1000/62;
 
 var map = {
   8: 'backspace',

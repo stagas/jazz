@@ -240,7 +240,7 @@ Jazz.prototype.onScroll = function(scroll) {
 
 Jazz.prototype.rest = debounce(function() {
   this.editing = false;
-  this.render();
+  // this.render();
 }, 600);
 
 Jazz.prototype.onMove = function(point, byEdit) {
@@ -386,15 +386,15 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 
   this.history.save();
 
-  // this.views.code.renderEdit({
-  //   line: editRange[0],
-  //   range: editRange,
-  //   shift: editShift,
-  //   caretNow: this.caret,
-  //   caretBefore: this.editCaretBefore
-  // });
+  this.views.code.renderEdit({
+    line: editRange[0],
+    range: editRange,
+    shift: editShift,
+    caretNow: this.caret,
+    caretBefore: this.editCaretBefore
+  });
 
-  this.render();
+  // this.render();
 
   this.emit('change');
 };

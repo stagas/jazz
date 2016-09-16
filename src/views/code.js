@@ -28,6 +28,106 @@ CodeView.prototype.renderRange = function(range) {
   var part = new Part(this, range);
   this.parts.push(part);
   part.render();
+  part.append();
+};
+
+CodeView.prototype.renderEdit = function(edit) {
+  if (edit.shift > 0) this.renderInsert(edit);
+  else if (edit.shift < 0) this.renderRemove(edit);
+  else this.renderLine(edit);
+};
+
+CodeView.prototype.renderInsert = function(edit) {
+  // console.log('render insert')
+  this.clearOutPageRange([0,0]);
+  // var line = this.editor.buffer.getLine(edit.line);
+  if (!this.updateLine(edit.line)) {
+    // console.log('splice')
+    this.spliceRange([edit.line, edit.line]);
+
+    this.renderRange([edit.line, edit.line]);
+    this.renderRange([edit.line + 1, edit.range[1] - 1]);
+    this.renderRange([edit.range[1], edit.range[1]]);
+    // this.renderRange([edit.line, edit.line]);
+    // this.renderRange([edit.line + 1, edit.range[1]]);
+    var page = this.editor.getPageRange([0,0]);
+    this.renderRange([edit.range[1] + 1, page[1]]);
+  } else {
+    this.shiftPartsBelow(edit.line, edit.shift);
+    this.renderRange([edit.line + 1, edit.range[1]]);
+  }
+  //   this.spliceRange([edit.line, edit.line]);
+  //   var page = this.editor.getPageRange([0,0]);
+  //   this.renderRange([edit.range[1] + 1, page[1]]);
+  // }
+  // this.renderRange([edit.range[0] + 1, edit.range[1]]);
+};
+
+CodeView.prototype.renderLine = function(edit) {
+  if (this.updateLine(edit.line)) return;
+  this.spliceRange(edit.range);
+  this.renderRange(edit.range);
+  var page = this.editor.getPageRange([0,0]);
+  this.renderRange([edit.range[1] + 1, page[1]]);
+};
+
+CodeView.prototype.updateLine = function(line) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if (part[0] === line && part[1] === line) {
+      part.render();
+      return true;
+    }
+  }
+};
+
+CodeView.prototype.shiftPartsBelow = function(y, dy) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if (part[0] < y) continue;
+
+    part[0] += dy;
+    part[1] += dy;
+    part.style();
+  }
+};
+
+CodeView.prototype.spliceRange = function(range) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+
+    if (part[1] < range[0] || part[0] > range[1]) {
+      continue;
+    }
+
+    if (part[0] < range[0] && part[1] >= range[0]) { // shorten above
+      part[1] = range[0] - 1;
+      part.style();
+    } else if (part[1] > range[1]) { // shorten below
+      part[0] = range[1] + 1;
+      part.render();
+    } else if (part[0] === range[0] && part[1] === range[1]) { // current line
+      part.render();
+    } else {
+      part.clear();
+    }
+  }
+};
+
+CodeView.prototype.outRangeParts = function(range) {
+  var parts = [];
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if ( part[1] < range[0]
+      || part[0] > range[1] ) {
+      parts.push(part);
+    }
+  }
+  return parts;
+};
+
+CodeView.prototype.clearOutPageRange = function(range) {
+  this.outRangeParts(this.editor.getPageRange(range)).forEach(part => part.clear());
 };
 
 CodeView.prototype.render = function() {
@@ -72,16 +172,35 @@ function Part(view, range) {
   this.dom = dom(css.code);
   this[0] = range[0];
   this[1] = range[1];
+
+  var style = {};
+
+  if (this.view.editor.options.debug_layers
+  && ~this.view.editor.options.debug_layers.indexOf(this.view.name)) {
+    style.background = '#'
+    + (Math.random() * 12 | 0).toString(16)
+    + (Math.random() * 12 | 0).toString(16)
+    + (Math.random() * 12 | 0).toString(16);
+  }
+
+  dom.style(this, style);
 }
+
+Part.prototype.append = function() {
+  dom.append(this.view.target, this);
+};
 
 Part.prototype.render = function() {
   var code = this.view.editor.buffer.get(this);
   dom.html(this, code);
+  this.style();
+};
+
+Part.prototype.style = function() {
   dom.style(this, {
     height: (this[1] - this[0] + 1) * this.view.editor.char.height,
     top: this[0] * this.view.editor.char.height
   });
-  dom.append(this.view.target, this);
 };
 
 Part.prototype.clear = function() {
