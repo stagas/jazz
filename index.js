@@ -5,7 +5,7 @@
 var DefaultOptions = {
   theme: 'western',
   font_size: '9pt',
-  line_height: '1.25em',
+  line_height: '1.4em',
   debug_layers: false,
   scroll_speed: 95,
   hide_rows: false,
@@ -108,7 +108,7 @@ function Jazz(options) {
     animationScrollTarget: null,
   });
 
-  // dom.append(this.views.caret, this.input.text);
+  dom.append(this.views.caret, this.input.text);
   // dom.append(this, this.views);
 
   // useful shortcuts
@@ -265,26 +265,26 @@ Jazz.prototype.onResize = function() {
 Jazz.prototype.onFocus = function(text) {
   this.hasFocus = true;
   this.emit('focus');
-  // this.views.caret.render();
+  this.views.caret.render();
   this.caretSolid();
 };
 
 Jazz.prototype.caretSolid = function() {
-  // dom.classes(this.views.caret, [css.caret]);
+  dom.classes(this.views.caret, [css.caret]);
   this.caretBlink();
 };
 
 Jazz.prototype.caretBlink = debounce(function() {
-  // dom.classes(this.views.caret, [css.caret, css['blink-smooth']]);
+  dom.classes(this.views.caret, [css.caret, css['blink-smooth']]);
 }, 400);
 
 Jazz.prototype.onBlur = function(text) {
   this.hasFocus = false;
   setTimeout(() => {
     if (!this.hasFocus) {
-      // dom.classes(this.views.caret, [css.caret]);
+      dom.classes(this.views.caret, [css.caret]);
       this.emit('blur');
-      // this.views.caret.render();
+      this.views.caret.render();
     }
   }, 5);
 };
@@ -1004,7 +1004,7 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.ruler},
     #${this.id} > .${css.layer} > .${css.find},
     #${this.id} > .${css.layer} > .${css.mark},
-    #${this.id} > .${css.layer} > .${css.code} {
+    #${this.id} > .${css.code} {
       margin-left: ${this.marginLeft}px;
       tab-size: ${this.tabSize};
     }

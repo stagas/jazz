@@ -6,6 +6,7 @@ module.exports = RulerView;
 
 function RulerView(editor) {
   View.call(this, editor);
+  this.name = 'ruler';
   this.dom = dom(css.ruler);
 }
 
