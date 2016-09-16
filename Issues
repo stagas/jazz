@@ -101,18 +101,18 @@ x- bring back history
 
 -- doing ---------------------
 
-
+- rewrite views
+  - optimize mark
+  - optimize ctrl-shift move area
+  - refactor template
 
 
 
 -- todo ----------------------
 
+- move caret blink/solid methods from main to view
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
-- rewrite views
-  - optimize mark
-  - optimize ctrl-shift move area
-  - refactor template
   x- vertical centering
     !- issues when rendering edits
 
