@@ -38,46 +38,68 @@ CodeView.prototype.renderEdit = function(edit) {
 };
 
 CodeView.prototype.renderInsert = function(edit) {
-  // console.log('render insert')
-  this.clearOutPageRange([0,0]);
-  // var line = this.editor.buffer.getLine(edit.line);
-  if (!this.updateLine(edit.line)) {
-    // console.log('splice')
-    this.spliceRange([edit.line, edit.line]);
+  var part;
 
-    this.renderRange([edit.line, edit.line]);
-    this.renderRange([edit.line + 1, edit.range[1] - 1]);
-    this.renderRange([edit.range[1], edit.range[1]]);
-    // this.renderRange([edit.line, edit.line]);
-    // this.renderRange([edit.line + 1, edit.range[1]]);
-    var page = this.editor.getPageRange([0,0]);
-    this.renderRange([edit.range[1] + 1, page[1]]);
-  } else {
-    this.shiftPartsBelow(edit.line, edit.shift);
-    this.renderRange([edit.line + 1, edit.range[1]]);
+  this.clearOutPageRange([0,0]);
+
+  if (!this.shortenPartAbove(edit.line)) {
+    part = this.getTopPart(edit.line);
+    if (part && part[1] !== edit.line) this.removePart(part);
   }
-  //   this.spliceRange([edit.line, edit.line]);
-  //   var page = this.editor.getPageRange([0,0]);
-  //   this.renderRange([edit.range[1] + 1, page[1]]);
+
+  // part = this.getTopPart(edit.range[1]-edit.shift+1);
+  // if (!part) {
+    // this.renderPageBelow(edit.range[1]);
   // }
-  // this.renderRange([edit.range[0] + 1, edit.range[1]]);
+  // else
+    this.shiftPartsBelow(edit.line, edit.shift);
+
+  // if (edit.shift === 1) {
+  //   // part = this.getTopPart(edit.range[1]);
+  //   // if (!part) this.renderPageBelow(edit.range[1]);
+  //   // else this.shiftPartsBelow(edit.range[1], edit.shift);
+
+  //   part = this.getLinePart(edit.line);
+
+  //   if (part) {
+  //     part[0]++;
+  //     part[1]++;
+  //     part.render();
+  //     this.renderRange([edit.range[0], edit.range[0]]);
+  //   } else {
+  //     this.renderRange([edit.range[0], edit.range[0]]);
+  //     this.renderRange([edit.range[1], edit.range[1]]);
+  //   }
+  // } else if (edit.shift >= 2) {
+    this.renderRange(edit.range);
+  // }
 };
 
 CodeView.prototype.renderLine = function(edit) {
-  if (this.updateLine(edit.line)) return;
-  this.spliceRange(edit.range);
+  var linePart = this.getLinePart(edit.line);
+  if (linePart) return linePart.render();
+  this.shortenPartAbove(edit.line);
   this.renderRange(edit.range);
-  var page = this.editor.getPageRange([0,0]);
-  this.renderRange([edit.range[1] + 1, page[1]]);
+  // this.renderPageBelow(edit.range[1]);
 };
 
-CodeView.prototype.updateLine = function(line) {
+CodeView.prototype.renderPageBelow = function(y) {
+  var page = this.editor.getPageRange([0,0]);
+  this.renderRange([y + 1, page[1]]);
+};
+
+
+CodeView.prototype.getLinePart = function(y) {
   for (var i = 0; i < this.parts.length; i++) {
     var part = this.parts[i];
-    if (part[0] === line && part[1] === line) {
-      part.render();
-      return true;
-    }
+    if (part[0] === y && part[1] === y) return part;
+  }
+};
+
+CodeView.prototype.getTopPart = function(y) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if (part[0] === y) return part;
   }
 };
 
@@ -89,6 +111,17 @@ CodeView.prototype.shiftPartsBelow = function(y, dy) {
     part[0] += dy;
     part[1] += dy;
     part.style();
+  }
+};
+
+CodeView.prototype.shortenPartAbove = function(y) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if (part[0] < y && part[1] >= y) { // shorten above
+      part[1] = y - 1;
+      part.style();
+      return true;
+    }
   }
 };
 
@@ -106,11 +139,11 @@ CodeView.prototype.spliceRange = function(range) {
     } else if (part[1] > range[1]) { // shorten below
       part[0] = range[1] + 1;
       part.render();
-    } else if (part[0] === range[0] && part[1] === range[1]) { // current line
-      part.render();
-    } else {
-      part.clear();
-    }
+    } //else if (part[0] === range[0] && part[1] === range[1]) { // current line
+      //part.render();
+    //} else {
+      //part.clear();
+    //}
   }
 };
 
@@ -126,12 +159,22 @@ CodeView.prototype.outRangeParts = function(range) {
   return parts;
 };
 
+CodeView.prototype.removePart = function(part) {
+  part.clear();
+  this.parts.splice(this.parts.indexOf(part), 1);
+};
+
 CodeView.prototype.clearOutPageRange = function(range) {
-  this.outRangeParts(this.editor.getPageRange(range)).forEach(part => part.clear());
+  this.outRangeParts(this.editor.getPageRange(range))
+    .forEach(part => this.removePart(part));
 };
 
 CodeView.prototype.render = function() {
   var page = this.editor.getPageRange([0,0]);
+
+  if (Range.NOT(page, this.parts).length === 0) {
+    return;
+  }
 
   if (Range.AND(page, this.parts).length === 0) {
     this.renderRange(page);
@@ -170,6 +213,7 @@ CodeView.prototype.clear = function() {
 function Part(view, range) {
   this.view = view;
   this.dom = dom(css.code);
+  this.code = '';
   this[0] = range[0];
   this[1] = range[1];
 
@@ -192,7 +236,10 @@ Part.prototype.append = function() {
 
 Part.prototype.render = function() {
   var code = this.view.editor.buffer.get(this);
-  dom.html(this, code);
+  if (code !== this.code) {
+    dom.html(this, code);
+    this.code = code;
+  }
   this.style();
 };
 

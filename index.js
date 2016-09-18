@@ -394,7 +394,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     caretBefore: this.editCaretBefore
   });
 
-  // this.render();
+  this.render();
 
   this.emit('change');
 };
