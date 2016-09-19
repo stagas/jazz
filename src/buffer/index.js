@@ -72,6 +72,7 @@ Buffer.prototype.setText = function(text) {
 
 Buffer.prototype.insert =
 Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift, noLog) {
+  ctrlShift = false;
   if (!noLog) {
     if (!ctrlShift) this.emit('before update');
   }
@@ -81,7 +82,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift, noLog) {
   var length = text.length;
   var point = this.getPoint(p);
   var shift = (text.match(NEWLINE) || []).length;
-  var range = [point.y, point.y + shift];
+  var range = [point.y, point.y + shift - 1];
   var offsetRange = this.getLineRangeOffsets(range);
 
   var before = this.getOffsetRangeText(offsetRange);
@@ -113,6 +114,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift, noLog) {
 
 Buffer.prototype.remove =
 Buffer.prototype.removeOffsetRange = function(o, noUpdate, noLog) {
+  ctrlShift = false;
   if (!noLog) {
     this.emit('before update');
   }
@@ -138,7 +140,8 @@ Buffer.prototype.removeOffsetRange = function(o, noUpdate, noLog) {
   if (!noLog) {
     this.log.push(['remove', o, text]);
 
-    if (!noUpdate) this.emit('update', range, shift, before, after);
+    // if (!noUpdate)
+    this.emit('update', range, shift, before, after);
   }
 };
 

@@ -37,57 +37,91 @@ CodeView.prototype.renderEdit = function(edit) {
   else this.renderLine(edit);
 };
 
-CodeView.prototype.renderInsert = function(edit) {
-  var part;
+CodeView.prototype.removeOverlappingParts = function() {
+  var parts = this.parts.slice();
 
-  this.clearOutPageRange([0,0]);
+  parts.sort((a, b) => a[0] - b[0]);
 
-  if (!this.shortenPartAbove(edit.line)) {
-    part = this.getTopPart(edit.line);
-    if (part && part[1] !== edit.line) this.removePart(part);
+  for (var i = 0; i < parts.length; i++) {
+    var a = parts[i];
+    for (var k = i + 1; k < parts.length; k++) {
+      var b = parts[k];
+      if (a[0] === b[0]) {
+        if (a[1] === b[1]) {
+          this.removePart(a);
+        } else if (a[1] > b[1]) {
+          this.removePart(a);
+        } else {
+          this.removePart(a);
+        }
+      } else if (b[0] > a[0] && b[0] <= a[1]) {
+        a[1] = b[0] - 1;
+        a.style();
+      }
+    }
   }
+};
 
-  // part = this.getTopPart(edit.range[1]-edit.shift+1);
-  // if (!part) {
-    // this.renderPageBelow(edit.range[1]);
-  // }
-  // else
-    this.shiftPartsBelow(edit.line, edit.shift);
+CodeView.prototype.renderPage = function() {
+  var page = this.editor.getPageRange([0,0]);
+  var inParts = this.inRangeParts(page);
+  var needRanges = Range.NOT(page, this.parts);
+  needRanges.forEach(range => this.renderRange(range));
+  inParts.forEach(part => part.render());
+};
 
-  // if (edit.shift === 1) {
-  //   // part = this.getTopPart(edit.range[1]);
-  //   // if (!part) this.renderPageBelow(edit.range[1]);
-  //   // else this.shiftPartsBelow(edit.range[1], edit.shift);
+// CodeView.prototype.renderInsert = function(edit) {
+//   this.clearOutPageRange([0,0]);
+//   this.shortenPartAbove(edit.line);
+//   this.shiftPartsBelow(edit.line, edit.shift);
+//   this.renderRange(edit.range);
+//   this.renderPage();
+// };
 
-  //   part = this.getLinePart(edit.line);
+// CodeView.prototype.renderRemove = function(edit) {
+//   this.clearOutPageRange([0,1]);
+//   this.shortenPartAbove(edit.line);
+//   var part = this.getLinePart(edit.line);
+//   if (part) part.render();
+//   else this.renderRange([edit.line, edit.line]);
+//   this.shiftPartsBelow(edit.range[1], edit.shift);
+//   this.shortenPartBelow(edit.range[1], edit.shift);
+//   this.renderPage();
+// };
 
-  //   if (part) {
-  //     part[0]++;
-  //     part[1]++;
-  //     part.render();
-  //     this.renderRange([edit.range[0], edit.range[0]]);
-  //   } else {
-  //     this.renderRange([edit.range[0], edit.range[0]]);
-  //     this.renderRange([edit.range[1], edit.range[1]]);
-  //   }
-  // } else if (edit.shift >= 2) {
-    this.renderRange(edit.range);
-  // }
+// CodeView.prototype.renderLine = function(edit) {
+//   var part = this.getLinePart(edit.line);
+//   if (part) return part.render();
+//   this.shortenPartAbove(edit.line);
+//   this.renderRange(edit.range);
+//   this.renderPage();
+// };
+
+CodeView.prototype.renderRemove = function(edit) {
+  this.shiftPartsBelow(edit.line+1, edit.shift);
+  this.renderPage();
+  this.removeOverlappingParts();
+};
+
+CodeView.prototype.renderInsert = function(edit) {
+  this.shiftPartsBelow(edit.line, edit.shift);
+  this.renderRange(edit.range);
+  this.removeOverlappingParts();
+  this.renderPage();
 };
 
 CodeView.prototype.renderLine = function(edit) {
-  var linePart = this.getLinePart(edit.line);
-  if (linePart) return linePart.render();
-  this.shortenPartAbove(edit.line);
-  this.renderRange(edit.range);
-  // this.renderPageBelow(edit.range[1]);
+  var part = this.getLinePart(edit.line);
+  if (part) return part.render();
+  else this.renderRange(edit.range);
+  this.removeOverlappingParts();
+  this.renderPage();
 };
 
 CodeView.prototype.renderPageBelow = function(y) {
   var page = this.editor.getPageRange([0,0]);
   this.renderRange([y + 1, page[1]]);
 };
-
 
 CodeView.prototype.getLinePart = function(y) {
   for (var i = 0; i < this.parts.length; i++) {
@@ -117,9 +151,25 @@ CodeView.prototype.shiftPartsBelow = function(y, dy) {
 CodeView.prototype.shortenPartAbove = function(y) {
   for (var i = 0; i < this.parts.length; i++) {
     var part = this.parts[i];
-    if (part[0] < y && part[1] >= y) { // shorten above
-      part[1] = y - 1;
-      part.style();
+    if (part[1] >= y) { // shorten above
+      if (part[0] < y) {
+        part[1] = y - 1;
+        part.style();
+        return true;
+      } else if (part[0] === y && part[1] > y) {
+        this.removePart(part);
+        return true;
+      }
+    }
+  }
+};
+
+CodeView.prototype.shortenPartBelow = function(y, shift) {
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if (part[0] === y + 1) { // shorten above
+      part[0] = y + 1 + shift;
+      part.render();
       return true;
     }
   }
@@ -147,6 +197,18 @@ CodeView.prototype.spliceRange = function(range) {
   }
 };
 
+CodeView.prototype.inRangeParts = function(range) {
+  var parts = [];
+  for (var i = 0; i < this.parts.length; i++) {
+    var part = this.parts[i];
+    if ( part[0] >= range[0] && part[0] <= range[1]
+      || part[1] >= range[0] && part[1] <= range[1] ) {
+      parts.push(part);
+    }
+  }
+  return parts;
+};
+
 CodeView.prototype.outRangeParts = function(range) {
   var parts = [];
   for (var i = 0; i < this.parts.length; i++) {
@@ -167,6 +229,14 @@ CodeView.prototype.removePart = function(part) {
 CodeView.prototype.clearOutPageRange = function(range) {
   this.outRangeParts(this.editor.getPageRange(range))
     .forEach(part => this.removePart(part));
+};
+
+CodeView.prototype.renderPageRest = function() {
+  var page = this.editor.getPageRange([0,0]);
+  var needRanges = Range.NOT(page, this.parts);
+  needRanges.forEach(range => {
+    this.renderRange(range);
+  });
 };
 
 CodeView.prototype.render = function() {
@@ -225,6 +295,7 @@ function Part(view, range) {
     + (Math.random() * 12 | 0).toString(16)
     + (Math.random() * 12 | 0).toString(16)
     + (Math.random() * 12 | 0).toString(16);
+    style.opacity = 0.5;
   }
 
   dom.style(this, style);

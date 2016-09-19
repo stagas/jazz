@@ -106,6 +106,9 @@ function Jazz(options) {
     animationFrame: -1,
     animationRunning: false,
     animationScrollTarget: null,
+
+    renderQueue: [],
+    renderRequest: null,
   });
 
   dom.append(this.views.caret, this.input.text);
@@ -255,7 +258,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
   this.emit('move');
   this.caretSolid();
   this.rest();
-  if (!this.editing) this.render();
+  this.render('caret');
 };
 
 Jazz.prototype.onResize = function() {
@@ -394,7 +397,8 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     caretBefore: this.editCaretBefore
   });
 
-  this.render();
+  // this.render();
+  requestAnimationFrame(() => this.views.caret.render());
 
   this.emit('change');
 };
@@ -514,7 +518,7 @@ Jazz.prototype.markClear = function(force) {
     begin: new Point({ x: -1, y: -1 }),
     end: new Point({ x: -1, y: -1 })
   });
-  this.render();
+  this.render('mark');
 };
 
 Jazz.prototype.getRange = function(range) {
@@ -881,7 +885,7 @@ Jazz.prototype.repaintBelowCaret = debounce(function() {
 Jazz.prototype.repaint = bindRaf(function() {
   this.clear();
   this.resize();
-  this.render();
+  this.views.render();
 });
 
 Jazz.prototype.resize = function() {
@@ -1028,10 +1032,36 @@ Jazz.prototype.resize = function() {
 Jazz.prototype.clear = bindRaf(function() {
   // console.log('clear')
   this.editing = false;
-  this.views.clear();
+  // this.views.clear();
 });
 
-Jazz.prototype.render = bindRaf(function() {
+Jazz.prototype.render = function(name) {
+  cancelAnimationFrame(this.renderRequest);
+  if (!~this.renderQueue.indexOf(name)) {
+    if (name in this.views) {
+      this.renderQueue.push(name);
+    }
+  }
+  this.renderRequest = requestAnimationFrame(this._render.bind(this));
   // console.log('render')
-  this.views.render();
-});
+  // this.views.render();
+};
+
+Jazz.prototype._render = function() {
+  this.renderQueue.forEach(name => this.views[name].render());
+  this.renderQueue = [];
+};
+
+
+function bindCallSite(fn) {
+  return function(a, b, c, d) {
+    // var orig = Error.prepareStackTrace;
+    // Error.prepareStackTrace = function(_, stack){ return stack; };
+    var err = new Error;
+    Error.captureStackTrace(err, arguments.callee);
+    var stack = err.stack;
+    // Error.prepareStackTrace = orig;
+    console.log(stack);
+    fn.call(this, a, b, c, d);
+  };
+}
