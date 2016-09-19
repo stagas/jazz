@@ -69,6 +69,7 @@ CodeView.prototype.renderRemove = function(edit) {
       part[0] += edit.shift + offset;
       part[1] += edit.shift + offset;
       part.offset(offset);
+      if (part[0] > part[1]) this.removePart(part);
     }
     else if (part[0] > edit.line) {
       part[0] += edit.shift;
@@ -87,7 +88,11 @@ CodeView.prototype.renderInsert = function(edit) {
       part[1] = edit.line - 1;
       part.style();
       this.renderPart(edit.range);
-    } else if (part[0] > edit.line) {
+    }
+    else if (part[0] === edit.line) {
+      part.render();
+    }
+    else if (part[0] > edit.line) {
       part[0] += edit.shift;
       part[1] += edit.shift;
       part.style();
@@ -97,6 +102,20 @@ CodeView.prototype.renderInsert = function(edit) {
 };
 
 CodeView.prototype.renderLine = function(edit) {
+  var parts = this.parts.slice();
+  for (var i = 0; i < parts.length; i++) {
+    var part = parts[i];
+    if (part[0] === edit.line && part[1] === edit.line) {
+      part.render();
+    }
+    else if (part[0] <= edit.line && part[1] >= edit.line) {
+      part[1] = edit.line - 1;
+      if (part[1] < part[0]) this.removePart(part)
+      else part.style();
+      this.renderPart(edit.range);
+    }
+  }
+  this.renderPage();
 };
 
 CodeView.prototype.removePart = function(part) {
