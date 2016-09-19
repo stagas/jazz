@@ -82,7 +82,7 @@ Buffer.prototype.insertTextAtPoint = function(p, text, ctrlShift, noLog) {
   var length = text.length;
   var point = this.getPoint(p);
   var shift = (text.match(NEWLINE) || []).length;
-  var range = [point.y, point.y + shift - 1];
+  var range = [point.y, point.y + shift];
   var offsetRange = this.getLineRangeOffsets(range);
 
   var before = this.getOffsetRangeText(offsetRange);
