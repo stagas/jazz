@@ -158,17 +158,32 @@ Buffer.prototype.removeCharAtPoint = function(p) {
 
 Buffer.prototype.get = function(range) {
   var code = this.getLineRangeText(range);
+
+  // calculate indent for `code`
+  //TODO: move to method
+  var AnyChar = /\S/g;
+  var y = range[1];
+  var match = AnyChar.exec(code);
+  while (!match && y < this.loc()) {
+    var after = this.getLineText(++y);
+    AnyChar.lastIndex = 0;
+    match = AnyChar.exec(after);
+  }
+  var indent = 0;
+  if (match) indent = match.index;
+  var indentText = new Array(indent + 1).join(this.syntax.tab);
+
   var segment = this.segments.get(range[0]);
   if (segment) {
-    code = SEGMENT[segment] + '\uffba' + code + '\uffbe*/`'
+    code = SEGMENT[segment] + '\uffba\n' + code + indentText + '\uffbe*/`'
     code = this.syntax.highlight(code);
     code = '<' + segment[0] + '>' +
       code.substring(
-        code.indexOf('\uffba') + 1,
+        code.indexOf('\uffba') + 2,
         code.lastIndexOf('\uffbe')
       );
   } else {
-    code = this.syntax.highlight(code + '\uffbe*/`');
+    code = this.syntax.highlight(code + indentText + '\uffbe*/`');
     code = code.substring(0, code.lastIndexOf('\uffbe'));
   }
   return code;

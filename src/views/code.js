@@ -42,7 +42,7 @@ CodeView.prototype.renderPage = function() {
   var inParts = this.inRangeParts(page);
   var needRanges = Range.NOT(page, this.parts);
   needRanges.forEach(range => this.renderPart(range));
-  // inParts.forEach(part => part.render());
+  inParts.forEach(part => part.render());
 };
 
 CodeView.prototype.renderRemove = function(edit) {
