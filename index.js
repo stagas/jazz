@@ -237,7 +237,7 @@ Jazz.prototype.bindEvents = function() {
 
 Jazz.prototype.onScroll = function(scroll) {
   this.scroll.set(scroll);
-  if (!this.editing) this.render();
+  if (!this.editing) this.render('code');
   this.rest();
 };
 
@@ -725,8 +725,6 @@ Jazz.prototype.backspace = function() {
     this.setCaret(area.begin);
     this.buffer.removeArea(area);
     this.markClear(true);
-    this.clear();
-    this.render();
   } else {
     this.move.byChars(-1, true);
     this.buffer.removeCharAtPoint(this.caret);
@@ -743,8 +741,6 @@ Jazz.prototype.delete = function() {
     this.setCaret(area.begin);
     this.buffer.removeArea(area);
     this.markClear(true);
-    this.clear();
-    this.render();
   } else {
     this.buffer.removeCharAtPoint(this.caret);
   }
