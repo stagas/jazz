@@ -238,6 +238,7 @@ Jazz.prototype.bindEvents = function() {
 Jazz.prototype.onScroll = function(scroll) {
   this.scroll.set(scroll);
   if (!this.editing) this.render('code');
+  this.render('rows');
   this.rest();
 };
 
@@ -398,6 +399,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   });
 
   this.render('caret');
+  this.render('rows');
   // this.render();
   // requestAnimationFrame(() => this.views.caret.render());
 
@@ -1010,7 +1012,7 @@ Jazz.prototype.resize = function() {
       margin-left: ${this.marginLeft}px;
       tab-size: ${this.tabSize};
     }
-    #${this.id} > .${css.layer} > .${css.rows} {
+    #${this.id} > .${css.rows} {
       padding-right: ${this.options.gutter_margin}px;
       padding-left: ${this.options.margin_left}px;
       width: ${this.marginLeft}px;

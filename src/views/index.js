@@ -3,7 +3,7 @@ var CodeView = require('./code');
 var CaretView = require('./caret');
 // var BlockView = require('./block');
 // var FindView = require('./find');
-// var RowsView = require('./rows');
+var RowsView = require('./rows');
 
 module.exports = Views;
 
@@ -17,7 +17,7 @@ function Views(editor) {
     // new BlockView,
     // new FindView,
     // new MarkView,
-    // new RowsView,
+    new RowsView(editor),
   ];
 
   this.views.forEach(view => this[view.name] = view);
