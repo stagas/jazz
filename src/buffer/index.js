@@ -135,7 +135,6 @@ Buffer.prototype.removeOffsetRange = function(o, noLog) {
     } else {
       this.log.push(['remove', o, text]);
     }
-
   }
 
   this.emit('update', range, shift, before, after);
@@ -303,7 +302,7 @@ Buffer.prototype.moveAreaByLines = function(y, area) {
   var text = this.getLineRangeText([area.begin.y, area.end.y-1]);
   this.removeArea(area);
 
-  this.insert({ x:0, y:area.begin.y + y }, text, y);
+  this.insert({ x:0, y:area.begin.y + y }, text);
 
   return true;
 };

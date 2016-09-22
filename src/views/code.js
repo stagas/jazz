@@ -67,10 +67,10 @@ CodeView.prototype.renderRemove = function(edit) {
     }
     else if (part[0] > edit.line && part[0] + edit.shift <= edit.line) {
       var offset = edit.line - (part[0] + edit.shift) + 1;
-      part[0] += edit.shift - offset;
-      part[1] += edit.shift - offset;
+      part[0] += edit.shift + offset;
+      part[1] += edit.shift + offset;
       part.offset(offset);
-      if (part[0] > part[1]) this.removePart(part);
+      if (part[0] >= part[1]) this.removePart(part);
     }
     else if (part[0] > edit.line) {
       part[0] += edit.shift;
@@ -220,6 +220,7 @@ function Part(view, range) {
 
 Part.prototype.offset = function(y) {
   this.offsetTop += y;
+  this.code = this.code.split(/\n/g).slice(y).join('\n');
   this[1] -= y;
   this.style();
   this.dom.el.scrollTop = this.offsetTop * this.view.editor.char.height;

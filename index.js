@@ -260,6 +260,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
   this.caretSolid();
   this.rest();
   this.render('caret');
+  this.render('block');
 };
 
 Jazz.prototype.onResize = function() {
@@ -1018,7 +1019,7 @@ Jazz.prototype.resize = function() {
       width: ${this.marginLeft}px;
     }
     #${this.id} > .${css.layer} > .${css.find} > i,
-    #${this.id} > .${css.layer} > .${css.block} > i {
+    #${this.id} > .${css.block} > i {
       height: ${this.char.height + 1}px;
     }
     x {
