@@ -111,6 +111,15 @@ t('getOffsetPoint', function() {
   assert.equal({ x:3, y:1 }, b.getOffsetPoint(6));
   assert.equal({ x:0, y:2 }, b.getOffsetPoint(7));
 })
+
+t('failing #1', function() {
+  before('\n\n\n/*\ntwo\n*/\n');
+  assert.equal([3,10], b.tokens.tokens.segments.toArray());
+  b.removeCharAtPoint({x:0,y:1});
+  assert.equal('\n\n/*\ntwo\n*/\n', b.text.toString());
+  assert.equal([2,9], b.tokens.tokens.segments.toArray());
+})
+
 /*
 t('insert', function() {
   before('012\n45\n78\n1');

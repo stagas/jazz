@@ -14,7 +14,6 @@ var Type = {
   '`': 'template string',
 };
 
-// var TOKEN = /\n/g;
 var TOKEN = /\n|\/\*|\*\/|`|\{|\}|\[|\]|\(|\)/g;
 
 module.exports = Tokens;

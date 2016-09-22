@@ -5,7 +5,7 @@ var View = require('./view');
 
 var AheadThreshold = {
   animation: [.15, .4],
-  normal: [1.5, 3]
+  normal: [.75, 1.5]
 };
 
 module.exports = CodeView;
@@ -32,6 +32,7 @@ CodeView.prototype.renderPart = function(range) {
 };
 
 CodeView.prototype.renderEdit = function(edit) {
+  this.clearOutPageRange([0,0]);
   if (edit.shift > 0) this.renderInsert(edit);
   else if (edit.shift < 0) this.renderRemove(edit);
   else this.renderLine(edit);
@@ -66,8 +67,8 @@ CodeView.prototype.renderRemove = function(edit) {
     }
     else if (part[0] > edit.line && part[0] + edit.shift <= edit.line) {
       var offset = edit.line - (part[0] + edit.shift) + 1;
-      part[0] += edit.shift + offset;
-      part[1] += edit.shift + offset;
+      part[0] += edit.shift - offset;
+      part[1] += edit.shift - offset;
       part.offset(offset);
       if (part[0] > part[1]) this.removePart(part);
     }
@@ -160,6 +161,7 @@ CodeView.prototype.render = function() {
   }
 
   if (Range.AND(page, this.parts).length === 0) {
+    this.clearOutPageRange([0,0]);
     this.renderPart(page);
     return;
   }
@@ -179,9 +181,10 @@ CodeView.prototype.render = function() {
       ? [-AheadThreshold.animation[1], +AheadThreshold.animation[1]]
       : [-AheadThreshold.normal[1], +AheadThreshold.normal[1]];
 
+    this.clearOutPageRange(threshold);
+
     aheadRange = this.editor.getPageRange(threshold);
     aheadNeedRanges = Range.NOT(aheadRange, this.parts);
-
     aheadNeedRanges.forEach(range => {
       this.renderPart(range);
     });

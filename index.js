@@ -368,7 +368,7 @@ Jazz.prototype.onFileSet = function() {
 };
 
 Jazz.prototype.onHistoryChange = function() {
-  this.repaint();
+  this.render('code');
   this.followCaret();
 };
 
@@ -397,8 +397,9 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
     caretBefore: this.editCaretBefore
   });
 
+  this.render('caret');
   // this.render();
-  requestAnimationFrame(() => this.views.caret.render());
+  // requestAnimationFrame(() => this.views.caret.render());
 
   this.emit('change');
 };
@@ -726,6 +727,7 @@ Jazz.prototype.backspace = function() {
     this.buffer.removeArea(area);
     this.markClear(true);
   } else {
+    this.history.save(); //TODO: somehow 'before update' needs to fire here
     this.move.byChars(-1, true);
     this.buffer.removeCharAtPoint(this.caret);
   }

@@ -82,16 +82,16 @@ History.prototype.checkout = function(type, n) {
     switch (action) {
       case 'insert':
         if ('undo' === type) {
-          this.editor.buffer.removeOffsetRange(offsetRange, null, true);
+          this.editor.buffer.removeOffsetRange(offsetRange, true);
         } else {
-          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, null, true);
+          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, true);
         }
         break;
       case 'remove':
         if ('undo' === type) {
-          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, null, true);
+          this.editor.buffer.insert(this.editor.buffer.getOffsetPoint(offsetRange[0]), text, true);
         } else {
-          this.editor.buffer.removeOffsetRange(offsetRange, null, true);
+          this.editor.buffer.removeOffsetRange(offsetRange, true);
         }
         break;
     }
