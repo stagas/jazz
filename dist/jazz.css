@@ -104,6 +104,7 @@ x {
 ._src_style__mark {
   color: transparent;
   background: transparent;
+  z-index: 1;
 }
 
 ._src_style__find > i {
