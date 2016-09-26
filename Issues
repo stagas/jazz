@@ -97,20 +97,22 @@ x- syntax:
   x- skip long lines entirely
 x- bug: indent on enter breaks half the times
 x- bring back history
+x- rewrite views
+  x- optimize mark
+  x- optimize ctrl-shift move area
+  x- refactor template
+x- bring back find
 
 
 -- doing ---------------------
 
-- rewrite views
-  - optimize mark
-  - optimize ctrl-shift move area
-  - refactor template
 
 
 
 -- todo ----------------------
 
 - move caret blink/solid methods from main to view
+- pageBounds/rows in one method
 - keyboard combos (i.e ctrl+k-ctrl+b)
 - review/cleanup main
   x- vertical centering

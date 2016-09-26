@@ -12,9 +12,9 @@ var _bench = require('bench');
 var el = setup({
   // 'src/buffer/skipstring.test': ['src/buffer/skipstring'],
   // 'src/buffer/parts.test': ['src/buffer/parts'],
-  // 'src/buffer/test': ['src/buffer'],
+  'src/buffer/test': ['src/buffer'],
   // 'src/buffer/prefixtree.test': ['src/buffer/prefixtree'],
-  'src/history.test': ['src/history'],
+  // 'src/history.test': ['src/history'],
 });
 
 append(document.body, el);
