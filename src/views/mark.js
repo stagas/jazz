@@ -39,7 +39,7 @@ MarkView.prototype.get = function(range, e) {
 };
 
 MarkView.prototype.render = function() {
-  if (!this.editor.mark.active) return;
+  if (!this.editor.mark.active) return this.clear();
 
   var page = this.editor.getPageRange([-.5,+.5]);
   var html = this.get(page, this.editor);

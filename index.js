@@ -371,6 +371,8 @@ Jazz.prototype.onFileSet = function() {
 
 Jazz.prototype.onHistoryChange = function() {
   this.render('code');
+  this.render('mark');
+  this.render('block');
   this.followCaret();
 };
 
@@ -404,6 +406,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   this.render('mark');
   this.render('find');
   this.render('ruler');
+  this.render('block');
 
   this.emit('change');
 };
@@ -493,6 +496,7 @@ Jazz.prototype.onMouseDrag = function() {
 Jazz.prototype.markBegin = function(area) {
   if (!this.mark.active) {
     this.mark.active = true;
+    this.history.save();
     if (area) {
       this.mark.set(area);
     } else if (area !== false || this.mark.begin.x === -1) {
@@ -505,6 +509,7 @@ Jazz.prototype.markBegin = function(area) {
 Jazz.prototype.markSet = function() {
   if (this.mark.active) {
     this.mark.end.set(this.caret);
+    this.history.save();
     this.render('mark');
   }
 };
@@ -722,12 +727,13 @@ Jazz.prototype.backspace = function() {
     return;
   }
   if (this.mark.active) {
+    this.history.save(true);
     var area = this.mark.get();
     this.setCaret(area.begin);
     this.buffer.removeArea(area);
     this.markClear(true);
   } else {
-    this.history.save(); //TODO: somehow 'before update' needs to fire here
+    this.history.save();
     this.move.byChars(-1, true);
     this.buffer.removeCharAtPoint(this.caret);
   }
@@ -739,11 +745,13 @@ Jazz.prototype.delete = function() {
     return;
   }
   if (this.mark.active) {
+    this.history.save(true);
     var area = this.mark.get();
     this.setCaret(area.begin);
     this.buffer.removeArea(area);
     this.markClear(true);
   } else {
+    this.history.save();
     this.buffer.removeCharAtPoint(this.caret);
   }
 };

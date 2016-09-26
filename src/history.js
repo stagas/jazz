@@ -20,8 +20,8 @@ function History(editor) {
 
 History.prototype.__proto__ = Event.prototype;
 
-History.prototype.save = function() {
-  if (Date.now() - this.timeStart > 2000) this.actuallySave();
+History.prototype.save = function(force) {
+  if (Date.now() - this.timeStart > 2000 || force) this.actuallySave();
   this.timeout = this.debouncedSave();
 };
 
