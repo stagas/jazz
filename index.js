@@ -238,6 +238,8 @@ Jazz.prototype.bindEvents = function() {
 Jazz.prototype.onScroll = function(scroll) {
   this.scroll.set(scroll);
   if (!this.editing) this.render('code');
+  this.render('mark');
+  this.render('find');
   this.render('rows');
   this.rest();
 };
@@ -295,7 +297,7 @@ Jazz.prototype.onBlur = function(text) {
 };
 
 Jazz.prototype.onInput = function(text) {
-  this.render();
+  // this.render();
 };
 
 Jazz.prototype.onText = function(text) {
@@ -349,8 +351,8 @@ Jazz.prototype.onFileOpen = function() {
 };
 
 Jazz.prototype.onFileRaw = function(raw) {
-  this.clear();
-  this.render();
+  // this.clear();
+  // this.render();
 };
 
 Jazz.prototype.setTabMode = function(char) {
@@ -401,6 +403,9 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 
   this.render('caret');
   this.render('rows');
+  this.render('mark');
+  this.render('find');
+  this.render('ruler');
   // this.render();
   // requestAnimationFrame(() => this.views.caret.render());
 
@@ -505,13 +510,13 @@ Jazz.prototype.markBegin = function(area) {
 Jazz.prototype.markSet = function() {
   if (this.mark.active) {
     this.mark.end.set(this.caret);
-    this.render();
+    this.render('mark');
   }
 };
 
 Jazz.prototype.markSetArea = function(area) {
   this.markBegin(area);
-  this.render();
+  this.render('mark');
 };
 
 Jazz.prototype.markClear = function(force) {
@@ -522,7 +527,7 @@ Jazz.prototype.markClear = function(force) {
     begin: new Point({ x: -1, y: -1 }),
     end: new Point({ x: -1, y: -1 })
   });
-  this.render('mark');
+  this.clear('mark');
 };
 
 Jazz.prototype.getRange = function(range) {
@@ -770,14 +775,13 @@ Jazz.prototype.findJump = function(jump) {
   this.move.byChars(this.findValue.length, true);
   this.markSet();
   this.followCaret(true, true);
-  this.render();
+  this.render('find');
 };
 
 Jazz.prototype.onFindValue = function(value, noJump) {
   var g = new Point({ x: this.gutter, y: 0 });
 
   this.buffer.updateRaw();
-  // this.views.find.clear();
   this.findValue = value;
   this.findResults = this.buffer.indexer.find(value).map((offset) => {
     return this.buffer.getOffsetPoint(offset);
@@ -789,7 +793,7 @@ Jazz.prototype.onFindValue = function(value, noJump) {
 
   if (!noJump) this.findJump(0);
 
-  // this.views.find.render();
+  this.render('find');
 };
 
 Jazz.prototype.onFindKey = function(e) {
@@ -815,6 +819,7 @@ Jazz.prototype.onFindOpen = function() {
 
 Jazz.prototype.onFindClose = function() {
   // this.views.find.clear();
+  this.clear('find');
   this.focus();
 };
 
@@ -884,7 +889,7 @@ Jazz.prototype.repaintBelowCaret = debounce(function() {
 }, 40);
 
 Jazz.prototype.repaint = bindRaf(function() {
-  this.clear();
+  // this.clear();
   this.resize();
   this.views.render();
 });
@@ -1007,8 +1012,8 @@ Jazz.prototype.resize = function() {
     }
 
     #${this.id} > .${css.ruler},
-    #${this.id} > .${css.layer} > .${css.find},
-    #${this.id} > .${css.layer} > .${css.mark},
+    #${this.id} > .${css.find},
+    #${this.id} > .${css.mark},
     #${this.id} > .${css.code} {
       margin-left: ${this.marginLeft}px;
       tab-size: ${this.tabSize};
@@ -1018,7 +1023,7 @@ Jazz.prototype.resize = function() {
       padding-left: ${this.options.margin_left}px;
       width: ${this.marginLeft}px;
     }
-    #${this.id} > .${css.layer} > .${css.find} > i,
+    #${this.id} > .${css.find} > i,
     #${this.id} > .${css.block} > i {
       height: ${this.char.height + 1}px;
     }
@@ -1030,11 +1035,12 @@ Jazz.prototype.resize = function() {
   this.emit('resize');
 };
 
-Jazz.prototype.clear = bindRaf(function() {
+Jazz.prototype.clear = function(name) {
   // console.log('clear')
   this.editing = false;
   // this.views.clear();
-});
+  this.views[name].clear();
+};
 
 Jazz.prototype.render = function(name) {
   cancelAnimationFrame(this.renderRequest);
@@ -1044,8 +1050,6 @@ Jazz.prototype.render = function(name) {
     }
   }
   this.renderRequest = requestAnimationFrame(this._render.bind(this));
-  // console.log('render')
-  // this.views.render();
 };
 
 Jazz.prototype._render = function() {

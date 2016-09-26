@@ -1,8 +1,9 @@
 var RulerView = require('./ruler');
+var MarkView = require('./mark');
 var CodeView = require('./code');
 var CaretView = require('./caret');
 var BlockView = require('./block');
-// var FindView = require('./find');
+var FindView = require('./find');
 var RowsView = require('./rows');
 
 module.exports = Views;
@@ -12,11 +13,11 @@ function Views(editor) {
 
   this.views = [
     new RulerView(editor),
+    new MarkView(editor),
     new CodeView(editor),
     new CaretView(editor),
     new BlockView(editor),
-    // new FindView,
-    // new MarkView,
+    new FindView(editor),
     new RowsView(editor),
   ];
 
@@ -34,6 +35,4 @@ Views.prototype.render = function() {
 
 Views.prototype.clear = function() {
   this.forEach(view => view.clear());
-},
-
-function noop() {/* noop */}
+};
