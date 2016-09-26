@@ -112,7 +112,6 @@ function Jazz(options) {
   });
 
   dom.append(this.views.caret, this.input.text);
-  // dom.append(this, this.views);
 
   // useful shortcuts
   this.buffer = this.file.buffer;
@@ -496,7 +495,6 @@ Jazz.prototype.onMouseDrag = function() {
 Jazz.prototype.markBegin = function(area) {
   if (!this.mark.active) {
     this.mark.active = true;
-    this.history.save();
     if (area) {
       this.mark.set(area);
     } else if (area !== false || this.mark.begin.x === -1) {
@@ -509,7 +507,6 @@ Jazz.prototype.markBegin = function(area) {
 Jazz.prototype.markSet = function() {
   if (this.mark.active) {
     this.mark.end.set(this.caret);
-    this.history.save();
     this.render('mark');
   }
 };
