@@ -154,6 +154,8 @@ CodeView.prototype.outRangeParts = function(range) {
 };
 
 CodeView.prototype.render = function() {
+  if (this.editor.editing) return;
+
   var page = this.editor.getPageRange([0,0]);
 
   if (Range.NOT(page, this.parts).length === 0) {

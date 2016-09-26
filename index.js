@@ -193,7 +193,6 @@ Jazz.prototype.bindMethods = function() {
   this.markClear = this.markClear.bind(this);
   this.focus = this.focus.bind(this);
   this.repaint = this.repaint.bind(this);
-  this.repaintBelowCaret = this.repaintBelowCaret.bind(this);
 };
 
 Jazz.prototype.bindHandlers = function() {
@@ -212,7 +211,6 @@ Jazz.prototype.bindEvents = function() {
   this.file.on('open', this.onFileOpen);
   this.file.on('change', this.onFileChange);
   this.file.on('before change', this.onBeforeFileChange);
-  this.file.buffer.on('change segments', this.repaintBelowCaret);
   this.history.on('change', this.onHistoryChange);
   this.input.on('blur', this.onBlur);
   this.input.on('focus', this.onFocus);
@@ -237,7 +235,7 @@ Jazz.prototype.bindEvents = function() {
 
 Jazz.prototype.onScroll = function(scroll) {
   this.scroll.set(scroll);
-  if (!this.editing) this.render('code');
+  this.render('code');
   this.render('mark');
   this.render('find');
   this.render('rows');
@@ -246,7 +244,6 @@ Jazz.prototype.onScroll = function(scroll) {
 
 Jazz.prototype.rest = debounce(function() {
   this.editing = false;
-  // this.render();
 }, 600);
 
 Jazz.prototype.onMove = function(point, byEdit) {
@@ -254,13 +251,17 @@ Jazz.prototype.onMove = function(point, byEdit) {
   if (point) this.setCaret(point);
 
   if (!byEdit) {
-    if (this.input.text.modifiers.shift || this.input.mouse.down) this.markSet();
-    else this.markClear();
+    if (this.input.text.modifiers.shift || this.input.mouse.down) {
+      this.markSet();
+    } else {
+      this.markClear();
+    }
   }
 
   this.emit('move');
   this.caretSolid();
   this.rest();
+
   this.render('caret');
   this.render('block');
 };
@@ -297,7 +298,7 @@ Jazz.prototype.onBlur = function(text) {
 };
 
 Jazz.prototype.onInput = function(text) {
-  // this.render();
+  //
 };
 
 Jazz.prototype.onText = function(text) {
@@ -351,8 +352,7 @@ Jazz.prototype.onFileOpen = function() {
 };
 
 Jazz.prototype.onFileRaw = function(raw) {
-  // this.clear();
-  // this.render();
+  //
 };
 
 Jazz.prototype.setTabMode = function(char) {
@@ -365,8 +365,6 @@ Jazz.prototype.setTabMode = function(char) {
 
 Jazz.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
-  // this.buffer.updateRaw();
-  // this.setTabMode(this.buffer.syntax.tab);
   this.followCaret();
   this.repaint();
 };
@@ -406,8 +404,6 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   this.render('mark');
   this.render('find');
   this.render('ruler');
-  // this.render();
-  // requestAnimationFrame(() => this.views.caret.render());
 
   this.emit('change');
 };
@@ -481,7 +477,6 @@ Jazz.prototype.onMouseClick = function() {
     if (area) {
       this.setCaret(area.end);
       this.markSetArea(area);
-      // this.render();
     }
   }
 };
@@ -574,12 +569,9 @@ Jazz.prototype.followCaret = function(center, animate) {
   if (left < 0) left = 0;
   if (right < 0) right = 0;
 
-  // if (!this.animationRunning)
   if (left + top + right + bottom) {
     this[animate ? 'animateScrollBy' : 'scrollBy'](right - left, bottom - top, 'ease');
   }
-  // else
-    // this.animateScrollBy(right - left, bottom - top);
 };
 
 Jazz.prototype.scrollTo = function(p) {
@@ -818,7 +810,6 @@ Jazz.prototype.onFindOpen = function() {
 };
 
 Jazz.prototype.onFindClose = function() {
-  // this.views.find.clear();
   this.clear('find');
   this.focus();
 };
@@ -884,12 +875,7 @@ Jazz.prototype.getCoordsTabs = function(point) {
   };
 };
 
-Jazz.prototype.repaintBelowCaret = debounce(function() {
-  // this.views.code.repaintBelowCaret();
-}, 40);
-
 Jazz.prototype.repaint = bindRaf(function() {
-  // this.clear();
   this.resize();
   this.views.render();
 });
@@ -1036,9 +1022,6 @@ Jazz.prototype.resize = function() {
 };
 
 Jazz.prototype.clear = function(name) {
-  // console.log('clear')
-  this.editing = false;
-  // this.views.clear();
   this.views[name].clear();
 };
 
@@ -1057,15 +1040,12 @@ Jazz.prototype._render = function() {
   this.renderQueue = [];
 };
 
-
+// this is used for development debug purposes
 function bindCallSite(fn) {
   return function(a, b, c, d) {
-    // var orig = Error.prepareStackTrace;
-    // Error.prepareStackTrace = function(_, stack){ return stack; };
     var err = new Error;
     Error.captureStackTrace(err, arguments.callee);
     var stack = err.stack;
-    // Error.prepareStackTrace = orig;
     console.log(stack);
     fn.call(this, a, b, c, d);
   };
