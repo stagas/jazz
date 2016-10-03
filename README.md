@@ -1,12 +1,9 @@
+# jazz
 
-jazz
+A code editor for the web
 
-a code editor for the web
 
--------------------------
-
-features :
-
+## Features
 - focus on performance
 - operate on large files no sweat
 - loads 100k loc file under a second
@@ -21,20 +18,20 @@ features :
 - undo/redo history
 - selection & cut/copy/paste
 
--------------------------
 
-but still :
-
-it's an early release - there are bugs,
-edge cases, optimizations to be done, etc
+It's an early release - there are bugs, edge cases, optimizations to be done, etc
 
 
-*** contributions are welcome ! ***
+### Contributions are welcome !
 
 
-development : $ make install && make dev
+### Development
 
-where to start?
+```bash
+$ make install && make dev
+```
+
+### Where to start?
 check out `./Issues` or `make todo`
 
 -------------------------
