@@ -67,6 +67,8 @@ BlockView.prototype.get = function(e) {
 
   count = 1;
 
+  var closeOffset;
+
   while (i < length - 1) {
     closeOffset = e.buffer.tokens.getByIndex('blocks', ++i);
     char = e.buffer.charAt(closeOffset);

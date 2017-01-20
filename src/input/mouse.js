@@ -25,11 +25,11 @@ Mouse.prototype.bindEvent = function() {
 Mouse.prototype.use = function(node) {
   if (this.node) {
     this.node.removeEventListener('mousedown', this.ondown);
-    // this.node.removeEventListener('mouseup', this.onup);
+    this.node.removeEventListener('touchstart', this.ondown);
   }
   this.node = node;
   this.node.addEventListener('mousedown', this.ondown);
-  // this.node.addEventListener('mouseup', this.onup);
+  this.node.addEventListener('touchstart', this.ondown);
 };
 
 Mouse.prototype.ondown = function(e) {

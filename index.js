@@ -111,8 +111,6 @@ function Jazz(options) {
     renderRequest: null,
   });
 
-  dom.append(this.views.caret, this.input.text);
-
   // useful shortcuts
   this.buffer = this.file.buffer;
   this.buffer.mark = this.mark;
@@ -147,6 +145,7 @@ Jazz.prototype.use = function(el, scrollEl) {
   this.el.classList.add(this.options.theme);
   this.offScroll = dom.onscroll(scrollEl || this.el, this.onScroll);
   this.input.use(this.el);
+  dom.append(this.views.caret, this.input.text);
   this.views.use(this.el);
 
   setTimeout(this.repaint, 0);
@@ -297,7 +296,6 @@ Jazz.prototype.onBlur = function(text) {
 };
 
 Jazz.prototype.onInput = function(text) {
-  //
 };
 
 Jazz.prototype.onText = function(text) {
@@ -408,6 +406,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   this.render('block');
 
   this.emit('change');
+  this.emit('input');
 };
 
 Jazz.prototype.setCaretFromPx = function(px) {

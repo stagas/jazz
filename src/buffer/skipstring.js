@@ -12,8 +12,6 @@ o o o-x o o o o o
 
 */
 
-log = console.log.bind(console);
-
 module.exports = SkipString;
 
 function Node(value, level) {

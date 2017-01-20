@@ -8,6 +8,7 @@ dev:
 
 dev-build:
 	@./node_modules/.bin/watchify \
+		--transform [ babelify --presets [ latest ] ] \
 		--plugin [ css-modulesify -o dist/jazz.css ] \
 		--verbose \
 		--detect-globals=false \

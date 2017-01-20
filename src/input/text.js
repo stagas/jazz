@@ -69,7 +69,8 @@ function Text() {
     top: 0,
     width: 1,
     height: 1,
-    opacity: 0
+    opacity: 0,
+    zIndex: 10000
   });
 
   dom.attrs(this, {

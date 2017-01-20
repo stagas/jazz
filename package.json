@@ -21,6 +21,8 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
+    "babel-preset-latest": "^6.16.0",
+    "babelify": "^7.3.0",
     "css-modulesify": "^0.25.1",
     "live-server": "^1.1.0",
     "watchify": "^3.7.0"
