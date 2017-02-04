@@ -195,7 +195,7 @@ Segments.prototype.isValid = function(text, offset, lastIndex) {
 
   var i = match.index;
 
-  last = i;
+  var last = i;
 
   var valid = true;
 

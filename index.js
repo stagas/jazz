@@ -58,7 +58,7 @@ function Jazz(options) {
     input: new Input(this),
     history: new History(this),
 
-    bindings: { single: {} },
+    bindings: Object.assign({}, DefaultBindings),
 
     find: new Dialog('Find', Text.map),
     findValue: '',
@@ -257,6 +257,7 @@ Jazz.prototype.onMove = function(point, byEdit) {
   }
 
   this.emit('move');
+  this.emit('input', '', this.caret.copy(), this.mark.copy(), this.mark.active);
   this.caretSolid();
   this.rest();
 
@@ -406,7 +407,6 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
   this.render('block');
 
   this.emit('change');
-  this.emit('input');
 };
 
 Jazz.prototype.setCaretFromPx = function(px) {
@@ -678,6 +678,8 @@ Jazz.prototype.animationScrollFrame = function() {
 Jazz.prototype.insert = function(text) {
   if (this.mark.active) this.delete();
 
+  this.emit('input', text, this.caret.copy(), this.mark.copy(), this.mark.active);
+
   var line = this.buffer.getLineText(this.caret.y);
   var right = line[this.caret.x];
   var hasRightSymbol = ~['}',']',')'].indexOf(right);
@@ -722,6 +724,9 @@ Jazz.prototype.backspace = function() {
     if (this.mark.active && !this.move.isEndOfFile()) return this.delete();
     return;
   }
+
+  this.emit('input', '\uaaa0', this.caret.copy(), this.mark.copy(), this.mark.active);
+
   if (this.mark.active) {
     this.history.save(true);
     var area = this.mark.get();
@@ -740,6 +745,9 @@ Jazz.prototype.delete = function() {
     if (this.mark.active && !this.move.isBeginOfFile()) return this.backspace();
     return;
   }
+
+  this.emit('input', '\uaaa1', this.caret.copy(), this.mark.copy(), this.mark.active);
+
   if (this.mark.active) {
     this.history.save(true);
     var area = this.mark.get();

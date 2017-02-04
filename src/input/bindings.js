@@ -56,27 +56,6 @@ var keys = module.exports = {
     this.markSet();
   },
 
-  'ctrl+shift+up': function() {
-    if (!this.mark.active) {
-      this.buffer.moveAreaByLines(-1, { begin: this.caret.pos, end: this.caret.pos });
-      this.move.byLines(-1, true);
-    } else {
-      this.buffer.moveAreaByLines(-1, this.mark.get());
-      this.mark.shiftByLines(-1);
-      this.move.byLines(-1, true);
-    }
-  },
-  'ctrl+shift+down': function() {
-    if (!this.mark.active) {
-      this.buffer.moveAreaByLines(+1, { begin: this.caret.pos, end: this.caret.pos });
-      this.move.byLines(+1, true);
-    } else {
-      this.buffer.moveAreaByLines(+1, this.mark.get());
-      this.mark.shiftByLines(+1);
-      this.move.byLines(+1, true);
-    }
-  },
-
   'enter': function() {
     this.insert('\n');
   },
@@ -142,6 +121,7 @@ var keys = module.exports = {
   },
 
   'shift+ctrl+up': function() {
+    this.emit('input', '\uaaa2', this.caret.copy(), this.mark.copy(), this.mark.active)
     this.markBegin(false);
     var area = this.mark.get();
     if (this.buffer.moveAreaByLines(-1, area)) {
@@ -151,6 +131,7 @@ var keys = module.exports = {
   },
 
   'shift+ctrl+down': function() {
+    this.emit('input', '\uaaa3', this.caret.copy(), this.mark.copy(), this.mark.active)
     this.markBegin(false);
     var area = this.mark.get();
     if (this.buffer.moveAreaByLines(+1, area)) {

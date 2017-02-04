@@ -294,7 +294,9 @@ Buffer.prototype.wordAreaAtPoint = function(p, inclusive) {
 
 Buffer.prototype.moveAreaByLines = function(y, area) {
   if (area.end.x > 0 || area.begin.y === area.end.y) area.end.y += 1;
-  if (area.begin.y + y < 0 || area.end.y + y > this.loc) return false;
+  //TODO: currently will not reach last line
+  // because it's buggy
+  if (area.begin.y + y < 0 || area.end.y + y > this.loc()) return false;
 
   area.begin.x = 0;
   area.end.x = 0;
