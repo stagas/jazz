@@ -372,6 +372,7 @@ Jazz.prototype.onHistoryChange = function() {
   this.render('mark');
   this.render('block');
   this.followCaret();
+  this.emit('history change')
 };
 
 Jazz.prototype.onBeforeFileChange = function() {
