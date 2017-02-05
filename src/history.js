@@ -16,6 +16,7 @@ function History(editor) {
   this.needle = 0;
   this.timeout = true;
   this.timeStart = 0;
+  this.debouncedSave = debounce(this.actuallySave.bind(this), 700)
 }
 
 History.prototype.__proto__ = Event.prototype;
@@ -24,10 +25,6 @@ History.prototype.save = function(force) {
   if (Date.now() - this.timeStart > 2000 || force) this.actuallySave();
   this.timeout = this.debouncedSave();
 };
-
-History.prototype.debouncedSave = debounce(function() {
-  this.actuallySave();
-}, 700);
 
 History.prototype.actuallySave = function() {
   clearTimeout(this.timeout);

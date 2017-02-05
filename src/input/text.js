@@ -101,6 +101,7 @@ Text.prototype.bindEvent = function() {
   this.el.oncut = this.oncut;
   this.el.oncopy = this.oncopy;
   this.el.onpaste = this.onpaste;
+  this.clear = throttle(this.clear.bind(this), 2000)
 };
 
 Text.prototype.reset = function() {
@@ -119,9 +120,9 @@ Text.prototype.set = function(value) {
 //TODO: on mobile we need to clear without debounce
 // or the textarea content is displayed in hacker's keyboard
 // or you need to disable word suggestions in hacker's keyboard settings
-Text.prototype.clear = throttle(function() {
+Text.prototype.clear = function() {
   this.set('');
-}, 2000);
+};
 
 Text.prototype.blur = function() {
   // console.log('focus')

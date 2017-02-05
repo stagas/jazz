@@ -16,5 +16,11 @@ var jazz = new Jazz(options);
 // jazz.use(document.body).open('jazz.js', '../dist/').focus();
 // jazz.use(document.body).open('jquery.js', './').focus();
 // jazz.use(document.body).open('codemirror.js', './').focus();
-jazz.use(document.body).open('broken.js', '../test/').focus();
+jazz.use(document.body).focus()
+// .open('broken.js', '../test/').focus();
 // jazz.use(document.body).open('index.js', '../').focus();
+
+// jazz.set('hello')
+// setTimeout(() => {
+//   jazz.set('world')
+// }, 1000)

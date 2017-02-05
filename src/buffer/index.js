@@ -66,7 +66,6 @@ Buffer.prototype.setText = function(text) {
   this.prefix = new PrefixTree;
   this.prefix.index(this.raw);
 
-  // this.emit('raw', this.raw);
   this.emit('set');
 };
 
@@ -293,18 +292,29 @@ Buffer.prototype.wordAreaAtPoint = function(p, inclusive) {
 };
 
 Buffer.prototype.moveAreaByLines = function(y, area) {
-  if (area.end.x > 0 || area.begin.y === area.end.y) area.end.y += 1;
-  //TODO: currently will not reach last line
-  // because it's buggy
   if (area.begin.y + y < 0 || area.end.y + y > this.loc()) return false;
 
-  area.begin.x = 0;
-  area.end.x = 0;
+  area.begin.x = 0
+  area.end.x = this.getLine(area.end.y).length
 
-  var text = this.getLineRangeText([area.begin.y, area.end.y-1]);
-  this.removeArea(area);
+  var offsets = this.getAreaOffsetRange(area);
 
-  this.insert({ x:0, y:area.begin.y + y }, text);
+  var x = 0
+
+  if (y > 0 && area.begin.y > 0 || area.end.y === this.loc()) {
+    area.begin.y -= 1
+    area.begin.x = this.getLine(area.begin.y).length
+    offsets = this.getAreaOffsetRange(area)
+    x = Infinity
+  } else {
+    offsets[1] += 1
+  }
+
+  var text = this.text.getRange(offsets)
+
+  this.removeOffsetRange(offsets)
+
+  this.insert({ x: x, y:area.begin.y + y }, text);
 
   return true;
 };

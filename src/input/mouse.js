@@ -15,6 +15,7 @@ function Mouse() {
 Mouse.prototype.__proto__ = Event.prototype;
 
 Mouse.prototype.bindEvent = function() {
+  this.resetClicks = debounce(this.resetClicks.bind(this), 350)
   this.onmaybedrag = this.onmaybedrag.bind(this);
   this.ondrag = this.ondrag.bind(this);
   this.ondown = this.ondown.bind(this);
@@ -89,10 +90,9 @@ Mouse.prototype.dragEnd = function() {
   this.emit('drag end');
 };
 
-
-Mouse.prototype.resetClicks = debounce(function() {
+Mouse.prototype.resetClicks = function() {
   this.clicks = 0;
-}, 350);
+};
 
 Mouse.prototype.getPoint = function(e) {
   return new Point({

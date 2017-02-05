@@ -148,7 +148,7 @@ Jazz.prototype.use = function(el, scrollEl) {
   dom.append(this.views.caret, this.input.text);
   this.views.use(this.el);
 
-  setTimeout(this.repaint, 0);
+  this.repaint()
 
   return this;
 };
@@ -190,7 +190,7 @@ Jazz.prototype.bindMethods = function() {
   this.markSet = this.markSet.bind(this);
   this.markClear = this.markClear.bind(this);
   this.focus = this.focus.bind(this);
-  this.repaint = this.repaint.bind(this);
+  this.repaint = this.repaint.bind(this); //bindRaf(this.repaint).bind(this);
 };
 
 Jazz.prototype.bindHandlers = function() {
@@ -364,7 +364,7 @@ Jazz.prototype.setTabMode = function(char) {
 Jazz.prototype.onFileSet = function() {
   this.setCaret({ x:0, y:0 });
   this.followCaret();
-  this.repaint();
+  this.repaint(true);
 };
 
 Jazz.prototype.onHistoryChange = function() {
@@ -887,10 +887,11 @@ Jazz.prototype.getCoordsTabs = function(point) {
   };
 };
 
-Jazz.prototype.repaint = bindRaf(function() {
+Jazz.prototype.repaint = function(clear) {
   this.resize();
+  if (clear) this.views.clear();
   this.views.render();
-});
+};
 
 Jazz.prototype.resize = function() {
   var $ = this.el;

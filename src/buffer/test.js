@@ -120,6 +120,12 @@ t('failing #1', function() {
   assert.equal([2,9], b.tokens.tokens.segments.toArray());
 })
 
+// t('failing #2', function() {
+//   before('\n\n\n');
+//   console.log(b.getLineOffset(4))
+//   console.log(b.getPoint({ x:0, y:4 }))
+// })
+
 /*
 t('insert', function() {
   before('012\n45\n78\n1');

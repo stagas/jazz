@@ -44,7 +44,6 @@ File.prototype.save = function(fn) {
 
 File.prototype.set = function(text) {
   this.buffer.setText(text);
-  this.emit('set');
 };
 
 function noop() {/* noop */}
