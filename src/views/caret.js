@@ -19,7 +19,7 @@ CaretView.prototype.use = function(target) {
 CaretView.prototype.render = function() {
   dom.style(this, {
     opacity: +this.editor.hasFocus,
-    left: this.editor.caretPx.x + this.editor.marginLeft,
+    left: this.editor.caretPx.x + this.editor.codeLeft,
     top: this.editor.caretPx.y - 1,
     height: this.editor.char.height + 1
   });

@@ -124,6 +124,10 @@ var keys = module.exports = {
     this.emit('input', '\uaaa2', this.caret.copy(), this.mark.copy(), this.mark.active)
     this.markBegin(false);
     var area = this.mark.get();
+    if (area.end.x === 0) {
+      area.end.y = area.end.y - 1
+      area.end.x = this.buffer.getLine(area.end.y).length
+    }
     if (this.buffer.moveAreaByLines(-1, area)) {
       this.mark.shiftByLines(-1);
       this.move.byLines(-1, true);
@@ -134,6 +138,10 @@ var keys = module.exports = {
     this.emit('input', '\uaaa3', this.caret.copy(), this.mark.copy(), this.mark.active)
     this.markBegin(false);
     var area = this.mark.get();
+    if (area.end.x === 0) {
+      area.end.y = area.end.y - 1
+      area.end.x = this.buffer.getLine(area.end.y).length
+    }
     if (this.buffer.moveAreaByLines(+1, area)) {
       this.mark.shiftByLines(+1);
       this.move.byLines(+1, true);
@@ -177,11 +185,11 @@ var keys = module.exports = {
       this.move.endOfLine(null, true);
       this.markSet();
       area = this.mark.get();
-      text = this.buffer.getArea(area);
+      text = this.buffer.getAreaText(area);
     } else {
       area = this.mark.get();
       this.mark.addBottom(area.end.x > 0).setLeft(0);
-      text = this.buffer.getArea(this.mark.get());
+      text = this.buffer.getAreaText(this.mark.get());
     }
 
     //TODO: should check if last line has // also
@@ -213,7 +221,7 @@ var keys = module.exports = {
     var caret = this.caret.copy();
     this.markBegin(false);
     var area = this.mark.get();
-    var text = this.buffer.getArea(area);
+    var text = this.buffer.getAreaText(area);
     if (text.slice(0,2) === '/*' && text.slice(-2) === '*/') {
       text = text.slice(2,-2);
       add -= 2;

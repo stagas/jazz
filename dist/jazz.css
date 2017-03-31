@@ -33,6 +33,7 @@ c,
 s,
 l,
 x {
+  box-sizing: border-box;
   white-space: pre;
 }
 
@@ -44,6 +45,10 @@ x {
   overflow: hidden;
 }
 
+._src_style__rows {
+  padding-right: 10px;
+}
+
 ._src_style__caret {
   position: absolute;
   cursor: text;
@@ -51,20 +56,20 @@ x {
   left: 0;
   width: 1px;
   background: #fff;
-  z-index: 90;
+  // z-index: 90;
 }
 
 @keyframes _src_style__caret-blink-smooth {
   0% { opacity: 1 }
   15% { opacity: 0 }
   30% { opacity: 0 }
-  70% { opacity: 1 }
+  75% { opacity: 1 }
   100% { opacity: 1 }
 }
 
 ._src_style__caret._src_style__blink-smooth {
   animation-name: _src_style__caret-blink-smooth;
-  animation-duration: 776.666ms;
+  animation-duration: 766.666ms;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
@@ -95,6 +100,7 @@ x {
 
 ._src_style__rows {
   position: absolute;
+  left: 0;
   text-align: right;
   cursor: default;
   color: #8e8e86;

@@ -44,7 +44,7 @@ RowsView.prototype.render = function() {
 
     dom.style(this, {
       top: range[0] * this.editor.char.height,
-      height: (range[1] - range[0] + 1) * this.editor.char.height
+      height: (range[1] - range[0] + 1) * this.editor.char.height,
     });
   }
 };

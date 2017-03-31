@@ -42,7 +42,7 @@ html, body {
 
 mark {
   color: #fff;
-  background: #b41;
+  background: rgba(255,255,255,.09);
   padding-top: 1px;
   padding-bottom: 1px;
 }

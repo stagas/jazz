@@ -154,7 +154,7 @@ CodeView.prototype.outRangeParts = function(range) {
 };
 
 CodeView.prototype.render = function() {
-  if (this.editor.editing) return;
+  // if (this.editor.editing) return;
 
   var page = this.editor.getPageRange([0,0]);
 
@@ -249,5 +249,21 @@ Part.prototype.style = function() {
 };
 
 Part.prototype.clear = function() {
-  dom.remove(this);
+  scheduleToRemove(this)
 };
+
+var scheduledForRemoval = []
+var removeTimeout
+
+function scheduleToRemove(el) {
+  scheduledForRemoval.push(el)
+  clearTimeout(removeTimeout)
+  removeTimeout = setTimeout(removeScheduled, 900)
+}
+
+function removeScheduled() {
+  var el
+  while (el = scheduledForRemoval.pop()) {
+    dom.remove(el)
+  }
+}

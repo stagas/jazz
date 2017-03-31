@@ -109,6 +109,7 @@ function Jazz(options) {
 
     renderQueue: [],
     renderRequest: null,
+    renderRequestStartedAt: -1,
   });
 
   // useful shortcuts
@@ -191,6 +192,7 @@ Jazz.prototype.bindMethods = function() {
   this.markClear = this.markClear.bind(this);
   this.focus = this.focus.bind(this);
   this.repaint = this.repaint.bind(this); //bindRaf(this.repaint).bind(this);
+  this._render = this._render.bind(this);
 };
 
 Jazz.prototype.bindHandlers = function() {
@@ -703,7 +705,7 @@ Jazz.prototype.insert = function(text) {
   var length;
 
   if (!hasRightSymbol || (hasRightSymbol && !~['}',']',')'].indexOf(text))) {
-    length = this.buffer.insert(this.caret, text);
+    length = this.buffer.insert(this.caret, text, null, true);
   } else {
     length = 1;
   }
@@ -928,7 +930,8 @@ Jazz.prototype.resize = function() {
   this.size.set(dom.getSize($));
 
   // this is a weird fix when doing multiple .use()
-  if (this.char.width === 0) this.char.set(dom.getCharSize($, css.code));
+  // if (this.char.width === 0)
+  this.char.set(dom.getCharSize($, css.code));
 
   this.rows = this.buffer.loc();
   this.code = this.buffer.text.length;
@@ -954,6 +957,7 @@ Jazz.prototype.resize = function() {
     );
 
   this.marginLeft = this.gutter + this.options.margin_left;
+  this.codeLeft = this.marginLeft + this.char.width * 2;
 
   // dom.style(this.el, {
   //   width: this.longestLine * this.char.width,
@@ -1015,12 +1019,10 @@ Jazz.prototype.resize = function() {
     #${this.id} > .${css.find},
     #${this.id} > .${css.mark},
     #${this.id} > .${css.code} {
-      margin-left: ${this.marginLeft}px;
+      margin-left: ${this.codeLeft}px;
       tab-size: ${this.tabSize};
     }
     #${this.id} > .${css.rows} {
-      padding-right: ${this.options.gutter_margin}px;
-      padding-left: ${this.options.margin_left}px;
       width: ${this.marginLeft}px;
     }
     #${this.id} > .${css.find} > i,
@@ -1041,15 +1043,24 @@ Jazz.prototype.clear = function(name) {
 
 Jazz.prototype.render = function(name) {
   cancelAnimationFrame(this.renderRequest);
+  // if (this.renderRequestStartedAt === -1) {
+  //   this.renderRequestStartedAt = Date.now();
+  // } else {
+  //   if (Date.now() - this.renderRequestStartedAt > 100) {
+  //     this._render();
+  //   }
+  // }
   if (!~this.renderQueue.indexOf(name)) {
     if (name in this.views) {
       this.renderQueue.push(name);
     }
   }
-  this.renderRequest = requestAnimationFrame(this._render.bind(this));
+  this.renderRequest = requestAnimationFrame(this._render);
 };
 
 Jazz.prototype._render = function() {
+  // console.log('render')
+  this.renderRequestStartedAt = -1;
   this.renderQueue.forEach(name => this.views[name].render());
   this.renderQueue = [];
 };

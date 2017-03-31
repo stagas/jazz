@@ -30,8 +30,8 @@ MarkView.prototype.get = function(range, e) {
 
   var above = code.substring(0, area[0]);
   var middle = code.substring(area[0], area[1]);
-  var html = e.syntax.entities(above)
-    + '<mark>' + e.syntax.entities(middle) + '</mark>';
+  var html = above.replace(/[^\n]/g, ' ') //e.syntax.entities(above)
+    + '<mark>' + middle.replace(/[^\n]/g, ' ') + '</mark>';
 
   html = html.replace(/\n/g, ' \n');
 

@@ -94,7 +94,7 @@ BlockView.prototype.get = function(e) {
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (begin.y * e.char.height) + 'px;'
         + 'left:' + ((begin.x + tabs.tabs * e.tabSize - tabs.remainder)
-                  * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+                  * e.char.width + e.codeLeft) + 'px;'
         + '"></i>';
 
   tabs = e.getPointTabs(end);
@@ -103,7 +103,7 @@ BlockView.prototype.get = function(e) {
         + 'width:' + e.char.width + 'px;'
         + 'top:' + (end.y * e.char.height) + 'px;'
         + 'left:' + ((end.x + tabs.tabs * e.tabSize - tabs.remainder)
-                  * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+                  * e.char.width + e.codeLeft) + 'px;'
         + '"></i>';
 
   return html;

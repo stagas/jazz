@@ -74,7 +74,8 @@ function setTheme(name) {
   var t = themes[name];
   dom.css('theme',
 `
-.${name} {
+.${name},
+.${css.rows} {
   background: ${t.background};
 }
 
