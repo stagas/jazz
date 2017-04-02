@@ -28,7 +28,7 @@ RowsView.prototype.render = function() {
       || this.editor.rows === this.rows
     )) return;
 
-  range = this.editor.getPageRange([-3,+3]);
+  range = this.editor.getPageRange([-2,+2]);
   this.rows = this.editor.rows;
   this.range = range;
 

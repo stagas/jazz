@@ -918,7 +918,7 @@ Jazz.prototype.resize = function() {
     s,
     l,
     x {
-      font-family: monospace;
+      font-family: 'Meslo LG S', 'Roboto Mono', 'Consolas', monospace;
       font-size: ${this.options.font_size};
       line-height: ${this.options.line_height};
     }
@@ -1010,7 +1010,7 @@ Jazz.prototype.resize = function() {
     s,
     l,
     x {
-      font-family: monospace;
+      font-family: 'Meslo LG S', 'Roboto Mono', 'Consolas', monospace;
       font-size: ${this.options.font_size};
       line-height: ${this.options.line_height};
     }

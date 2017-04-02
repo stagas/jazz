@@ -16,6 +16,7 @@
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   -o-text-size-adjust: 100%;
+  transform: translateZ(0);
 }
 
 /* style */

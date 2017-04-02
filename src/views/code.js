@@ -5,7 +5,7 @@ var View = require('./view');
 
 var AheadThreshold = {
   animation: [.15, .4],
-  normal: [.75, 1.5]
+  normal: [.15, .4]
 };
 
 module.exports = CodeView;
@@ -16,6 +16,7 @@ function CodeView(editor) {
   this.name = 'code';
   this.dom = dom(css.code);
   this.parts = [];
+  this.offset = { top: 0, left: 0 };
 }
 
 CodeView.prototype.__proto__ = View.prototype;
@@ -153,7 +154,8 @@ CodeView.prototype.outRangeParts = function(range) {
   return parts;
 };
 
-CodeView.prototype.render = function() {
+CodeView.prototype.render = function(opts = {}) {
+  if (opts.offset) this.offset = opts.offset;
   // if (this.editor.editing) return;
 
   var page = this.editor.getPageRange([0,0]);
@@ -245,10 +247,15 @@ Part.prototype.style = function() {
   dom.style(this, {
     height: (this[1] - this[0] + 1) * this.view.editor.char.height,
     top: this[0] * this.view.editor.char.height
+      -this.view.offset.top
   });
 };
 
 Part.prototype.clear = function() {
+  dom.style(this, {
+    height: 0
+  })
+  // dom.remove(this)
   scheduleToRemove(this)
 };
 
@@ -258,6 +265,9 @@ var removeTimeout
 function scheduleToRemove(el) {
   scheduledForRemoval.push(el)
   clearTimeout(removeTimeout)
+  if (scheduledForRemoval.length > 10) {
+    return removeScheduled()
+  }
   removeTimeout = setTimeout(removeScheduled, 900)
 }
 

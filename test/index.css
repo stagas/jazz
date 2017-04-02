@@ -2,8 +2,8 @@
 html, body {
   margin: 0;
   padding: 0 5px 10px;
-  font-family: monospace;
   color: #656565;
+  font-family: 'Meslo LG S', 'Roboto Mono', 'Consolas', monospace;
   font-size: 8.5pt;
 }
 
