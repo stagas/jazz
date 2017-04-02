@@ -959,6 +959,10 @@ Jazz.prototype.resize = function() {
   this.marginLeft = this.gutter + this.options.margin_left;
   this.codeLeft = this.marginLeft + this.char.width * 2;
 
+  this.height = (this.rows + this.page.height)
+    * this.char.height
+    + this.pageRemainder.height;
+
   // dom.style(this.el, {
   //   width: this.longestLine * this.char.width,
   //   height: this.rows * this.char.height

@@ -19,9 +19,10 @@ RulerView.prototype.use = function(target) {
 RulerView.prototype.render = function() {
   dom.style(this, {
     top: 0,
-    height: (this.editor.rows + this.editor.page.height)
-      * this.editor.char.height
-      + this.editor.pageRemainder.height
+    height: this.editor.height
+    // (this.editor.rows + this.editor.page.height)
+    //   * this.editor.char.height
+    //   + this.editor.pageRemainder.height
   });
 };
 
