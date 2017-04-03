@@ -1,7 +1,7 @@
 var options = {
   theme: 'redbliss',
   // debug_layers: ['code'],
-  // scroll_speed: 95,
+  scroll_speed: 125,
   // hide_rows: true,
   // center_horizontal: true,
   // center_vertical: true,

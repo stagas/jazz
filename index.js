@@ -203,7 +203,7 @@ Jazz.prototype.bindHandlers = function() {
       this[method] = this[method].bind(this);
     }
   }
-  this.onWheel = throttle(this.onWheel, 10);
+  this.onWheel = throttle(this.onWheel, 8);
 };
 
 Jazz.prototype.bindEvents = function() {
