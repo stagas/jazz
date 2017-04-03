@@ -251,7 +251,7 @@ Part.prototype.style = function() {
   dom.style(this, {
     height: (this[1] - this[0] + 1) * this.view.editor.char.height,
     top: this[0] * this.view.editor.char.height
-      -this.view.offset.top
+      // -this.view.offset.top
   });
 };
 
