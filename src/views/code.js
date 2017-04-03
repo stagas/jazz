@@ -5,7 +5,7 @@ var View = require('./view');
 
 var AheadThreshold = {
   animation: [.15, .4],
-  normal: [.15, .4]
+  normal: [2, 4]
 };
 
 module.exports = CodeView;
@@ -23,6 +23,10 @@ CodeView.prototype.__proto__ = View.prototype;
 
 CodeView.prototype.use = function(target) {
   this.target = target;
+};
+
+CodeView.prototype.appendParts = function() {
+  this.parts.forEach(part => part.append());
 };
 
 CodeView.prototype.renderPart = function(range) {
@@ -255,7 +259,6 @@ Part.prototype.clear = function() {
   dom.style(this, {
     height: 0
   })
-  // dom.remove(this)
   scheduleToRemove(this)
 };
 

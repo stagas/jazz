@@ -17,10 +17,13 @@ jazz.use(document.body).focus()
 //   jazz.repaint()
 // }, 1000)
 
-// jazz.use(document.body).open('huge.js', './').focus();
+jazz.use(document.body).open('huge.js', './').focus();
+setTimeout(() => {
+  // jazz.scrollBy(0, 500000 * 10)
+}, 5000)
 // jazz.use(document.body).open('ember.js', './').focus();
 // jazz.use(document.body).open('babel.js', './').focus();
-jazz.use(document.body).open('jazz.js', '../dist/').focus();
+// jazz.use(document.body).open('jazz.js', '../dist/').focus();
 // jazz.use(document.body).open('jquery.js', './').focus();
 // jazz.use(document.body).open('codemirror.js', './').focus();
 // jazz.use(document.body).focus()

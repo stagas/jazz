@@ -131,6 +131,7 @@ Jazz.prototype.use = function(el, scrollEl) {
     this.el.classList.remove(css.editor);
     this.el.classList.remove(this.options.theme);
     this.offScroll();
+    this.offWheel();
     this.ref.forEach(ref => {
       dom.append(el, ref);
     });
@@ -145,6 +146,7 @@ Jazz.prototype.use = function(el, scrollEl) {
   this.el.classList.add(css.editor);
   this.el.classList.add(this.options.theme);
   this.offScroll = dom.onscroll(scrollEl || this.el, this.onScroll);
+  this.offWheel = dom.onwheel(scrollEl || this.el, this.onWheel)
   this.input.use(this.el);
   dom.append(this.views.caret, this.input.text);
   this.views.use(this.el);
@@ -201,6 +203,7 @@ Jazz.prototype.bindHandlers = function() {
       this[method] = this[method].bind(this);
     }
   }
+  this.onWheel = throttle(this.onWheel, 10);
 };
 
 Jazz.prototype.bindEvents = function() {
@@ -240,6 +243,10 @@ Jazz.prototype.onScroll = function(scroll) {
   this.render('find');
   this.render('rows');
   this.rest();
+};
+
+Jazz.prototype.onWheel = function(wheel) {
+  this.animateScrollBy(wheel.deltaX, wheel.deltaY * 1.2, 'ease')
 };
 
 Jazz.prototype.rest = debounce(function() {
@@ -1047,13 +1054,13 @@ Jazz.prototype.clear = function(name) {
 
 Jazz.prototype.render = function(name) {
   cancelAnimationFrame(this.renderRequest);
-  // if (this.renderRequestStartedAt === -1) {
-  //   this.renderRequestStartedAt = Date.now();
-  // } else {
-  //   if (Date.now() - this.renderRequestStartedAt > 100) {
-  //     this._render();
-  //   }
-  // }
+  if (this.renderRequestStartedAt === -1) {
+    this.renderRequestStartedAt = Date.now();
+  } else {
+    if (Date.now() - this.renderRequestStartedAt > 100) {
+      this._render();
+    }
+  }
   if (!~this.renderQueue.indexOf(name)) {
     if (name in this.views) {
       this.renderQueue.push(name);
@@ -1065,7 +1072,12 @@ Jazz.prototype.render = function(name) {
 Jazz.prototype._render = function() {
   // console.log('render')
   this.renderRequestStartedAt = -1;
-  this.renderQueue.forEach(name => this.views[name].render());
+  this.renderQueue.forEach(name => this.views[name].render({
+    offset: {
+      left: this.scroll.x,
+      top: this.scroll.y - this.el.scrollTop
+    }
+  }));
   this.renderQueue = [];
 };
 
