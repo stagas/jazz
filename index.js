@@ -7,7 +7,7 @@ var DefaultOptions = {
   font_size: '9pt',
   line_height: '1.4em',
   debug_layers: false,
-  scroll_speed: 95,
+  scroll_speed: 125,
   hide_rows: false,
   center_horizontal: false,
   center_vertical: false,
@@ -65,6 +65,8 @@ function Jazz(options) {
     findNeedle: 0,
     findResults: [],
 
+    scrollOffsetTop: 0,
+    scrollPage: 0,
     scroll: new Point,
     offset: new Point,
     size: new Box,
@@ -243,6 +245,13 @@ Jazz.prototype.onScroll = function(scroll) {
   this.render('find');
   this.render('rows');
   this.rest();
+  console.log('scroll', scroll, this.size.height);
+};
+
+Jazz.prototype.adjustScroll = function() {
+  this.views['code'].parts.forEach(part => {
+    part.style();
+  });
 };
 
 Jazz.prototype.onWheel = function(wheel) {
@@ -420,7 +429,7 @@ Jazz.prototype.onFileChange = function(editRange, editShift, textBefore, textAft
 };
 
 Jazz.prototype.setCaretFromPx = function(px) {
-  var g = new Point({ x: this.marginLeft, y: this.char.height/2 })['+'](this.offset);
+  var g = new Point({ x: this.codeLeft, y: this.char.height/2 })['+'](this.offset);
   if (this.options.center_vertical) g.y += this.size.height / 3 | 0;
   var p = px['-'](g)['+'](this.scroll)['o/'](this.char);
 
@@ -542,6 +551,7 @@ Jazz.prototype.getRange = function(range) {
 
 Jazz.prototype.getPageRange = function(range) {
   var s = this.scroll.copy();
+  s.y += this.scrollOffsetTop;
   if (this.options.center_vertical) {
     s.y -= this.size.height / 3 | 0;
   }
@@ -590,14 +600,7 @@ Jazz.prototype.scrollTo = function(p) {
 };
 
 Jazz.prototype.scrollBy = function(x, y) {
-  var target = Point.low({
-    x: 0,
-    y: 0
-  }, {
-    x: this.scroll.x + x,
-    y: this.scroll.y + y
-  });
-
+  let target = this.scroll.add({ x, y });
   if (Point.sort(target, this.scroll) !== 0) {
     this.scroll.set(target);
     this.scrollTo(this.scroll);
@@ -632,6 +635,7 @@ Jazz.prototype.animationScrollBegin = function() {
 
   var s = this.scroll;
   var t = this.animationScrollTarget;
+  if (!t) return cancelAnimationFrame(this.animationScrollFrame);
 
   var dx = t.x - s.x;
   var dy = t.y - s.y;
@@ -646,6 +650,7 @@ Jazz.prototype.animationScrollFrame = function() {
   var speed = this.options.scroll_speed;
   var s = this.scroll;
   var t = this.animationScrollTarget;
+  if (!t) return cancelAnimationFrame(this.animationScrollFrame);
 
   var dx = t.x - s.x;
   var dy = t.y - s.y;
@@ -925,7 +930,7 @@ Jazz.prototype.resize = function() {
     s,
     l,
     x {
-      font-family: monospace;
+      font-family: 'Roboto Mono', monospace;
       font-size: ${this.options.font_size};
       line-height: ${this.options.line_height};
     }
@@ -1021,7 +1026,7 @@ Jazz.prototype.resize = function() {
     s,
     l,
     x {
-      font-family: monospace;
+      font-family: 'Roboto Mono', monospace;
       font-size: ${this.options.font_size};
       line-height: ${this.options.line_height};
     }
@@ -1074,8 +1079,8 @@ Jazz.prototype._render = function() {
   this.renderRequestStartedAt = -1;
   this.renderQueue.forEach(name => this.views[name].render({
     offset: {
-      left: this.scroll.x,
-      top: this.scroll.y - this.el.scrollTop
+      left: 0,
+      top: 0
     }
   }));
   this.renderQueue = [];

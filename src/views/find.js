@@ -43,7 +43,7 @@ FindView.prototype.get = function(range, e) {
           + 'width:' + width + ';'
           + 'top:' + (r.y * e.char.height) + 'px;'
           + 'left:' + ((r.x + tabs.tabs * e.tabSize - tabs.remainder)
-                    * e.char.width + e.gutter + e.options.margin_left) + 'px;'
+                    * e.char.width + e.codeLeft) + 'px;'
           + '"></i>';
   }
 
